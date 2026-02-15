@@ -11,17 +11,17 @@ Ergon is composed of:
 
 Talos is composed of:
 * a Mother Board
-  * a 32-bit CPU
-    * single Core
-        * ALU
+  * a 32-bit <a href="#CPU">CPU</a>
+    * single <a href="#Core">Core</a>
+        * <a href="#ALU">ALU</a>
         * 16 registers
   * a from 1 to 516Kb RAM
   * a ROM where all the instructions (32-bit) are stored
-* a ASM interpreter to convert assembly code to 32-bit bytecode
+* a <a href="#ASM interpreter">ASM interpreter</a> to convert assembly code to 32-bit bytecode
 
 ## Architecture
 
-# ALU
+### ALU
 
 ALU Operations:
 * ADD
@@ -53,7 +53,7 @@ ALU Flags:
 * Carry
 * Overflow
 
-# Core
+### Core
 
 Core Instructions (type R, I and J):
 
@@ -133,7 +133,7 @@ Core Instructions (type R, I and J):
     HALT    = 0xFF // HALT (stops program)
     
 
-# CPU
+### CPU
 
 The CPU is composed of a single Core:
 
@@ -150,7 +150,7 @@ The CPU is composed of a single Core:
  └───────────────────────┘
 ```
 
-# ASM interpreter
+### ASM interpreter
 
 The ASM interpreter translate Assembly code into 32-bit bytecode (ex: add 4 6 7 -> 0x00040607).
 
