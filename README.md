@@ -17,7 +17,7 @@ Talos is composed of:
         * 16 registers
   * a from 1 to 516Kb RAM
   * a ROM where all the instructions (32-bit) are stored
-* a [ASM interpreter](#asm-interpreter) to convert assembly code to 32-bit bytecode
+* a ASM <a href="#interpreter">interpreter</a> to convert assembly code to 32-bit bytecode
 
 ## Architecture
 
