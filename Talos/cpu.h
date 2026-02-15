@@ -3,9 +3,9 @@
 
 #include "core.h"
 
-template <size_t REG_COUNT, size_t MEM_SIZE>
+template <size_t MEM_SIZE>
 struct SimpleCPU {
-    SimpleCore<REG_COUNT, MEM_SIZE> core;
+    SimpleCore<MEM_SIZE> core;
 
 
 };

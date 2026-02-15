@@ -7,12 +7,6 @@
 #include <array>
 #include <vector>
 
-enum class CoreState {
-    stalled, // temporarily blocked, needs clear/reset
-    running, // executing instructions
-    waiting, // waiting for instructions
-    halted, // finished program, ready for use
-};
 
 enum OPCODE : uint8_t {
     //----------------- ALU OPERATIONS -----------------
@@ -97,11 +91,11 @@ enum OPCODE : uint8_t {
 };
 
 
-template <size_t REG_COUNT, size_t MEM_SIZE>
+template <size_t MEM_SIZE>
 struct SimpleCore {
-    std::array<uint32_t, REG_COUNT> regs{};
-    uint32_t& PC = regs[REG_COUNT - 1]; // Program Counter
-    uint32_t& SP = regs[REG_COUNT - 2]; // Stack Pointer
+    std::array<uint32_t, 16> regs{};
+    uint32_t& PC = regs[16 - 1]; // Program Counter
+    uint32_t& SP = regs[16 - 2]; // Stack Pointer
     Flags flags;
 
     ALU alu;

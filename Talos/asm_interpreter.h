@@ -165,19 +165,20 @@ struct AsmInterpreter {
                 if (!error_code_1) return error_code_1;
                 auto [error_code_2, rs1] = parse_reg(tokens[2]);
                 if (!error_code_2) return error_code_2;
+
+                uint8_t rs2 = 0;
+                if (tokens.size() > 3) {
+                    auto [error_code_3, loc_rs2] = parse_reg(tokens[3]);
+                    if (!error_code_3) return error_code_3;
+                    rs2 = loc_rs2;
+                }
+                else {
+                    if (!(it->first == "swap" || it->first == "mov"))
+                        return 2;
+                }
+                result = (static_cast<uint32_t>(def.opcode) << 24) | (rd << 16) | (rs1 << 8) | rs2;
             } else
                 return 2;
-
-            uint8_t rs2 = 0;
-            if ((it->first != "swap" || it->first != "mov") && tokens.size() > 3) {
-                auto [error_code_3, loc_rs2] = parse_reg(tokens[3]);
-                if (!error_code_3) return error_code_3;
-                rs2 = loc_rs2;
-            }
-            else
-                return 2;
-
-            result = (static_cast<uint32_t>(def.opcode) << 24) | (rd << 16) | (rs1 << 8) | rs2;
         }
         if (def.type == InstrType::I) {
             if (tokens.size() > 3) {
@@ -187,10 +188,10 @@ struct AsmInterpreter {
                 if (!error_code_2) return error_code_2;
                 auto [error_code_3, imm] = parse_imm(tokens[3]);
                 if (!error_code_3) return error_code_3;
+
+                result = (static_cast<uint32_t>(def.opcode) << 24) | (rd  << 16) | (rs1 << 8) | (imm & 0xFF);
             } else
                 return 2;
-
-            result = (static_cast<uint32_t>(def.opcode) << 24) | (rd  << 16) | (rs1 << 8) | (imm & 0xFF);
         }
         if (def.type == InstrType::J) {
             /* IMPLEMENT LABEL TO PC CONVERTER
@@ -235,7 +236,7 @@ struct AsmInterpreter {
         const std::vector<std::string> lines = slice_str(asm_program, '\n');
         for (size_t i = 0; i < lines.size(); i++) {
             program.push_back(0);
-            int error_code = decode_line(lines[i], program.back());
+            int error_code = decode_line(normalize(lines[i]), program.back());
             if (!error_code)
                 return ErrorInfo(error_code, i);
         }
