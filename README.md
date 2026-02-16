@@ -58,79 +58,85 @@ ALU Flags:
 Core Instructions (type R, I and J):
 
 <b>Note that all instruction must be written in lower case</b>
+    //----------------- ALU OPERATIONS -----------------
+    ADD     = 0x00, // R-type: add rd, rs1, rs2
+    SUB     = 0x01, // R-type: sub rd, rs1, rs2
+    MUL     = 0x02, // R-type: mul rd, rs1, rs2
+    DIV     = 0x03, // R-type: div rd, rs1, rs2
+    MOD     = 0x04, // R-type: mod rd, rs1, rs2
+    ADDI    = 0x05, // I-type: addi rd, rs, imm
+    SUBI    = 0x06, // I-type: subi rd, rs, imm
+    MULI    = 0x07, // I-type: muli rd, rs, imm
+    DIVI    = 0x08, // I-type: divi rd, rs, imm
+    MODI    = 0x09, // I-type: modi rd, rs, imm
 
-    ADD     = 0x00, // R-type: ADD rd, rs1, rs2
-    SUB     = 0x01, // R-type: SUB rd, rs1, rs2
-    MUL     = 0x02, // R-type: MUL rd, rs1, rs2
-    DIV     = 0x03, // R-type: DIV rd, rs1, rs2
-    MOD     = 0x04, // R-type: MOD rd, rs1, rs2
-    ADDI    = 0x05, // I-type: ADDI rd, rs, imm
-    SUBI    = 0x06, // I-type: SUBI rd, rs, imm
-    MULI    = 0x07, // I-type: MULI rd, rs, imm
-    DIVI    = 0x08, // I-type: DIVI rd, rs, imm
-    MODI    = 0x09, // I-type: MODI rd, rs, imm
+    AND     = 0x0A, // R-type: and rd, rs1, rs2
+    OR      = 0x0B, // R-type: or rd, rs1, rs2
+    XOR     = 0x0C, // R-type: xor rd, rs1, rs2
+    ANDI    = 0x0D, // I-type: andi rd, rs, imm
+    ORI     = 0x0E, // I-type: ori rd, rs, imm
+    XORI    = 0x0F, // I-type: xori rd, rs, imm
 
-    AND     = 0x0A, // R-type: AND rd, rs1, rs2
-    OR      = 0x0B, // R-type: OR rd, rs1, rs2
-    XOR     = 0x0C, // R-type: XOR rd, rs1, rs2
-    ANDI    = 0x0D, // I-type: ANDI rd, rs, imm
-    ORI     = 0x0E, // I-type: ORI rd, rs, imm
-    XORI    = 0x0F, // I-type: XORI rd, rs, imm
+    SHL     = 0x10, // R-type: shl rd, rs, rt
+    SHR     = 0x11, // R-type: shr rd, rs, rt
+    SAR     = 0x12, // R-type: sar rd, rs, rt
+    ROL     = 0x13, // R-type: rol rd, rs, rt
+    ROR     = 0x14, // R-type: ror rd, rs, rt
+    SHLI    = 0x15, // I-type: shli rd, rs, imm
+    SHRI    = 0x16, // I-type: shri rd, rs, imm
+    SARI    = 0x17, // I-type: sari rd, rs, imm
+    ROLI    = 0x18, // I-type: roli rd, rs, imm
+    RORI    = 0x19, // I-type: rori rd, rs, imm
 
-    SHL     = 0x10, // R-type: SHL rd, rs, rt
-    SHR     = 0x11, // R-type: SHR rd, rs, rt
-    SAR     = 0x12, // R-type: SAR rd, rs, rt
-    ROL     = 0x13, // R-type: ROL rd, rs, rt
-    ROR     = 0x14, // R-type: ROR rd, rs, rt
-    SHLI    = 0x15, // I-type: SHLI rd, rs, imm
-    SHRI    = 0x16, // I-type: SHRI rd, rs, imm
-    SARI    = 0x17, // I-type: SARI rd, rs, imm
-    ROLI    = 0x18, // I-type: ROLI rd, rs, imm
-    RORI    = 0x19, // I-type: RORI rd, rs, imm
+    CMP     = 0x1A, // R-type: cmp rs1, rs2
+    TEST    = 0x1B, // R-type: test rs1, rs2
+    CMPI    = 0x1C, // I-type: cmpi rs, imm
+    TESTI   = 0x1D, // I-type: testI rs, imm
 
-    CMP     = 0x1A, // R-type: CMP rs1, rs2
-    TEST    = 0x1B, // R-type: TEST rs1, rs2
-    CMPI    = 0x1C, // I-type: CMPI rs, imm
-    TESTI   = 0x1D, // I-type: TESTI rs, imm
+    INC     = 0x1E, // J-type: inc rd
+    DEC     = 0x1F, // J-type: dec rd
+    NOT     = 0x20, // J-type: not rd, rs
+    ABS     = 0x21, // J-type: abs rd, rs
+    NEG     = 0x22, // J-type: neg rd, rs
+    MIN     = 0x23, // R-type: min rd, rs1, rs2
+    MAX     = 0x24, // R-type: max rd, rs1, rs2
+    MINI    = 0x25, // I-type: mini rd, rs1, imm
+    MAXI    = 0x26, // I-type: maxi rd, rs1, imm
 
-    INC     = 0x1E, // J-type: INC rd
-    DEC     = 0x1F, // J-type: DEC rd
-    NOT     = 0x20, // J-type: NOT rd, rs
-    ABS     = 0x21, // J-type: ABS rd, rs
-    NEG     = 0x22, // J-type: NEG rd, rs
-    MIN     = 0x23, // R-type: MIN rd, rs1, rs2
-    MAX     = 0x24, // R-type: MAX rd, rs1, rs2
-    MINI    = 0x25, // I-type: MINI rd, rs1, imm
-    MAXI    = 0x26, // I-type: MAXI rd, rs1, imm
+    //----------------- FPU OPERATIONS -----------------
 
-    MOV_IMM = 0x27, // MOV rd, imm
-    MOV_REG = 0x28, // MOV rd, rs1
-    LOAD    = 0x29, // LOAD rd, [imm]
-    STORE   = 0x2A, // STORE rs1, [imm]
-    LOAD_BASE = 0x2B, // LOAD rd, [rs1 + imm]
-    LDB     = 0x2C, // LOAD byte rd, [rs1 + imm] 8b sign-extended
-    LDH     = 0x2D, // LOAD halfword rd, [rs1 + imm] 16b sign-extended
-    LDW     = 0x2E, // LOAD word rd, [rs1 + imm] 32b
-    STORE_BASE = 0x2F, // STORE rs1, [rd + imm]
-    STB     = 0x30, // STORE byte rs1, [rd + imm] 8b
-    STH     = 0x31, // STORE halfword rs1, [rd + imm] 16b
-    STW     = 0x32, // STORE word rs1, [rd + imm] 32b
-    PUSH    = 0x33, // PUSH rs1
-    POP     = 0x34, // POP rd
-    LEA     = 0x35, // LEA rd, rs1, imm
-    SWAP    = 0x36, // SWAP rd, rs1
-    CLR     = 0x37, // CLR rd
-    MEMCPY  = 0x38, // MEMCPY rd, rs1, imm (length = imm)
+    //A FAIRE
 
-    JMP     = 0x39, // JMP {(rd, rs1, rs2) = 24b} (RELATIVE JUMP)
-    JZ      = 0x3A, // JZ {(rd, rs1, rs2) = 24b} (JMPR if Z flag is true)
-    JNZ     = 0x3B, // JNZ {(rd, rs1, rs2) = 24b} (JMPR if Z flag is false)
-    JG      = 0x3C, // JG {(rd, rs1, rs2) = 24b} (JMPR if both Z and N flag are false)
-    JL      = 0x3D, // JL {(rd, rs1, rs2) = 24b} (JMPR if N flag is true)
-    CALL    = 0x3E, // CALL {(rd, rs1, rs2) = 24b}  (JMPR and saves the current PC)
-    RET     = 0x3F, // RET (load previous PC and JMPR there)
+    //----------------- MEMORY OPERATIONS -----------------
+    MOV_IMM    = 0x27, // mov rd, imm
+    MOV_REG    = 0x28, // mov rd, rs1
+    LOAD       = 0x29, // load rd, [imm]
+    STORE      = 0x2A, // store rs1, [imm]
+    LOAD_BASE  = 0x2B, // lbase rd, [rs1 + imm]
+    LDB        = 0x2C, // load byte rd, [rs1 + imm] 8b sign-extended
+    LDH        = 0x2D, // load halfword rd, [rs1 + imm] 16b sign-extended
+    LDW        = 0x2E, // load word rd, [rs1 + imm] 32b
+    STORE_BASE = 0x2F, // sbase rs1, [rd + imm]
+    STB        = 0x30, // store byte rs1, [rd + imm] 8b
+    STH        = 0x31, // store halfword rs1, [rd + imm] 16b
+    STW        = 0x32, // store word rs1, [rd + imm] 32b
+    PUSH       = 0x33, // push rs1
+    POP        = 0x34, // pop rd
+    LEA        = 0x35, // lea rd, rs1, imm
+    SWAP       = 0x36, // swap rd, rs1
+    CLR        = 0x37, // clr rd
+    MEMCPY     = 0x38, // memcpy rd, rs1, imm (length = imm)
 
-    HALT    = 0xFF // HALT (stops program)
+    //----------------- PROGRAM OPERATIONS -----------------
+    JMP     = 0x39, // jmp {(rd, rs1, rs2) = 24b} (RELATIVE JUMP)
+    JZ      = 0x3A, // jz {(rd, rs1, rs2) = 24b} (JMPR if Z flag is true)
+    JNZ     = 0x3B, // jnz {(rd, rs1, rs2) = 24b} (JMPR if Z flag is false)
+    JG      = 0x3C, // jg {(rd, rs1, rs2) = 24b} (JMPR if both Z and N flag are false)
+    JL      = 0x3D, // jl {(rd, rs1, rs2) = 24b} (JMPR if N flag is true)
+    CALL    = 0x3E, // calL {(rd, rs1, rs2) = 24b}  (JMPR and saves the current PC)
+    RET     = 0x3F, // ret (load previous PC and JMPR there)
+
+    HALT    = 0xFF // halt (stops program)
     
 
 ### CPU
