@@ -53,8 +53,8 @@ struct ALU {
         uint64_t u_wide; //unsigned wide
         int64_t  s_wide; //signed wide
 
-        int32_t s_a = static_cast<int32_t>(a); //signed a
-        int32_t s_b = static_cast<int32_t>(b); //signed b
+        auto s_a = static_cast<int32_t>(a); //signed a
+        auto s_b = static_cast<int32_t>(b); //signed b
 
         switch (op) {
 
@@ -79,9 +79,7 @@ struct ALU {
             r.flags.V = s_wide > INT32_MAX || s_wide < INT32_MIN;
             break;
         case ALUOp::DIV:
-            if (s_b == 0)
-                r.trap = true;
-            else if (s_a == INT32_MIN && s_b == -1)
+            if (s_b == 0 || (s_a == INT32_MIN && s_b == -1))
                 r.trap = true;
             else
                 r.value = static_cast<uint32_t>(s_a / s_b);

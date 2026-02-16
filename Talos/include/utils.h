@@ -1,6 +1,8 @@
 #ifndef ERGON_UTILS_H
 #define ERGON_UTILS_H
 
+#include "error.h"
+
 #include <vector>
 #include <string>
 #include <cctype>
@@ -43,9 +45,9 @@ inline std::string lower_case(const std::string& str) {
 }
 
 // returns { error_code, result }
-inline std::pair<int, int> better_stoi(const std::string& str, size_t* idx = nullptr, int base = 10) {
+inline std::pair<ErrorCode, int> better_stoi(const std::string& str, size_t* idx = nullptr, int base = 10) {
     if (base < 2 || base > 36)
-        return {4, 0};
+        return {ErrorCode::STOI_OVERFLOW, 0};
 
     size_t i = 0;
     int sign = 1;
@@ -64,18 +66,18 @@ inline std::pair<int, int> better_stoi(const std::string& str, size_t* idx = nul
             break;
 
         if (result > (std::numeric_limits<int>::max() - digit) / base)
-            return {5, 0};
+            return {ErrorCode::STOI_OVERFLOW, 0};
 
         result = result * base + digit;
     }
 
     if (i == start)
-        return {4, 0};
+        return {ErrorCode::INVALID_CHAR, 0};
 
     if (idx)
         *idx = i;
 
-    return {0, result * sign};
+    return {ErrorCode::OK, result * sign};
 }
 
 #endif

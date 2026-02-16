@@ -91,7 +91,7 @@ enum OPCODE : uint8_t {
 };
 
 
-template <size_t MEM_SIZE>
+template <size_t RAM_SIZE>
 struct SimpleCore {
     std::array<uint32_t, 16> regs{};
     uint32_t& PC = regs[16 - 1]; // Program Counter
@@ -158,7 +158,7 @@ struct SimpleCore {
         flags = Flags();
     }
 
-    bool step(uint32_t instr, std::array<uint8_t, MEM_SIZE>& ram) {
+    bool step(uint32_t instr, std::array<uint8_t, RAM_SIZE>& ram) {
         uint8_t opcode = instr & 0xFF; //16 bits instruction index
         uint8_t rd = (instr >> 8) & 0xFF; //index of the "destination" register
         uint8_t rs1 = (instr >> 16) & 0xFF; //index of the first "source" register

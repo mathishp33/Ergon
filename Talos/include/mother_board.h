@@ -22,33 +22,43 @@
  └───────────────────────┘
  */
 
-//I NEED TO IMPLEMENT malloc and free alike instruction !
-
-template <size_t REG_COUNT, size_t MEM_SIZE, size_t PROGRAM_SIZE>
+template <size_t RAM_SIZE = 0x10000, size_t PROGRAM_SIZE = 0xFFFF>
 struct MotherBoard {
-    SimpleCPU<REG_COUNT, MEM_SIZE> cpu;
-    std::array<uint8_t, MEM_SIZE> ram{};
-    std::array<uint32_t, PROGRAM_SIZE> rom{};
+    SimpleCPU<RAM_SIZE> cpu;
+    std::array<uint8_t, RAM_SIZE> ram{};
+    std::vector<uint32_t> rom{};
     std::atomic<bool> running;
 
     void reset() {
         running = false;
 
         ram.fill(0);
-        rom.fill(0);
+        for (auto& elem : rom) elem = 0;
     }
 
-    void load(const std::array<uint32_t, PROGRAM_SIZE>& program) {
+    void load_prog(const std::vector<uint32_t>& program) {
         rom = program;
     }
 
     void start() {
         running = true;
+    }
 
+    void stop() {
+        running = false;
+    }
+
+    void run() {
         while (running) {
             running = cpu.core.step(rom[cpu.core.PC], ram);
         }
     }
+
+    void step() {
+        if (running)
+            running = cpu.core.step(rom[cpu.core.PC], ram);
+    }
+
 };
 
 
