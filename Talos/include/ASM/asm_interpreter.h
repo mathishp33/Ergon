@@ -97,77 +97,89 @@ struct AsmInterpreter
         if (def.type == InstrType::I) {
             if (tokens.size() < 3) return ErrorCode::INVALID_ARG;
 
-            int rd = 0;     // destination reg
-            int rs1 = 0;    // source reg
-            int imm = 0;    // immediate value or var addr
+            if (it->first == "ldb" || it->first == "ldh" || it->first == "ldw") {
+                // ldX rd, addr
+                if (tokens.size() != 3) return ErrorCode::INVALID_ARG;
 
-            if (it->first == "load" || it->first == "loadb" || it->first == "loadh" || it->first == "loadw") {
-                // Syntax: loadX <var> <rd>
-                int var_addr = get_var_addr(tokens[1]);
-                if (var_addr == -1) return ErrorCode::INVALID_ARG;
+                auto [e_rd, rd] = parse_reg(tokens[1]);
+                if (e_rd != ErrorCode::OK) return e_rd;
+
+                int addr = get_var_addr(tokens[2]);
+                if (addr == -1) {
+                    auto [e_imm, imm] = parse_imm(tokens[2]);
+                    if (e_imm != ErrorCode::OK) return e_imm;
+                    addr = imm;
+                }
+
+                result =
+                    (uint32_t(def.opcode) << 24) | (rd << 16) | (0 << 8) | (addr & 0xFF); // base = 0
+
+                return ErrorCode::OK;
+            }
+            if (it->first == "stb" || it->first == "sth" || it->first == "stw") {
+                // stX rs, addr
+                if (tokens.size() != 3) return ErrorCode::INVALID_ARG;
+
+                auto [e_rs, rs] = parse_reg(tokens[1]);
+                if (e_rs != ErrorCode::OK) return e_rs;
+
+                int addr = get_var_addr(tokens[2]);
+                if (addr == -1) {
+                    auto [e_imm, imm] = parse_imm(tokens[2]);
+                    if (e_imm != ErrorCode::OK) return e_imm;
+                    addr = imm;
+                }
+
+                result = (uint32_t(def.opcode) << 24) | (rs << 16) | (0 << 8) | (addr & 0xFF); //base 0
+
+                return ErrorCode::OK;
+            }
+            if (it->first == "lbaseb" || it->first == "lbaseh" || it->first == "lbasew") {
+                // lbaseX rd, base, off
+                if (tokens.size() != 4) return ErrorCode::INVALID_ARG;
+
+                auto [e_rd, rd]   = parse_reg(tokens[1]);
+                auto [e_base, rb] = parse_reg(tokens[2]);
+                auto [e_off, off] = parse_imm(tokens[3]);
+
+                if (e_rd != ErrorCode::OK || e_base != ErrorCode::OK || e_off != ErrorCode::OK) return ErrorCode::INVALID_ARG;
+
+                result = (uint32_t(def.opcode) << 24) | (rd << 16) | (rb << 8) | (off & 0xFF);
+
+                return ErrorCode::OK;
+            }
+            if (it->first == "sbaseb" || it->first == "sbaseh" || it->first == "sbasew") {
+                // sbaseX rs, base, off
+                if (tokens.size() != 4) return ErrorCode::INVALID_ARG;
+
+                auto [e_rs, rs]   = parse_reg(tokens[1]);
+                auto [e_base, rb] = parse_reg(tokens[2]);
+                auto [e_off, off] = parse_imm(tokens[3]);
+
+                if (e_rs != ErrorCode::OK || e_base != ErrorCode::OK || e_off != ErrorCode::OK) return ErrorCode::INVALID_ARG;
+
+                result = (static_cast<uint32_t>(def.opcode) << 24) | (rs << 16) | (rb << 8) | (off & 0xFF);
+
+                return ErrorCode::OK;
+            }
+            // (else)
+            // Standard I-type: rd rs1 imm
+            auto [err_rd, rd] = parse_reg(tokens[1]);
+            if (err_rd != ErrorCode::OK) return err_rd;
+
+            auto [err_rs1, rs1] = parse_reg(tokens[2]);
+            if (err_rs1 != ErrorCode::OK) return err_rs1;
+
+            // immediate could be a literal or a variable
+            int imm = 0;
+            int var_addr = get_var_addr(tokens[3]);
+            if (var_addr != -1) {
                 imm = var_addr;
-
-                auto [err, rd_val] = parse_reg(tokens[2]);
-                if (err != ErrorCode::OK) return err;
-                rd = rd_val;
-            }
-            else if (it->first == "store" || it->first == "stb" || it->first == "sth"   || it->first == "stw") {
-                // Syntax: storeX <rs> <var>
-                auto [err, rs_val] = parse_reg(tokens[1]);
-                if (err != ErrorCode::OK) return err;
-                rd = rs_val;
-
-                int var_addr = get_var_addr(tokens[2]);
-                if (var_addr == -1) return ErrorCode::INVALID_ARG;
-                imm = var_addr;
-            }
-            else if (it->first == "lbase") {
-                // lbase rd base reg offset
-                auto [e1, rd_v]  = parse_reg(tokens[1]);
-                if (e1 != ErrorCode::OK) return e1;
-                auto [e2, rs_v]  = parse_reg(tokens[2]);
-                if (e2 != ErrorCode::OK) return e2;
-                auto [e3, imm_v] = parse_imm(tokens[3]);
-                if (e3 != ErrorCode::OK) return e3;
-
-                rd  = rd_v;
-                rs1 = rs_v;
-                imm = imm_v;
-            }
-            else if (it->first == "sbase") {
-                // sbase rs base reg offset
-                auto [e1, rs_v]  = parse_reg(tokens[1]);
-                if (e1 != ErrorCode::OK) return e1;
-                auto [e2, rb_v]  = parse_reg(tokens[2]);
-                if (e2 != ErrorCode::OK) return e2;
-                auto [e3, imm_v] = parse_imm(tokens[3]);
-                if (e3 != ErrorCode::OK) return e3;
-
-                rd  = rs_v;   // value to store
-                rs1 = rb_v;   // base register
-                imm = imm_v;
             }
             else {
-                // Standard I-type: reg reg imm
-                auto [err_rd, rd_val] = parse_reg(tokens[1]);
-                if (err_rd != ErrorCode::OK) return err_rd;
-                rd = rd_val;
-
-                auto [err_rs1, rs1_val] = parse_reg(tokens[2]);
-                if (err_rs1 != ErrorCode::OK) return err_rs1;
-                rs1 = rs1_val;
-
-                // immediate could be a literal or a variable
-                int temp_imm = 0;
-                int var_addr = get_var_addr(tokens[3]);
-                if (var_addr != -1) {
-                    temp_imm = var_addr;
-                } else {
-                    auto [err_imm, imm_val] = parse_imm(tokens[3]);
-                    if (err_imm != ErrorCode::OK) return err_imm;
-                    temp_imm = imm_val;
-                }
-                imm = temp_imm;
+                auto [err_imm, imm_val] = parse_imm(tokens[3]);
+                if (err_imm != ErrorCode::OK) return err_imm;
+                imm = imm_val;
             }
 
             result = (static_cast<uint32_t>(def.opcode) << 24) | (rd << 16) | (rs1 << 8) | (imm & 0xFF);

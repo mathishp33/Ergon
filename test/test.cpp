@@ -7,7 +7,7 @@
 int main() {
     std::cout << "---------- TEST PROGRAM ----------\n";
     std::string program = "a DB 1 ; define variable 'a' with a size of 1 byte and a initial value of 1\n"
-                          "load a r3 \n"
+                          "load r3 a \n"
                           "addi r2 r3 30";
     std::cout << program << std::endl;
 

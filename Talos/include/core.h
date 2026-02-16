@@ -5,7 +5,6 @@
 
 #include <cstdint>
 #include <array>
-#include <vector>
 
 
 enum OPCODE : uint8_t {
@@ -61,33 +60,35 @@ enum OPCODE : uint8_t {
     //----------------- MEMORY OPERATIONS -----------------
     MOV_IMM    = 0x27, // mov rd, imm
     MOV_REG    = 0x28, // mov rd, rs1
-    LOAD       = 0x29, // load rd, [imm]
-    STORE      = 0x2A, // store rs1, [imm]
-    LOAD_BASE  = 0x2B, // lbase rd, [rs1 + imm]
-    LDB        = 0x2C, // load byte rd, [rs1 + imm] 8b sign-extended
-    LDH        = 0x2D, // load halfword rd, [rs1 + imm] 16b sign-extended
-    LDW        = 0x2E, // load word rd, [rs1 + imm] 32b
-    STORE_BASE = 0x2F, // sbase rs1, [rd + imm]
-    STB        = 0x30, // store byte rs1, [rd + imm] 8b
-    STH        = 0x31, // store halfword rs1, [rd + imm] 16b
-    STW        = 0x32, // store word rs1, [rd + imm] 32b
-    PUSH       = 0x33, // push rs1
-    POP        = 0x34, // pop rd
-    LEA        = 0x35, // lea rd, rs1, imm
-    SWAP       = 0x36, // swap rd, rs1
-    CLR        = 0x37, // clr rd
-    MEMCPY     = 0x38, // memcpy rd, rs1, imm (length = imm)
+    LDB_ABS    = 0x29, // load byte rd, [imm]
+    LDH_ABS    = 0x2A, // load half-word rd, [imm]
+    LDW_ABS    = 0x2B, // load word rd, [imm]
+    STB_ABS    = 0x2C, // store byte rd, [imm]
+    STH_ABS    = 0x2D, // store half-word rd, [imm]
+    STW_ABS    = 0x2E, // store word rd, [imm]
+    LDB_BASE   = 0x2F, // load byte rd, [rs1 + imm]
+    LDH_BASE   = 0x30, // load half-word rd, [rs1 + imm]
+    LDW_BASE   = 0x31, // load word rd, [rs1 + imm]
+    STB_BASE   = 0x32, // store byte rd, [rs1 + imm]
+    STH_BASE   = 0x33, // store half-word rd, [rs1 + imm]
+    STW_BASE   = 0x34, // store word rd, [rs1 + imm]
+    PUSH       = 0x35, // push rs1
+    POP        = 0x36, // pop rd
+    LEA        = 0x37, // lea rd, rs1, imm
+    SWAP       = 0x38, // swap rd, rs1
+    CLR        = 0x39, // clr rd
+    MEMCPY     = 0x3A, // memcpy rd, rs1, imm (length = imm)
 
     //----------------- PROGRAM OPERATIONS -----------------
-    JMP     = 0x39, // jmp {(rd, rs1, rs2) = 24b} (RELATIVE JUMP)
-    JZ      = 0x3A, // jz {(rd, rs1, rs2) = 24b} (JMPR if Z flag is true)
-    JNZ     = 0x3B, // jnz {(rd, rs1, rs2) = 24b} (JMPR if Z flag is false)
-    JG      = 0x3C, // jg {(rd, rs1, rs2) = 24b} (JMPR if both Z and N flag are false)
-    JL      = 0x3D, // jl {(rd, rs1, rs2) = 24b} (JMPR if N flag is true)
-    CALL    = 0x3E, // calL {(rd, rs1, rs2) = 24b}  (JMPR and saves the current PC)
-    RET     = 0x3F, // ret (load previous PC and JMPR there)
+    JMP        = 0x3B, // jmp {(rd, rs1, rs2) = 24b} (RELATIVE JUMP)
+    JZ         = 0x3C, // jz {(rd, rs1, rs2) = 24b} (JMPR if Z flag is true)
+    JNZ        = 0x3D, // jnz {(rd, rs1, rs2) = 24b} (JMPR if Z flag is false)
+    JG         = 0x3E, // jg {(rd, rs1, rs2) = 24b} (JMPR if both Z and N flag are false)
+    JL         = 0x3F, // jl {(rd, rs1, rs2) = 24b} (JMPR if N flag is true)
+    CALL       = 0x40, // calL {(rd, rs1, rs2) = 24b}  (JMPR and saves the current PC)
+    RET        = 0x41, // ret (load previous PC and JMPR there)
 
-    HALT    = 0xFF // halt (stops program)
+    HALT       = 0xFF // halt (stops program)
 };
 
 
@@ -276,41 +277,47 @@ struct SimpleCore {
         case MOV_REG:
             regs[rd] = regs[rs1];
             break;
-        // Absolute memory access
-        case LOAD:
+        case LDB_ABS:
+            regs[rd] = static_cast<int8_t>(load8(ram, imm));
+            break;
+
+        case LDH_ABS:
+            regs[rd] = static_cast<int16_t>(load16(ram, imm));
+            break;
+
+        case LDW_ABS:
             regs[rd] = load32(ram, imm);
             break;
-        case STORE:
-            store32(ram, imm, regs[rs1]);
+        case STB_ABS:
+            store8(ram, imm, regs[rd] & 0xFF);
             break;
-        // Base + offset memory access (imm treated as int8_t offset)
-        case LOAD_BASE:    regs[rd] = load32(ram, regs[rs1] + static_cast<int8_t>(imm)); break;
-        case STORE_BASE:   store32(ram, regs[rs1] + static_cast<int8_t>(imm), regs[rd]); break;
+        case STH_ABS:
+            store16(ram, imm, regs[rd] & 0xFFFF);
+            break;
+        case STW_ABS:
+            store32(ram, imm, regs[rd]);
+            break;
+        case LDB_BASE:
+            regs[rd] = static_cast<int8_t>(load8(ram, regs[rs1] + static_cast<int8_t>(imm)));
+            break;
+        case LDH_BASE:
+            regs[rd] = static_cast<int16_t>(load16(ram, regs[rs1] + static_cast<int8_t>(imm)));
+            break;
+        case LDW_BASE:
+            regs[rd] = load32(ram, regs[rs1] + static_cast<int8_t>(imm));
+            break;
 
-        // Byte, Half-word, Word loads with sign-extension
-        case LDB:  regs[rd] = static_cast<int8_t>(load8(ram, regs[rs1] + static_cast<int8_t>(imm))); break;
-        case LDH:  regs[rd] = static_cast<int16_t>(load16(ram, regs[rs1] + static_cast<int8_t>(imm))); break;
-        case LDW:  regs[rd] = load32(ram, regs[rs1] + static_cast<int8_t>(imm)); break;
-        // case LDQ:  // optional 64-bit
-        // {
-        //     uint32_t lo = load32(ram, regs[rs1] + static_cast<int8_t>(imm));
-        //     uint32_t hi = load32(ram, regs[rs1] + static_cast<int8_t>(imm) + 4);
-        //     regs[rd] = lo; // assuming 32-bit registers, store lower 32b; full 64-bit would require two registers
-        //     regs[rd + 1] = hi; // use next register for high 32b
-        //     break;
-        // }
+        case STB_BASE:
+            store8(ram, regs[rs1] + static_cast<int8_t>(imm), regs[rd] & 0xFF);
+            break;
 
-        // Byte, Half-word, Word stores
-        case STB:  store8(ram, regs[rs1] + static_cast<int8_t>(imm), regs[rd] & 0xFF); break;
-        case STH:  store16(ram, regs[rs1] + static_cast<int8_t>(imm), regs[rd] & 0xFFFF); break;
-        case STW:  store32(ram, regs[rs1] + static_cast<int8_t>(imm), regs[rd]); break;
-        // case STQ:  // optional 64-bit
-        // {
-        //     store32(ram, regs[rs1] + static_cast<int8_t>(imm), regs[rd]);       // low
-        //     store32(ram, regs[rs1] + static_cast<int8_t>(imm) + 4, regs[rd+1]); // high
-        //     break;
-        // }
+        case STH_BASE:
+            store16(ram, regs[rs1] + static_cast<int8_t>(imm), regs[rd] & 0xFFFF);
+            break;
 
+        case STW_BASE:
+            store32(ram, regs[rs1] + static_cast<int8_t>(imm), regs[rd]);
+            break;
         case PUSH:
             SP -= 4;
             store32(ram, SP, regs[rs1]);
@@ -319,7 +326,6 @@ struct SimpleCore {
             regs[rd] = load32(ram, SP);
             SP += 4;
             break;
-
         // Load Effective Address
         case LEA:
             regs[rd] = regs[rs1] + static_cast<int8_t>(imm);

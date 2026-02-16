@@ -28,14 +28,12 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="checkpoint commit">
-      <change afterPath="$PROJECT_DIR$/Talos/include/ASM/asm_interpreter.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Talos/include/ASM/decoder.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/asm_interpreter.h" beforeDir="false" />
+    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="I cleaned code + added more instructions">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/ASM/asm_interpreter.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/ASM/asm_interpreter.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/ASM/decoder.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/ASM/decoder.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Talos/include/core.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/core.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/env_manager.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/env_manager.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Talos/include/mother_board.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/mother_board.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/utils.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/utils.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test/test.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/test/test.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -159,7 +157,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1771261991495</updated>
-      <workItem from="1771261993365" duration="11571000" />
+      <workItem from="1771261993365" duration="14592000" />
     </task>
     <task id="LOCAL-00001" summary="checkpoint commit">
       <option name="closed" value="true" />
@@ -169,7 +167,15 @@
       <option name="project" value="LOCAL" />
       <updated>1771263890094</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="I cleaned code + added more instructions">
+      <option name="closed" value="true" />
+      <created>1771274606244</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1771274606244</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -182,6 +188,7 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="checkpoint commit" />
-    <option name="LAST_COMMIT_MESSAGE" value="checkpoint commit" />
+    <MESSAGE value="I cleaned code + added more instructions" />
+    <option name="LAST_COMMIT_MESSAGE" value="I cleaned code + added more instructions" />
   </component>
 </project>

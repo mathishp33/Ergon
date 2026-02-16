@@ -5,6 +5,7 @@
 
 #include <atomic>
 #include <array>
+#include <vector>
 
 /*
  ----------------- VM SCHEMATIC -----------------
