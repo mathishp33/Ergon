@@ -2,7 +2,7 @@
 #define ERGON_ENV_MANAGER_H
 
 #include "mother_board.h"
-#include "asm_interpreter.h"
+#include "ASM/asm_interpreter.h"
 
 enum class RunMode {
     AUTO,
@@ -11,13 +11,13 @@ enum class RunMode {
 
 template <size_t RAM_SIZE, size_t PROGRAM_SIZE> //65 5535 lines, 64Kb
 struct EnvironmentManager {
-    std::unique_ptr<MotherBoard<RAM_SIZE, PROGRAM_SIZE>> motherboard;
+    std::unique_ptr<MotherBoard<RAM_SIZE, PROGRAM_SIZE>> mb;
     AsmInterpreter<PROGRAM_SIZE> interpreter;
     RunMode mode = RunMode::STEP;
     std::string error_msg;
 
     EnvironmentManager() {
-        motherboard = std::make_unique<MotherBoard<RAM_SIZE, PROGRAM_SIZE>>();
+        mb = std::make_unique<MotherBoard<RAM_SIZE, PROGRAM_SIZE>>();
     }
 
     void build(std::string input_program) {
@@ -33,24 +33,52 @@ struct EnvironmentManager {
         }
 
 
-        motherboard->stop();
-        motherboard->reset();
+        mb->stop();
+        mb->reset();
 
         interpreter.program.resize(PROGRAM_SIZE);
-        motherboard->load_prog(interpreter.program);
+        mb->load_prog(interpreter.program);
     }
 
     uint8_t get_from_ram(size_t addr) {
-        if (addr > motherboard->ram.size())
-            return motherboard->ram[addr];
+        if (addr < mb->ram.size())
+            return mb->ram[addr];
         return 0;
     }
 
-    void start(RunMode new_mode) {
+    uint32_t get_from_reg(size_t reg) {
+        if (reg < mb->cpu.core.regs.size())
+            return mb->cpu.core.regs[reg];
+        return 0;
+    }
+
+    Flags get_cpu_flags() {
+        return mb->cpu.core.flags;
+    }
+
+    void set_mod(RunMode new_mode) {
         mode = new_mode;
-        motherboard.start();
+    }
+
+    void start() {
+        mb->start();
+
         if (mode == RunMode::AUTO)
-            motherboard.run();
+            while (mb->running) {
+                if (mb->cpu.core.PC < mb->rom.size())
+                    mb->running = mb->cpu.core.step(mb->rom[mb->cpu.core.PC], mb->ram);
+                else
+                    mb->running = false;
+            }
+    }
+
+    void step(){
+        if (!mb->running) return;
+
+        if (mb->cpu.core.PC < mb->rom.size())
+            mb->running = mb->cpu.core.step(mb->rom[mb->cpu.core.PC], mb->ram);
+        else
+            mb->running = false;
     }
 
     std::string get_error_msg() {

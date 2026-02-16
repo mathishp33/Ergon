@@ -8,76 +8,92 @@
 #include <cctype>
 #include <limits>
 
-inline std::vector<std::string> slice_str(const std::string& str, char wanted_char) {
-    std::vector<std::string> result;
-    std::string buffer;
+namespace string_utils {
 
-    for (char c : str) {
-        if (c == wanted_char) {
-            result.push_back(buffer);
-            buffer.clear();
-        } else
-            buffer += c;
-    }
-    result.push_back(buffer);
-    return result;
-}
+    inline std::vector<std::string> slice_str(const std::string& str, char wanted_char) {
+        std::vector<std::string> result;
+        std::string buffer;
 
-inline unsigned int rep_counter(const std::string& str, char wanted_char) {
-    unsigned int i = 0;
-    for (char c : str) {
-        if (c == wanted_char) i++;
-    }
-    return i;
-}
-
-inline int char_to_int(char c) {
-    if (c >= '0' && c <= '9') return c - '0';
-    if (c >= 'a' && c <= 'z') return c - 'a' + 10;
-    return 0;
-}
-
-inline std::string lower_case(const std::string& str) {
-    std::string result = str;
-    for (char& c : result)
-        c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
-    return result;
-}
-
-// returns { error_code, result }
-inline std::pair<ErrorCode, int> better_stoi(const std::string& str, size_t* idx = nullptr, int base = 10) {
-    if (base < 2 || base > 36)
-        return {ErrorCode::STOI_OVERFLOW, 0};
-
-    size_t i = 0;
-    int sign = 1;
-
-    if (str[i] == '+' || str[i] == '-') {
-        if (str[i] == '-') sign = -1;
-        ++i;
+        for (char c : str) {
+            if (c == wanted_char) {
+                result.push_back(buffer);
+                buffer.clear();
+            } else
+                buffer += c;
+        }
+        result.push_back(buffer);
+        return result;
     }
 
-    int result = 0;
-    size_t start = i;
+    inline unsigned int rep_counter(const std::string& str, char wanted_char) {
+        unsigned int i = 0;
+        for (char c : str) {
+            if (c == wanted_char) i++;
+        }
+        return i;
+    }
 
-    for (; i < str.size(); ++i) {
-        int digit = char_to_int(str[i]);
-        if (digit < 0 || digit >= base)
-            break;
+    inline int char_to_int(char c) {
+        if (c >= '0' && c <= '9') return c - '0';
+        if (c >= 'a' && c <= 'z') return c - 'a' + 10;
+        return 0;
+    }
 
-        if (result > (std::numeric_limits<int>::max() - digit) / base)
+    inline std::string lower_case(const std::string& str) {
+        std::string result = str;
+        for (char& c : result)
+            c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+        return result;
+    }
+
+    // returns { error_code, result }
+    inline std::pair<ErrorCode, int> better_stoi(const std::string& str, size_t* idx = nullptr, int base = 10) {
+        if (base < 2 || base > 36)
             return {ErrorCode::STOI_OVERFLOW, 0};
 
-        result = result * base + digit;
+        size_t i = 0;
+        int sign = 1;
+
+        if (str[i] == '+' || str[i] == '-') {
+            if (str[i] == '-') sign = -1;
+            ++i;
+        }
+
+        int result = 0;
+        size_t start = i;
+
+        for (; i < str.size(); ++i) {
+            int digit = char_to_int(str[i]);
+            if (digit < 0 || digit >= base)
+                break;
+
+            if (result > (std::numeric_limits<int>::max() - digit) / base)
+                return {ErrorCode::STOI_OVERFLOW, 0};
+
+            result = result * base + digit;
+        }
+
+        if (i == start)
+            return {ErrorCode::INVALID_CHAR, 0};
+
+        if (idx)
+            *idx = i;
+
+        return {ErrorCode::OK, result * sign};
     }
 
-    if (i == start)
-        return {ErrorCode::INVALID_CHAR, 0};
+    static std::string normalize(std::string line) {
+        //comments
+        if (auto pos = line.find(';'); pos != std::string::npos)
+            line = line.substr(0, pos);
 
-    if (idx)
-        *idx = i;
-
-    return {ErrorCode::OK, result * sign};
+        //trim spaces
+        auto l = line.find_first_not_of(" \t");
+        auto r = line.find_last_not_of(" \t");
+        if (l == std::string::npos) return "";
+        return line.substr(l, r - l + 1);
+    }
 }
+
 
 #endif

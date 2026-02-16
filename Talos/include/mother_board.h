@@ -1,8 +1,6 @@
 #ifndef ERGON_MOTHER_BOARD_H
 #define ERGON_MOTHER_BOARD_H
 
-//IRL bytecode program is ROM, EEPROM or Flash. -> it contains the firmware (BIOS, bootloader, ...)
-
 #include "cpu.h"
 
 #include <atomic>
@@ -47,18 +45,6 @@ struct MotherBoard {
     void stop() {
         running = false;
     }
-
-    void run() {
-        while (running) {
-            running = cpu.core.step(rom[cpu.core.PC], ram);
-        }
-    }
-
-    void step() {
-        if (running)
-            running = cpu.core.step(rom[cpu.core.PC], ram);
-    }
-
 };
 
 
