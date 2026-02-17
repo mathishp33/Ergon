@@ -23,6 +23,7 @@ Add .data / .text sections (and maybe other) (and maybe a linker mimic)
 Add register aliases (sp, pc, a0, etc.)
 ️Add error underlining with exact token span
 Add 2 passes for labels
+MEttre LOADS_ABS imm en 24 bit et STORES_ABS en 16bit!!!!
 */
 
 template <size_t RAM_SIZE = 0x10000, size_t PROGRAM_SIZE = 0xFFFF>
@@ -45,7 +46,7 @@ struct AsmInterpreter {
         // labels
         if (line.ends_with(':')) {
             std::string label = line.substr(0, line.size() - 1);
-            labels[label] = program.size() * 4; // PC
+            labels[label] = program.size(); // PC
             return ErrorCode::OK;
         }
 
@@ -83,6 +84,17 @@ struct AsmInterpreter {
 
         // ---------- R-type ----------
         if (def.type == InstrType::R) {
+            if (it->first == "cmp" || it->first == "cmpu" || it->first == "test") {
+                if (tokens.size() != 3) return ErrorCode::INVALID_ARG;
+                auto [err_rs1, rs1] = parse_reg(tokens[1]);
+                if (err_rs1 != ErrorCode::OK) return err_rs1;
+
+                auto [err_rs2, rs2] = parse_reg(tokens[2]);
+                if (err_rs2 != ErrorCode::OK) return err_rs2;
+
+                result = static_cast<uint32_t>(def.opcode) | (0 << 8) | (rs1 << 16) | (rs2 << 24);
+                return ErrorCode::OK;
+            }
             if (tokens.size() < 3) return ErrorCode::INVALID_ARG;
 
             auto [err_rd, rd] = parse_reg(tokens[1]);
@@ -96,18 +108,37 @@ struct AsmInterpreter {
                 auto [err_rs2, rs2_val] = parse_reg(tokens[3]);
                 if (err_rs2 != ErrorCode::OK) return err_rs2;
                 rs2 = rs2_val;
-            } else {
+            }
+            else {
                 if (!(it->first == "swap" || it->first == "mov"))
                     return ErrorCode::INVALID_ARG;
             }
-
             result = static_cast<uint32_t>(def.opcode) | (rd << 8) | (rs1 << 16) | (rs2 << 24);
             return ErrorCode::OK;
         }
 
         // ---------- I-type ----------
         if (def.type == InstrType::I) {
-            if (tokens.size() < 3) return ErrorCode::INVALID_ARG;
+            if (it->first == "cmp" || it->first == "cmpu" || it->first == "test") {
+                if (tokens.size() != 3) return ErrorCode::INVALID_ARG;
+
+                auto [err_rs1, rs1] = parse_reg(tokens[1]);
+                if (err_rs1 != ErrorCode::OK) return err_rs1;
+
+                uint8_t imm = 0;
+                int var_addr = get_var_addr(tokens[2]);
+                if (var_addr != -1) {
+                    imm = var_addr;
+                }
+                else {
+                    auto [err_imm, imm_val] = parse_imm(tokens[2]);
+                    if (err_imm != ErrorCode::OK) return err_imm;
+                    imm = imm_val;
+                }
+
+                result = static_cast<uint32_t>(def.opcode) | (0 << 8) | (rs1 << 16) | ((imm & 0xFF) << 24);
+                return ErrorCode::OK;
+            }
 
             if (it->first == "ldb" || it->first == "ldh" || it->first == "ldw") {
                 // ldX rd, addr
@@ -175,6 +206,8 @@ struct AsmInterpreter {
             }
             // (else)
             // Standard I-type: rd rs1 imm
+            if (tokens.size() < 3) return ErrorCode::INVALID_ARG;
+
             auto [err_rd, rd] = parse_reg(tokens[1]);
             if (err_rd != ErrorCode::OK) return err_rd;
 
@@ -183,14 +216,16 @@ struct AsmInterpreter {
 
             // immediate could be a literal or a variable
             int imm = 0;
-            int var_addr = get_var_addr(tokens[3]);
-            if (var_addr != -1) {
-                imm = var_addr;
-            }
-            else {
-                auto [err_imm, imm_val] = parse_imm(tokens[3]);
-                if (err_imm != ErrorCode::OK) return err_imm;
-                imm = imm_val;
+            if (tokens.size() > 3) {
+                int var_addr = get_var_addr(tokens[3]);
+                if (var_addr != -1) {
+                    imm = var_addr;
+                }
+                else {
+                    auto [err_imm, imm_val] = parse_imm(tokens[3]);
+                    if (err_imm != ErrorCode::OK) return err_imm;
+                    imm = imm_val;
+                }
             }
 
             result = static_cast<uint32_t>(def.opcode) | (rd << 8) | (rs1 << 16) | ((imm & 0xFF) << 24);
@@ -205,8 +240,11 @@ struct AsmInterpreter {
                 const std::string& label = tokens[1];
                 if (!labels.contains(label)) return ErrorCode::UNKNOWN_LABEL;
 
-                int offset = static_cast<int>(labels[label] - program.size());
-                result = static_cast<uint32_t>(def.opcode) | ((offset & 0xFFFFFF) << 8);
+                int offset = static_cast<int>(labels[label]) - static_cast<int>(program.size() + 1);
+                if (offset < -(1 << 23) || offset > ((1 << 23) - 1))
+                    return ErrorCode::INVALID_ARG;
+
+                result = static_cast<uint32_t>(def.opcode) | ((static_cast<uint32_t>(offset) & 0x00FFFFFF) << 8);
                 return ErrorCode::OK;
                 }
 
@@ -253,8 +291,11 @@ struct AsmInterpreter {
         if (lines.size() > max_lines) return { ErrorCode::LINE_OVERFLOW, lines.size() - 1};
 
         for (size_t i = 0; i < lines.size(); i++) {
+            std::string cleaned_line = string_utils::normalize(lines[i]);
+            if (cleaned_line.empty()) continue;
+
             program.push_back(0);
-            ErrorCode error_code = decode_line(string_utils::normalize(lines[i]), program.back());
+            ErrorCode error_code = decode_line(cleaned_line, program.back());
             if (error_code != ErrorCode::OK)
                 return {error_code, i};
         }

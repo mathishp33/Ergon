@@ -29,6 +29,7 @@ enum class ALUOp {
     ROR, // bit rotation right
 
     CMP, // a ? b sets flags only
+    CMPU, // a ? b sets flags only (unsinged)
     TEST, // a & b flags only
 
     INC, // a + 1
@@ -129,12 +130,20 @@ struct ALU {
             {
                 int32_t diff = s_a - s_b;
                 r.writeback = false;
-                r.flags.Z = (diff == 0);
-                r.flags.N = (diff < 0);
+                r.flags.Z = diff == 0;
+                r.flags.N = diff < 0;
                 r.flags.C = a >= b;
                 r.flags.V = ((s_a ^ s_b) & (s_a ^ diff)) < 0;
                 return r;
             }
+        case ALUOp::CMPU:
+                r.writeback = false;
+                r.flags.Z = a == b;
+                r.flags.N = a < b;
+                r.flags.C = a >= b;
+                r.flags.V = ((a ^ b) & (a ^ (a - b))) < 0;
+                return r;
+
         case ALUOp::TEST:
             {
                 uint32_t v = a & b;

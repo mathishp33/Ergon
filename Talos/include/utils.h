@@ -36,7 +36,8 @@ namespace string_utils {
     inline int char_to_int(char c) {
         if (c >= '0' && c <= '9') return c - '0';
         if (c >= 'a' && c <= 'z') return c - 'a' + 10;
-        return 0;
+        if (c >= 'A' && c <= 'Z') return c - 'A' + 10;
+        return -1;
     }
 
     inline std::string lower_case(const std::string& str) {
@@ -44,6 +45,22 @@ namespace string_utils {
         for (char& c : result)
             c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
         return result;
+    }
+
+    inline std::string replace_null(std::string s, char a) {
+        size_t move = 0;
+        size_t i = 0;
+
+        for (; i < s.size(); ++i) {
+            if (s[i] == a) {
+                move++;
+            } else {
+                s[i - move] = s[i];
+            }
+        }
+
+        s.resize(s.size() - move);
+        return s;
     }
 
     // returns { error_code, result }
@@ -54,20 +71,25 @@ namespace string_utils {
         size_t i = 0;
         int sign = 1;
 
-        if (str[i] == '+' || str[i] == '-') {
-            if (str[i] == '-') sign = -1;
+        const std::string cleaned_str = replace_null(str, '_');
+        if (cleaned_str.empty()) return { ErrorCode::OK, 0 };
+
+        if (cleaned_str[i] == '+' || cleaned_str[i] == '-') {
+            if (cleaned_str[i] == '-') sign = -1;
             ++i;
         }
 
         int result = 0;
         size_t start = i;
 
-        for (; i < str.size(); ++i) {
-            int digit = char_to_int(str[i]);
+        for (; i < cleaned_str.size(); ++i) {
+            int digit = char_to_int(cleaned_str[i]);
             if (digit < 0 || digit >= base)
                 break;
 
-            if (result > (std::numeric_limits<int>::max() - digit) / base)
+            if (sign == 1 && result > (INT_MAX - digit) / base)
+                return {ErrorCode::STOI_OVERFLOW, 0};
+            if (sign == -1 && result > (INT_MAX - digit + 1) / base)
                 return {ErrorCode::STOI_OVERFLOW, 0};
 
             result = result * base + digit;

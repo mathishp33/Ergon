@@ -10,86 +10,88 @@
 
 enum OPCODE : uint8_t {
     //----------------- ALU OPERATIONS -----------------
-    ADD     = 0x00, // R-type: add rd, rs1, rs2
-    SUB     = 0x01, // R-type: sub rd, rs1, rs2
-    MUL     = 0x02, // R-type: mul rd, rs1, rs2
-    DIV     = 0x03, // R-type: div rd, rs1, rs2
-    MOD     = 0x04, // R-type: mod rd, rs1, rs2
-    ADDI    = 0x05, // I-type: addi rd, rs, imm
-    SUBI    = 0x06, // I-type: subi rd, rs, imm
-    MULI    = 0x07, // I-type: muli rd, rs, imm
-    DIVI    = 0x08, // I-type: divi rd, rs, imm
-    MODI    = 0x09, // I-type: modi rd, rs, imm
+    ADD  , // R-type: add rd, rs1, rs2
+    SUB  , // R-type: sub rd, rs1, rs2
+    MUL  , // R-type: mul rd, rs1, rs2
+    DIV  , // R-type: div rd, rs1, rs2
+    MOD  , // R-type: mod rd, rs1, rs2
+    ADDI , // I-type: addi rd, rs, imm
+    SUBI , // I-type: subi rd, rs, imm
+    MULI , // I-type: muli rd, rs, imm
+    DIVI , // I-type: divi rd, rs, imm
+    MODI , // I-type: modi rd, rs, imm
 
-    AND     = 0x0A, // R-type: and rd, rs1, rs2
-    OR      = 0x0B, // R-type: or rd, rs1, rs2
-    XOR     = 0x0C, // R-type: xor rd, rs1, rs2
-    ANDI    = 0x0D, // I-type: andi rd, rs, imm
-    ORI     = 0x0E, // I-type: ori rd, rs, imm
-    XORI    = 0x0F, // I-type: xori rd, rs, imm
+    AND  , // R-type: and rd, rs1, rs2
+    OR   , // R-type: or rd, rs1, rs2
+    XOR  , // R-type: xor rd, rs1, rs2
+    ANDI , // I-type: andi rd, rs, imm
+    ORI  , // I-type: ori rd, rs, imm
+    XORI , // I-type: xori rd, rs, imm
 
-    SHL     = 0x10, // R-type: shl rd, rs, rt
-    SHR     = 0x11, // R-type: shr rd, rs, rt
-    SAR     = 0x12, // R-type: sar rd, rs, rt
-    ROL     = 0x13, // R-type: rol rd, rs, rt
-    ROR     = 0x14, // R-type: ror rd, rs, rt
-    SHLI    = 0x15, // I-type: shli rd, rs, imm
-    SHRI    = 0x16, // I-type: shri rd, rs, imm
-    SARI    = 0x17, // I-type: sari rd, rs, imm
-    ROLI    = 0x18, // I-type: roli rd, rs, imm
-    RORI    = 0x19, // I-type: rori rd, rs, imm
+    SHL  , // R-type: shl rd, rs, rt
+    SHR  , // R-type: shr rd, rs, rt
+    SAR  , // R-type: sar rd, rs, rt
+    ROL  , // R-type: rol rd, rs, rt
+    ROR  , // R-type: ror rd, rs, rt
+    SHLI , // I-type: shli rd, rs, imm
+    SHRI , // I-type: shri rd, rs, imm
+    SARI , // I-type: sari rd, rs, imm
+    ROLI , // I-type: roli rd, rs, imm
+    RORI , // I-type: rori rd, rs, imm
 
-    CMP     = 0x1A, // R-type: cmp rs1, rs2
-    TEST    = 0x1B, // R-type: test rs1, rs2
-    CMPI    = 0x1C, // I-type: cmpi rs, imm
-    TESTI   = 0x1D, // I-type: testI rs, imm
+    CMP  , // R-type: cmp rs1, rs2
+    CMPU , // R-type: cmpu rs1, rs2
+    TEST , // R-type: test rs1, rs2
+    CMPI , // I-type: cmpi rs, imm
+    CMPUI, // I-type: cmpui rs, imm (unsigned)
+    TESTI, // I-type: testI rs, imm
 
-    INC     = 0x1E, // J-type: inc rd
-    DEC     = 0x1F, // J-type: dec rd
-    NOT     = 0x20, // J-type: not rd, rs
-    ABS     = 0x21, // J-type: abs rd, rs
-    NEG     = 0x22, // J-type: neg rd, rs
-    MIN     = 0x23, // R-type: min rd, rs1, rs2
-    MAX     = 0x24, // R-type: max rd, rs1, rs2
-    MINI    = 0x25, // I-type: mini rd, rs1, imm
-    MAXI    = 0x26, // I-type: maxi rd, rs1, imm
+    INC , // J-type: inc rd
+    DEC , // J-type: dec rd
+    NOT , // J-type: not rd, rs
+    ABS , // J-type: abs rd, rs
+    NEG , // J-type: neg rd, rs
+    MIN , // R-type: min rd, rs1, rs2
+    MAX , // R-type: max rd, rs1, rs2
+    MINI, // I-type: mini rd, rs1, imm
+    MAXI, // I-type: maxi rd, rs1, imm
 
     //----------------- FPU OPERATIONS -----------------
 
     //A FAIRE
 
     //----------------- MEMORY OPERATIONS -----------------
-    MOV_IMM    = 0x27, // mov rd, imm
-    MOV_REG    = 0x28, // mov rd, rs1
-    LDB_ABS    = 0x29, // load byte rd, [imm]
-    LDH_ABS    = 0x2A, // load half-word rd, [imm]
-    LDW_ABS    = 0x2B, // load word rd, [imm]
-    STB_ABS    = 0x2C, // store byte rd, [imm]
-    STH_ABS    = 0x2D, // store half-word rd, [imm]
-    STW_ABS    = 0x2E, // store word rd, [imm]
-    LDB_BASE   = 0x2F, // load byte rd, [rs1 + imm]
-    LDH_BASE   = 0x30, // load half-word rd, [rs1 + imm]
-    LDW_BASE   = 0x31, // load word rd, [rs1 + imm]
-    STB_BASE   = 0x32, // store byte rd, [rs1 + imm]
-    STH_BASE   = 0x33, // store half-word rd, [rs1 + imm]
-    STW_BASE   = 0x34, // store word rd, [rs1 + imm]
-    PUSH       = 0x35, // push rs1
-    POP        = 0x36, // pop rd
-    LEA        = 0x37, // lea rd, rs1, imm
-    SWAP       = 0x38, // swap rd, rs1
-    CLR        = 0x39, // clr rd
-    MEMCPY     = 0x3A, // memcpy rd, rs1, imm (length = imm)
+    MOV_IMM , // mov rd, imm
+    MOV_REG , // mov rd, rs1
+    LDB_ABS , // load byte rd, [imm]
+    LDH_ABS , // load half-word rd, [imm]
+    LDW_ABS , // load word rd, [imm]
+    STB_ABS , // store byte rd, [imm]
+    STH_ABS , // store half-word rd, [imm]
+    STW_ABS , // store word rd, [imm]
+    LDB_BASE, // load byte rd, [rs1 + imm]
+    LDH_BASE, // load half-word rd, [rs1 + imm]
+    LDW_BASE, // load word rd, [rs1 + imm]
+    STB_BASE, // store byte rd, [rs1 + imm]
+    STH_BASE, // store half-word rd, [rs1 + imm]
+    STW_BASE, // store word rd, [rs1 + imm]
+    PUSH    , // push rs1
+    POP     , // pop rd
+    LEA     , // lea rd, rs1, imm
+    SWAP    , // swap rd, rs1
+    CLR     , // clr rd
+    MEMCPY  , // memcpy rd, rs1, imm (length = imm)
 
     //----------------- PROGRAM OPERATIONS -----------------
-    JMP        = 0x3B, // jmp {(rd, rs1, rs2) = 24b} (RELATIVE JUMP)
-    JZ         = 0x3C, // jz {(rd, rs1, rs2) = 24b} (JMPR if Z flag is true)
-    JNZ        = 0x3D, // jnz {(rd, rs1, rs2) = 24b} (JMPR if Z flag is false)
-    JG         = 0x3E, // jg {(rd, rs1, rs2) = 24b} (JMPR if both Z and N flag are false)
-    JL         = 0x3F, // jl {(rd, rs1, rs2) = 24b} (JMPR if N flag is true)
-    CALL       = 0x40, // calL {(rd, rs1, rs2) = 24b}  (JMPR and saves the current PC)
-    RET        = 0x41, // ret (load previous PC and JMPR there)
+    JMP , // jmp {(rd, rs1, rs2) = 24b} (RELATIVE JUMP)
+    JZ  , // jz {(rd, rs1, rs2) = 24b} (JMPR if Z flag is true)
+    JNZ , // jnz {(rd, rs1, rs2) = 24b} (JMPR if Z flag is false)
+    JG  , // jg {(rd, rs1, rs2) = 24b} (JMPR if both Z and N flag are false)
+    JL  , // jl {(rd, rs1, rs2) = 24b} (JMPR if N flag is true)
+    CALL, // calL {(rd, rs1, rs2) = 24b}  (JMPR and saves the current PC)
+    RET , // ret (load previous PC and JMPR there)
 
-    HALT       = 0xFF // halt (stops program)
+    HALT // halt (stops program)
 };
 
 
@@ -240,10 +242,14 @@ struct SimpleCore {
 
         case CMP:
             R_type_instr(ALUOp::CMP, rd, rs1, rs2); break;
+        case CMPU:
+            R_type_instr(ALUOp::CMPU, rd, rs1, rs2); break;
         case TEST:
             R_type_instr(ALUOp::TEST, rd, rs1, rs2); break;
         case CMPI:
             I_type_instr(ALUOp::CMP, rd, rs1, imm); break;
+        case CMPUI:
+            I_type_instr(ALUOp::CMPU, rd, rs1, imm); break;
         case TESTI:
             I_type_instr(ALUOp::TEST, rd, rs1, imm); break;
 
@@ -320,12 +326,12 @@ struct SimpleCore {
             store32(ram, regs[rs1] + static_cast<int8_t>(imm), regs[rd]);
             break;
         case PUSH:
-            SP -= 4;
+            SP -= 1;
             store32(ram, SP, regs[rs1]);
             break;
         case POP:
             regs[rd] = load32(ram, SP);
-            SP += 4;
+            SP += 1;
             break;
         // Load Effective Address
         case LEA:
@@ -349,30 +355,30 @@ struct SimpleCore {
 
         //----------------- PROGRAM OPERATIONS -----------------
         case JMP:
-            PC += sign_extend_24b(instr & 0xFFFFFF); //relative jump
+            PC += sign_extend_24b(instr >> 8); //relative jump
             pc_advanced = false;
             break;
         case JZ:
             if (flags.Z) {
-                PC += sign_extend_24b(instr & 0xFFFFFF);
+                PC += sign_extend_24b(instr >> 8);
                 pc_advanced = false;
             }
             break;
         case JNZ:
             if (!flags.Z) {
-                PC += sign_extend_24b(instr & 0xFFFFFF);
+                PC += sign_extend_24b(instr >> 8);
                 pc_advanced = false;
             }
             break;
         case JG:
             if (!flags.Z && !flags.N) {
-                PC += sign_extend_24b(instr & 0xFFFFFF);
+                PC += sign_extend_24b(instr >> 8);
                 pc_advanced = false;
             }
             break;
         case JL:
             if (flags.N) {
-                PC += sign_extend_24b(instr & 0xFFFFFF);
+                PC += sign_extend_24b(instr >> 8);
                 pc_advanced = false;
             }
             break;
@@ -380,7 +386,7 @@ struct SimpleCore {
             // pushes PC + 1 on pile
             SP -= 1;
             store32(ram, SP, PC + 1);
-            PC += sign_extend_24b(instr & 0xFFFFFF);
+            PC += sign_extend_24b(instr >> 8);
             pc_advanced = false;
             break;
         case RET:
