@@ -84,8 +84,7 @@ namespace string_utils {
 
     static std::string normalize(std::string line) {
         //comments
-        if (auto pos = line.find(';'); pos != std::string::npos)
-            line = line.substr(0, pos);
+        line = line.substr(0, line.find(';'));
 
         //trim spaces
         auto l = line.find_first_not_of(" \t");

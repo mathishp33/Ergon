@@ -4,6 +4,7 @@
 #include "alu.h"
 
 #include <cstdint>
+#include <vector>
 #include <array>
 
 
@@ -119,31 +120,31 @@ struct SimpleCore {
     }
 
     // <- memory[addr]
-    static uint32_t load32(const std::array<uint8_t, RAM_SIZE>& memory, uint32_t addr) {
+    static uint32_t load32(const std::vector<uint8_t>& memory, uint32_t addr) {
         return memory[addr] |
                (memory[addr + 1] << 8) |
                (memory[addr + 2] << 16) |
                (memory[addr + 3] << 24);
     }
-    static uint16_t load16(const std::array<uint8_t, RAM_SIZE>& memory, uint32_t addr) {
+    static uint16_t load16(const std::vector<uint8_t>& memory, uint32_t addr) {
         return memory[addr] |
                (memory[addr + 1] << 8);
     }
-    static uint8_t load8(const std::array<uint8_t, RAM_SIZE>& memory, uint32_t addr) {
+    static uint8_t load8(const std::vector<uint8_t>& memory, uint32_t addr) {
         return memory[addr];
     }
     // value -> memory
-    static void store32(std::array<uint8_t, RAM_SIZE>& memory, uint32_t addr, uint32_t value) {
+    static void store32(std::vector<uint8_t>& memory, uint32_t addr, uint32_t value) {
         memory[addr] = value & 0xFF;
         memory[addr + 1] = (value >> 8) & 0xFF;
         memory[addr + 2] = (value >> 16) & 0xFF;
         memory[addr + 3] = (value >> 24) & 0xFF;
     }
-    static void store16(std::array<uint8_t, RAM_SIZE>& memory, uint32_t addr, uint16_t value) {
+    static void store16(std::vector<uint8_t>& memory, uint32_t addr, uint16_t value) {
         memory[addr] = value & 0xFF;
         memory[addr + 1] = (value >> 8) & 0xFF;
     }
-    static void store8(std::array<uint8_t, RAM_SIZE>& memory, uint32_t addr, uint8_t value) {
+    static void store8(std::vector<uint8_t>& memory, uint32_t addr, uint8_t value) {
         memory[addr] = value;
     }
 
@@ -159,7 +160,7 @@ struct SimpleCore {
         flags = Flags();
     }
 
-    bool step(uint32_t instr, std::array<uint8_t, RAM_SIZE>& ram) {
+    bool step(uint32_t instr, std::vector<uint8_t>& ram) {
         uint8_t opcode = instr & 0xFF; //16 bits instruction index
         uint8_t rd = (instr >> 8) & 0xFF; //index of the "destination" register
         uint8_t rs1 = (instr >> 16) & 0xFF; //index of the first "source" register
@@ -376,16 +377,16 @@ struct SimpleCore {
             }
             break;
         case CALL:
-            // pushes PC + 4 on pile
-            SP -= 4;
-            store32(ram, SP, PC + 4);
+            // pushes PC + 1 on pile
+            SP -= 1;
+            store32(ram, SP, PC + 1);
             PC += sign_extend_24b(instr & 0xFFFFFF);
             pc_advanced = false;
             break;
         case RET:
             {
                 uint32_t return_addr = load32(ram, SP);
-                SP += 4;
+                SP += 1;
                 PC = return_addr;
                 pc_advanced = false;
                 break;
@@ -397,7 +398,7 @@ struct SimpleCore {
         default:
             break;
         }
-        if (pc_advanced) PC += 4;
+        if (pc_advanced) PC++;
 
         return true;
     }

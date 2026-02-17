@@ -8,23 +8,25 @@
 #include <unordered_map>
 #include <string>
 
-//A FAIRE:
-//Heap: malloc & free instructions
-//give registers names
-//maybe adds linker and section
-//https://www.tutorialspoint.com/assembly_programming/assembly_registers.htm
-//www.tutorialspoint.com/assembly_programming/assembly_system_calls.htm
-//www.tutorialspoint.com/assembly_programming/assembly_variables.htm
-//voir autres tuto sur www.tutorialspoint.com/assembly_programming
-//Add instruction validation tables
-//Add .data / .text sections
-//Add register aliases (sp, pc, a0, etc.)
-//️Add error underlining with exact token span
+/*
+https://www.tutorialspoint.com/assembly_programming/assembly_registers.htm
+www.tutorialspoint.com/assembly_programming/assembly_system_calls.htm
+www.tutorialspoint.com/assembly_programming/assembly_variables.htm
+VOIR AUTRES TUTOS sur www.tutorialspoint.com/assembly_programming
 
 
-template <size_t PROGRAM_SIZE = 0xFFFF>
-struct AsmInterpreter
-{
+A FAIRE:
+
+Add instruction validation tables
+Heap: malloc & free instructions
+Add .data / .text sections (and maybe other) (and maybe a linker mimic)
+Add register aliases (sp, pc, a0, etc.)
+️Add error underlining with exact token span
+Add 2 passes for labels
+*/
+
+template <size_t RAM_SIZE = 0x10000, size_t PROGRAM_SIZE = 0xFFFF>
+struct AsmInterpreter {
     std::unordered_map<std::string, size_t> labels; // name and PC
     std::unordered_map<std::string, Var> vars; // name, addr and size
     std::vector<uint32_t> program;
@@ -53,14 +55,24 @@ struct AsmInterpreter
         if (it == instr_table.end()) {
             //var declaration
             if (tokens.size() < 2) return ErrorCode::UNKNOWN_INSTR;
-            auto [error_code_4, var_size] = parse_DD(tokens[1]);
-            if (error_code_4 != ErrorCode::OK) return error_code_4;
-            Var v;
-            v.addr = cur_data_addr;
+            auto [e_code_4, var_size] = parse_DD(tokens[1]);
+            auto [e_code_5, un_var_size] = parse_RD(tokens[1]);
+            if (e_code_4 != ErrorCode::OK && e_code_5!= ErrorCode::OK) return ErrorCode::INVALID_ARG;
 
-            v.size = var_size;
+            Var v(cur_data_addr, e_code_4 == ErrorCode::OK ? var_size : un_var_size);
+            if (e_code_4 == ErrorCode::OK) {
+                if (tokens.size() == 3) {
+                    auto [e_code_6, res] = parse_bytes(tokens[2], v.init.size());
+                    if (e_code_6 != ErrorCode::OK) return e_code_6;
+                    v.init = res;
+                }
+                else
+                    return ErrorCode::INVALID_ARG;
+            }
+
+            if (cur_data_addr + v.size > RAM_SIZE)
+                return ErrorCode::RAM_OVERFLOW;
             cur_data_addr += v.size;
-            if (cur_data_addr >= program.size()) cur_data_addr = 0;
 
             vars[tokens[0]] = v;
 
@@ -89,7 +101,7 @@ struct AsmInterpreter
                     return ErrorCode::INVALID_ARG;
             }
 
-            result = (static_cast<uint32_t>(def.opcode) << 24) | (rd << 16) | (rs1 << 8) | rs2;
+            result = static_cast<uint32_t>(def.opcode) | (rd << 8) | (rs1 << 16) | (rs2 << 24);
             return ErrorCode::OK;
         }
 
@@ -111,8 +123,7 @@ struct AsmInterpreter
                     addr = imm;
                 }
 
-                result =
-                    (uint32_t(def.opcode) << 24) | (rd << 16) | (0 << 8) | (addr & 0xFF); // base = 0
+                result = static_cast<uint32_t>(def.opcode) | (rd << 8) | (0 << 16) | ((addr & 0xFF) << 24);
 
                 return ErrorCode::OK;
             }
@@ -130,7 +141,7 @@ struct AsmInterpreter
                     addr = imm;
                 }
 
-                result = (uint32_t(def.opcode) << 24) | (rs << 16) | (0 << 8) | (addr & 0xFF); //base 0
+                result = static_cast<uint32_t>(def.opcode) | (rs << 8) | (0 << 16) | ((addr & 0xFF) << 24); //base 0
 
                 return ErrorCode::OK;
             }
@@ -144,7 +155,7 @@ struct AsmInterpreter
 
                 if (e_rd != ErrorCode::OK || e_base != ErrorCode::OK || e_off != ErrorCode::OK) return ErrorCode::INVALID_ARG;
 
-                result = (uint32_t(def.opcode) << 24) | (rd << 16) | (rb << 8) | (off & 0xFF);
+                result = static_cast<uint32_t>(def.opcode) | (rd << 8) | (rb << 16) | ((off & 0xFF) << 24);
 
                 return ErrorCode::OK;
             }
@@ -158,7 +169,7 @@ struct AsmInterpreter
 
                 if (e_rs != ErrorCode::OK || e_base != ErrorCode::OK || e_off != ErrorCode::OK) return ErrorCode::INVALID_ARG;
 
-                result = (static_cast<uint32_t>(def.opcode) << 24) | (rs << 16) | (rb << 8) | (off & 0xFF);
+                result = static_cast<uint32_t>(def.opcode) | (rs << 8) | (rb << 16) | ((off & 0xFF) << 24);
 
                 return ErrorCode::OK;
             }
@@ -182,7 +193,7 @@ struct AsmInterpreter
                 imm = imm_val;
             }
 
-            result = (static_cast<uint32_t>(def.opcode) << 24) | (rd << 16) | (rs1 << 8) | (imm & 0xFF);
+            result = static_cast<uint32_t>(def.opcode) | (rd << 8) | (rs1 << 16) | ((imm & 0xFF) << 24);
             return ErrorCode::OK;
         }
 
@@ -194,13 +205,13 @@ struct AsmInterpreter
                 const std::string& label = tokens[1];
                 if (!labels.contains(label)) return ErrorCode::UNKNOWN_LABEL;
 
-                int offset = static_cast<int>(labels[label] - (program.size() * 4));
-                result = (static_cast<uint32_t>(def.opcode) << 24) | (offset & 0xFFFFFF);
+                int offset = static_cast<int>(labels[label] - program.size());
+                result = static_cast<uint32_t>(def.opcode) | ((offset & 0xFFFFFF) << 8);
                 return ErrorCode::OK;
                 }
 
             if (it->first == "ret" || it->first == "halt") {
-                result = (static_cast<uint32_t>(def.opcode) << 24);
+                result = static_cast<uint32_t>(def.opcode);
                 return ErrorCode::OK;
             }
 
@@ -210,7 +221,7 @@ struct AsmInterpreter
                 auto [err, rd] = parse_reg(tokens[1]);
                 if (err != ErrorCode::OK) return err;
 
-                result = (static_cast<uint32_t>(def.opcode) << 24) | (rd << 16);
+                result = (static_cast<uint32_t>(def.opcode)) | (rd << 8);
                 return ErrorCode::OK;
             }
 
@@ -224,8 +235,7 @@ struct AsmInterpreter
                 auto [err_rs, rs] = parse_reg(tokens[2]);
                 if (err_rs != ErrorCode::OK) return err_rs;
 
-                result = (static_cast<uint32_t>(def.opcode) << 24) |
-                         (rd << 16) | (rs << 8);
+                result = static_cast<uint32_t>(def.opcode) | (rd << 8) | (rs << 16);
                 return ErrorCode::OK;
             }
 

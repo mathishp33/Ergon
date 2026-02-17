@@ -4,13 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="BackendCodeEditorMiscSettings">
+    <option name="/Default/Environment/UserInterface/HierarchyView/ViewStyle/@EntryValue" value="SuperTypes" type="string" />
     <option name="/Default/Housekeeping/FeatureSuggestion/FeatureSuggestionManager/DisabledSuggesters/=SwitchToGoToActionSuggester/@EntryIndexedValue" value="true" type="bool" />
     <option name="/Default/Housekeeping/GlobalSettingsUpgraded/IsUpgraded/@EntryValue" value="true" type="bool" />
     <option name="/Default/RiderDebugger/RiderRestoreDecompile/RestoreDecompileSetting/@EntryValue" value="false" type="bool" />
   </component>
-  <component name="CMakePresetLoader"><![CDATA[{
-  "useNewFormat": true
-}]]></component>
+  <component name="CMakePresetLoader">{
+  &quot;useNewFormat&quot;: true
+}</component>
   <component name="CMakeProjectFlavorService">
     <option name="flavorId" value="CMakePlainProjectFlavor" />
   </component>
@@ -28,12 +29,15 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="I cleaned code + added more instructions">
+    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="added better instruction + still trying to fix the bug">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Talos/include/ASM/asm_interpreter.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/ASM/asm_interpreter.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Talos/include/ASM/decoder.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/ASM/decoder.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Talos/include/core.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/core.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/env_manager.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/env_manager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/error.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/error.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Talos/include/mother_board.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/mother_board.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/utils.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/utils.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test/test.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/test/test.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -45,24 +49,24 @@
     <option name="formatViaClangd" value="false" />
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="102" />
+    <option name="cachedIndexableFilesCount" value="107" />
   </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "mathishp33"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;mathishp33&quot;
   }
-}]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/mathishp33/Ergon",
-    "accountId": "2c353670-91fe-4230-a235-f9bb83e1eef5"
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/mathishp33/Ergon&quot;,
+    &quot;accountId&quot;: &quot;2c353670-91fe-4230-a235-f9bb83e1eef5&quot;
   }
-}]]></component>
+}</component>
   <component name="MacroExpansionManager">
     <option name="directoryName" value="d1oNEqBJ" />
   </component>
@@ -76,21 +80,21 @@
     <option name="minorVersion" value="3.2" />
     <option name="productBranch" value="Classic" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "customColor": "",
-  "associatedIndex": 4
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 4
+}</component>
   <component name="ProjectId" id="39lDv1hoeULNkhConh5rtXNgHt7" />
-  <component name="ProjectStatusUIService"><![CDATA[{
-  "uiKindId": "Widget"
-}]]></component>
+  <component name="ProjectStatusUIService">{
+  &quot;uiKindId&quot;: &quot;Widget&quot;
+}</component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "CMake Application.ergon_tests.executor": "Run",
+    "CMake Application.ergon_tests.executor": "Debug",
     "CMake Debug.Ergon.executor": "Debug",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.MCP Project settings loaded": "true",
@@ -127,11 +131,6 @@
     <configuration name="Ergon" type="CMakeListConfigurationType" factoryName="CMakeListConfigurationFactory" temporary="true">
       <method v="2" />
     </configuration>
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="ergon_tests" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Ergon" TARGET_NAME="ergon_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="Ergon" RUN_TARGET_NAME="ergon_tests">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -157,7 +156,10 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1771261991495</updated>
-      <workItem from="1771261993365" duration="14592000" />
+      <workItem from="1771261993365" duration="14817000" />
+      <workItem from="1771319626333" duration="200000" />
+      <workItem from="1771328005130" duration="278000" />
+      <workItem from="1771334992488" duration="13841000" />
     </task>
     <task id="LOCAL-00001" summary="checkpoint commit">
       <option name="closed" value="true" />
@@ -175,7 +177,15 @@
       <option name="project" value="LOCAL" />
       <updated>1771274606244</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="added better instruction + still trying to fix the bug">
+      <option name="closed" value="true" />
+      <created>1771278560929</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1771278560929</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -189,6 +199,18 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="checkpoint commit" />
     <MESSAGE value="I cleaned code + added more instructions" />
-    <option name="LAST_COMMIT_MESSAGE" value="I cleaned code + added more instructions" />
+    <MESSAGE value="added better instruction + still trying to fix the bug" />
+    <option name="LAST_COMMIT_MESSAGE" value="added better instruction + still trying to fix the bug" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/Talos/include/env_manager.h</url>
+          <line>37</line>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>

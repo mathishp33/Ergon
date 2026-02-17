@@ -10,7 +10,8 @@ enum class ErrorCode : uint8_t {
     UNKNOWN_LABEL,
     INVALID_CHAR,
     STOI_OVERFLOW,
-    LINE_OVERFLOW
+    LINE_OVERFLOW,
+    RAM_OVERFLOW
 };
 
 // there is padding, but I don't want to #pragma pack(1) bc it gives warning
@@ -41,6 +42,8 @@ inline std::string ErrorCode_to_String(ErrorInfo e) {
         return "Overflow while trying to convert an argument in line " + std::to_string(e.index_line) + ".";
     case ErrorCode::LINE_OVERFLOW:
         return "Overflow in line " + std::to_string(e.index_line) + ".";
+    case ErrorCode::RAM_OVERFLOW:
+        return "RAM Overflow in line " + std::to_string(e.index_line) + ".";
     }
     return "Error " + std::to_string(e.index_line) + ".";
 }

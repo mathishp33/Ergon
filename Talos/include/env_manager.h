@@ -12,7 +12,7 @@ enum class RunMode {
 template <size_t RAM_SIZE, size_t PROGRAM_SIZE> //65 5535 lines, 64Kb
 struct EnvironmentManager {
     std::unique_ptr<MotherBoard<RAM_SIZE, PROGRAM_SIZE>> mb;
-    AsmInterpreter<PROGRAM_SIZE> interpreter;
+    AsmInterpreter<RAM_SIZE, PROGRAM_SIZE> interpreter;
     RunMode mode = RunMode::STEP;
     std::string error_msg;
 
@@ -32,21 +32,24 @@ struct EnvironmentManager {
             error_msg += "\n";
         }
 
-
         mb->stop();
         mb->reset();
 
-        interpreter.program.resize(PROGRAM_SIZE);
+        for (auto& [name, var] : interpreter.vars) {
+            for (size_t i = 0; i < var.init.size(); ++i)
+                mb->ram[var.addr + i] = var.init[i];
+        }
+
         mb->load_prog(interpreter.program);
     }
 
-    uint8_t get_from_ram(size_t addr) {
+    int get_from_ram(size_t addr) {
         if (addr < mb->ram.size())
             return mb->ram[addr];
         return 0;
     }
 
-    uint32_t get_from_reg(size_t reg) {
+    int get_from_reg(size_t reg) {
         if (reg < mb->cpu.core.regs.size())
             return mb->cpu.core.regs[reg];
         return 0;
