@@ -173,22 +173,22 @@ The CPU has 16 (32-bit) registers:
 
 | Index | Name | Purpose |
 |----|------|----------|
-| r0 | zero | Always 0 |
-| r1	| eax	|	General-purpose, accumulator |
-| r2	| ebx	|	General-purpose, base |
-| r3	| ecx	|	Counter / loop index |
-| r4	| edx	|	Data / temp |
-| r5	| esi	|	Source index / arg |
-| r6	| edi	|	Destination index / arg |
-| r7	| r8	| Scratch / temp |
-| r8	| r9	| Scratch / temp |
-| r9	| r10	|	Preserved / callee-saved |
-| r10	| r11	|	Preserved / callee-saved |
-| r11	| r12	|	Preserved / callee-saved |
-| r12	| r13	|	Frame pointer (optional) |
-| r13	| sp	|	Stack pointer |
-| r14	| bp	| Base pointer |
-| r15	| r15	|	Extra general-purpose |
+| 0 | zero | Always 0 |
+| 1	| eax	|	General-purpose, accumulator |
+| 2	| ebx	|	General-purpose, base |
+| 3	| ecx	|	Counter / loop index |
+| 4	| edx	|	Data / temp |
+| 5	| esi	|	Source index / arg |
+| 6	| edi	|	Destination index / arg |
+| 7	| r8	| Scratch / temp |
+| 8	| r9	| Scratch / temp |
+| 9	| r10	|	Preserved / callee-saved |
+| 10	| r11	|	Preserved / callee-saved |
+| 11	| r12	|	Preserved / callee-saved |
+| 12	| r13	|	Frame pointer (optional) |
+| 13	| sp	|	Stack pointer |
+| 14	| bp	| Base pointer |
+| 15	| r15	|	Extra general-purpose |
 
 
 
