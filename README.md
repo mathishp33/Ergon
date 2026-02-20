@@ -186,9 +186,9 @@ The CPU has 16 (32-bit) registers:
 | r10	| r11	|	Preserved / callee-saved |
 | r11	| r12	|	Preserved / callee-saved |
 | r12	| r13	|	Frame pointer (optional) |
-| r13	| r14	|	Stack pointer |
-| r14	| sp	| Base pointer |
-| r15	| bp	|	Extra general-purpose |
+| r13	| sp	|	Stack pointer |
+| r14	| bp	| Base pointer |
+| r15	| r15	|	Extra general-purpose |
 
 
 
