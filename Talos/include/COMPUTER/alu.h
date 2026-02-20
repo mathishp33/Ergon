@@ -49,7 +49,7 @@ struct ALUResult {
 };
 
 struct ALU {
-    ALUResult exec(ALUOp op, uint32_t a, uint32_t b) {
+    static ALUResult exec(ALUOp op, uint32_t a, uint32_t b) {
         ALUResult r{};
         uint64_t u_wide; //unsigned wide
         int64_t  s_wide; //signed wide

@@ -110,7 +110,7 @@ struct DecodedInstr {
 
 struct SimpleCore {
     std::array<uint32_t, 16> regs{};
-    uint32_t SP = 0; // Stack Pointer
+    uint32_t& SP = regs[14]; // Stack Pointer
     uint32_t PC = 0; // Program Counter
     Flags flags;
     bool inc_pc = true;
@@ -124,7 +124,7 @@ struct SimpleCore {
     }
 
     void R_type_instr(ALUOp op, uint8_t rd, uint8_t rs1, uint8_t rs2) {
-        auto r = alu.exec(op, regs[rs1], regs[rs2]);
+        auto r = ALU::exec(op, regs[rs1], regs[rs2]);
         if (r.writeback) regs[rd] = r.value;
         flags = r.flags;
     }
@@ -135,12 +135,12 @@ struct SimpleCore {
         flags = r.flags;
     }
     void J_type_instr(ALUOp op, uint8_t rd, uint8_t rs) {
-        auto r = alu.exec(op, regs[rs], regs[rs]);
+        auto r = ALU::exec(op, regs[rs], regs[rs]);
         if (r.writeback) regs[rd] = r.value;
         flags = r.flags;
     }
     void J_type_instr(ALUOp op, uint8_t rd) {
-        auto r = alu.exec(op, regs[rd], 0);
+        auto r = ALU::exec(op, regs[rd], 0);
         if (r.writeback) regs[rd] = r.value;
         flags = r.flags;
     }

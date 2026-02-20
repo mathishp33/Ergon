@@ -143,10 +143,29 @@ inline std::unordered_map<std::string, InstrDef> instr_table = {
 };
 
 
+inline std::unordered_map<std::string, uint8_t> reg_table = {
+    { "zero", 0 },
+    { "eax", 1 },
+    { "ebx", 2 },
+    { "ecx", 3 },
+    { "edx", 4 },
+    { "esi", 5 },
+    { "edi", 6 },
+    { "r7", 7 },
+    { "r8", 8 },
+    { "r9", 9 },
+    { "r10", 10 },
+    { "r11", 11 },
+    { "r12", 12 },
+    { "sp", 13 },
+    { "bp", 14 },
+    { "r15", 15 }
+};
+
 static std::pair<ErrorCode, uint8_t> parse_reg(const std::string& s) {
-    size_t offset = 0;
-    if (s[0] == 'R' || s[0] == 'r' || s[0] == '%') offset = 1;
-    return string_utils::better_stoi(s.substr(offset));
+    if (reg_table.contains(s))
+        return { ErrorCode::OK, reg_table[s] };
+    return { ErrorCode::INVALID_ARG, 0 };
 }
 
 static std::pair<ErrorCode, int> parse_imm(const std::string& s) {

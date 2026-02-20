@@ -8,10 +8,10 @@
 int main() {
     std::cout << "---------- TEST PROGRAM ----------\n";
     std::string program = "rmax dd 2_000_000 \n"
-                          "ldw r4 rmax       \n"
+                          "ldw eax rmax       \n"
                           "loop_start:       \n"
-                          " addi r0 r0 1     \n"
-                          " cmpu r0 r4       \n"
+                          " addi ecx ecx 1     \n"
+                          " cmpu ecx eax       \n"
                           " jl loop_start    \n"
                           ""
                           "halt              \n";
