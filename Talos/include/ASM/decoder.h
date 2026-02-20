@@ -3,26 +3,46 @@
 
 #include <unordered_map>
 
-#include "core.h"
+#include "../COMPUTER/core.h"
 
 
 struct Var {
     size_t addr = 0;
-    size_t size = 0;
+    size_t size = 1;
     std::vector<uint8_t> init;
+    size_t elem_count = 1;
 
     Var() = default;
 
     Var(size_t addr, size_t size) : addr(addr), size(size) {
         for (size_t i = 0; i < size; i++) init.push_back(0);
+        elem_count = 1;
+    }
+
+    Var(size_t addr, size_t size, size_t elem_count) : addr(addr), size(size), elem_count(elem_count) {
+        for (size_t i = 0; i < size * elem_count; i++) init.push_back(0);
     }
 };
 
 enum class InstrType { R, I, J };
 
+enum class ArgType {
+    REG,
+    IMM,
+    LABEL,
+    VAR,
+    NONE
+};
+
 struct InstrDef {
     OPCODE opcode;
     InstrType type;
+    std::vector<ArgType> args;
+    std::vector<size_t> args_pos;
+
+    InstrDef(OPCODE opcode, InstrType type, const std::vector<ArgType>& args, const std::vector<size_t>& args_pos) : opcode(opcode), type(type), args(args), args_pos(args_pos) {
+        if (args.size() != args_pos.size()) throw std::exception();
+    }
 };
 
 // sizes in bytes
@@ -44,82 +64,82 @@ enum class ReserveDirective : unsigned int {
 };
 
 inline std::unordered_map<std::string, InstrDef> instr_table = {
-    {"add",  {ADD,  InstrType::R}},
-    {"sub",  {SUB,  InstrType::R}},
-    {"mul",  {MUL,  InstrType::R}},
-    {"div",  {DIV,  InstrType::R}},
-    {"mod",  {MOD,  InstrType::R}},
-    {"addi", {ADDI, InstrType::I}},
-    {"subi", {SUBI, InstrType::I}},
-    {"muli", {MULI, InstrType::I}},
-    {"divi", {DIVI, InstrType::I}},
-    {"modi", {MODI, InstrType::I}},
+    {"add",  {ADD,  InstrType::R, { ArgType::REG, ArgType::REG, ArgType::REG }, { 0, 1, 2 } }}, //rd, rs1, rs2/imm
+    {"sub",  {SUB,  InstrType::R, { ArgType::REG, ArgType::REG, ArgType::REG }, { 0, 1, 2 } }},
+    {"mul",  {MUL,  InstrType::R, { ArgType::REG, ArgType::REG, ArgType::REG }, { 0, 1, 2 } }},
+    {"div",  {DIV,  InstrType::R, { ArgType::REG, ArgType::REG, ArgType::REG }, { 0, 1, 2 } }},
+    {"mod",  {MOD,  InstrType::R, { ArgType::REG, ArgType::REG, ArgType::REG }, { 0, 1, 2 } }},
+    {"addi", {ADDI, InstrType::I, { ArgType::REG, ArgType::REG, ArgType::IMM }, { 0, 1, 2 } }},
+    {"subi", {SUBI, InstrType::I, { ArgType::REG, ArgType::REG, ArgType::IMM }, { 0, 1, 2 } }},
+    {"muli", {MULI, InstrType::I, { ArgType::REG, ArgType::REG, ArgType::IMM }, { 0, 1, 2 } }},
+    {"divi", {DIVI, InstrType::I, { ArgType::REG, ArgType::REG, ArgType::IMM }, { 0, 1, 2 } }},
+    {"modi", {MODI, InstrType::I, { ArgType::REG, ArgType::REG, ArgType::IMM }, { 0, 1, 2 } }},
 
-    {"and",  {AND,  InstrType::R}},
-    {"or",   {OR,   InstrType::R}},
-    {"xor",  {XOR,  InstrType::R}},
-    {"andi", {ANDI, InstrType::I}},
-    {"ori",  {ORI,  InstrType::I}},
-    {"xori", {XORI, InstrType::I}},
+    {"and",  {AND,  InstrType::R, { ArgType::REG, ArgType::REG, ArgType::REG }, { 0, 1, 2 } }},
+    {"or",   {OR,   InstrType::R, { ArgType::REG, ArgType::REG, ArgType::REG }, { 0, 1, 2 } }},
+    {"xor",  {XOR,  InstrType::R, { ArgType::REG, ArgType::REG, ArgType::REG }, { 0, 1, 2 } }},
+    {"andi", {ANDI, InstrType::I, { ArgType::REG, ArgType::REG, ArgType::IMM }, { 0, 1, 2 } }},
+    {"ori",  {ORI,  InstrType::I, { ArgType::REG, ArgType::REG, ArgType::IMM }, { 0, 1, 2 } }},
+    {"xori", {XORI, InstrType::I, { ArgType::REG, ArgType::REG, ArgType::IMM }, { 0, 1, 2 } }},
 
-    {"shl",  {SHL,  InstrType::R}},
-    {"shr",  {SHR,  InstrType::R}},
-    {"sar",  {SAR,  InstrType::R}},
-    {"rol",  {ROL,  InstrType::R}},
-    {"ror",  {ROR,  InstrType::R}},
-    {"shli", {SHLI, InstrType::I}},
-    {"shri", {SHRI, InstrType::I}},
-    {"sari", {SARI, InstrType::I}},
-    {"roli", {ROLI, InstrType::I}},
-    {"rori", {RORI, InstrType::I}},
+    {"shl",  {SHL,  InstrType::R, { ArgType::REG, ArgType::REG, ArgType::REG }, { 0, 1, 2 } }},
+    {"shr",  {SHR,  InstrType::R, { ArgType::REG, ArgType::REG, ArgType::REG }, { 0, 1, 2 } }},
+    {"sar",  {SAR,  InstrType::R, { ArgType::REG, ArgType::REG, ArgType::REG }, { 0, 1, 2 } }},
+    {"rol",  {ROL,  InstrType::R, { ArgType::REG, ArgType::REG, ArgType::REG }, { 0, 1, 2 } }},
+    {"ror",  {ROR,  InstrType::R, { ArgType::REG, ArgType::REG, ArgType::REG }, { 0, 1, 2 } }},
+    {"shli", {SHLI, InstrType::I, { ArgType::REG, ArgType::REG, ArgType::IMM }, { 0, 1, 2 } }},
+    {"shri", {SHRI, InstrType::I, { ArgType::REG, ArgType::REG, ArgType::IMM }, { 0, 1, 2 } }},
+    {"sari", {SARI, InstrType::I, { ArgType::REG, ArgType::REG, ArgType::IMM }, { 0, 1, 2 } }},
+    {"roli", {ROLI, InstrType::I, { ArgType::REG, ArgType::REG, ArgType::IMM }, { 0, 1, 2 } }},
+    {"rori", {RORI, InstrType::I, { ArgType::REG, ArgType::REG, ArgType::IMM }, { 0, 1, 2 } }},
 
-    {"cmp",   {CMP,   InstrType::R}},
-    {"cmpu",  {CMPU,  InstrType::R}},
-    {"test",  {TEST,  InstrType::R}},
-    {"cmpi",  {CMPI,  InstrType::I}},
-    {"cmpui",  {CMPUI,  InstrType::I}},
-    {"testi", {TESTI, InstrType::I}},
+    {"cmp",   {CMP,   InstrType::R, { ArgType::REG, ArgType::REG }, { 1, 2 } }}, //rs1, rs2/imm
+    {"cmpu",  {CMPU,  InstrType::R, { ArgType::REG, ArgType::REG }, { 1, 2 } }},
+    {"test",  {TEST,  InstrType::R, { ArgType::REG, ArgType::REG }, { 1, 2 } }},
+    {"cmpi",  {CMPI,  InstrType::I, { ArgType::REG, ArgType::IMM }, { 1, 2 } }},
+    {"cmpui", {CMPUI, InstrType::I, { ArgType::REG, ArgType::IMM }, { 1, 2 } }},
+    {"testi", {TESTI, InstrType::I, { ArgType::REG, ArgType::IMM }, { 1, 2 } }},
 
-    {"inc", {INC, InstrType::J}},
-    {"dec", {DEC, InstrType::J}},
-    {"not", {NOT, InstrType::J}},
-    {"abs", {ABS, InstrType::J}},
-    {"neg", {NEG, InstrType::J}},
-    {"min", {MIN, InstrType::R}},
-    {"max", {MAX, InstrType::R}},
-    {"mini",{MINI,InstrType::I}},
-    {"maxi",{MAXI,InstrType::I}},
+    {"inc", {INC, InstrType::J, { ArgType::REG }, { 0 } }}, //rd
+    {"dec", {DEC, InstrType::J, { ArgType::REG }, { 0 } }},
+    {"not", {NOT, InstrType::J, { ArgType::REG, ArgType::REG }, { 0, 1 } }},
+    {"abs", {ABS, InstrType::J, { ArgType::REG, ArgType::REG }, { 0, 1 } }},
+    {"neg", {NEG, InstrType::J, { ArgType::REG, ArgType::REG }, { 0, 1 } }},
+    {"min", {MIN, InstrType::R, { ArgType::REG, ArgType::REG, ArgType::REG }, { 0, 1, 2 } }},
+    {"max", {MAX, InstrType::R, { ArgType::REG, ArgType::REG, ArgType::REG }, { 0, 1, 2 } }},
+    {"mini",{MINI,InstrType::I, { ArgType::REG, ArgType::REG, ArgType::IMM }, { 0, 1, 2 } }},
+    {"maxi",{MAXI,InstrType::I, { ArgType::REG, ArgType::REG, ArgType::IMM }, { 0, 1, 2 } }},
 
-    {"mov",   {MOV_REG, InstrType::R}},
-    {"movi",  {MOV_IMM, InstrType::I}},
-    {"lbaseb", {LDB_BASE, InstrType::I}},
-    {"lbaseh", {LDH_BASE, InstrType::I}},
-    {"lbasew", {LDW_BASE, InstrType::I}},
-    {"sbaseb", {STB_BASE, InstrType::I}},
-    {"sbaseh", {STH_BASE, InstrType::I}},
-    {"sbasew", {STW_BASE, InstrType::I}},
-    {"ldb", {LDB_ABS, InstrType::I}},
-    {"ldh", {LDH_ABS, InstrType::I}},
-    {"ldw", {LDW_ABS, InstrType::I}},
-    {"stb", {STB_ABS, InstrType::I}},
-    {"sth", {STH_ABS, InstrType::I}},
-    {"stw", {STW_ABS, InstrType::I}},
-    {"push",  {PUSH,    InstrType::J}},
-    {"pop",   {POP,     InstrType::J}},
-    {"lea",   {LEA,     InstrType::I}},
-    {"swap",  {SWAP,    InstrType::R}},
-    {"clr",   {CLR,     InstrType::J}},
-    {"memcpy",{MEMCPY,  InstrType::I}},
+    {"mov",   {MOV_REG, InstrType::R, { ArgType::REG, ArgType::REG }, { 0, 1 } }},
+    {"movi",  {MOV_IMM, InstrType::I, { ArgType::REG, ArgType::IMM }, { 0, 2 } }},
+    {"lbaseb", {LDB_BASE, InstrType::I, { ArgType::REG, ArgType::REG, ArgType::IMM }, { 0, 1, 2 } }},
+    {"lbaseh", {LDH_BASE, InstrType::I, { ArgType::REG, ArgType::REG, ArgType::IMM }, { 0, 1, 2 } }},
+    {"lbasew", {LDW_BASE, InstrType::I, { ArgType::REG, ArgType::REG, ArgType::IMM }, { 0, 1, 2 } }},
+    {"sbaseb", {STB_BASE, InstrType::I, { ArgType::REG, ArgType::REG, ArgType::IMM }, { 0, 1, 2 } }},
+    {"sbaseh", {STH_BASE, InstrType::I, { ArgType::REG, ArgType::REG, ArgType::IMM }, { 0, 1, 2 } }},
+    {"sbasew", {STW_BASE, InstrType::I, { ArgType::REG, ArgType::REG, ArgType::IMM }, { 0, 1, 2 } }},
+    {"ldb", {LDB_ABS, InstrType::I, { ArgType::REG, ArgType::VAR }, { 0, 2 } }},
+    {"ldh", {LDH_ABS, InstrType::I, { ArgType::REG, ArgType::VAR }, { 0, 2 } }},
+    {"ldw", {LDW_ABS, InstrType::I, { ArgType::REG, ArgType::VAR }, { 0, 2 } }},
+    {"stb", {STB_ABS, InstrType::I, { ArgType::REG, ArgType::VAR }, { 0, 2 } }},
+    {"sth", {STH_ABS, InstrType::I, { ArgType::REG, ArgType::VAR }, { 0, 2 } }},
+    {"stw", {STW_ABS, InstrType::I, { ArgType::REG, ArgType::VAR }, { 0, 2 } }},
+    {"push",  {PUSH,    InstrType::J, { ArgType::REG }, { 1 } }}, //rs1
+    {"pop",   {POP,     InstrType::J, { ArgType::REG }, { 0 } }}, //rd
+    {"lea",   {LEA,     InstrType::I, { ArgType::REG, ArgType::REG, ArgType::IMM }, { 0, 1, 2 } }},
+    {"swap",  {SWAP,    InstrType::R, { ArgType::REG, ArgType::REG }, { 0, 1 } }},
+    {"clr",   {CLR,     InstrType::J, { ArgType::REG }, { 0 } }},
+    {"memcpy",{MEMCPY,  InstrType::I, { ArgType::REG, ArgType::REG, ArgType::IMM }, { 0, 1, 2 } }},
 
-    {"jmp",  {JMP,  InstrType::J}},
-    {"jz",   {JZ,   InstrType::J}},
-    {"jnz",  {JNZ,  InstrType::J}},
-    {"jg",   {JG,   InstrType::J}},
-    {"jl",   {JL,   InstrType::J}},
-    {"call", {CALL, InstrType::J}},
-    {"ret",  {RET,  InstrType::J}},
+    {"jmp",  {JMP,  InstrType::J, { ArgType::LABEL }, { 0 } }},
+    {"jz",   {JZ,   InstrType::J, { ArgType::LABEL }, { 0 } }},
+    {"jnz",  {JNZ,  InstrType::J, { ArgType::LABEL }, { 0 } }},
+    {"jg",   {JG,   InstrType::J, { ArgType::LABEL }, { 0 } }},
+    {"jl",   {JL,   InstrType::J, { ArgType::LABEL }, { 0 } }},
+    {"call", {CALL, InstrType::J, { ArgType::LABEL }, { 0 } }},
+    {"ret",  {RET,  InstrType::J, { }, { } }},
 
-    {"halt",  {HALT,  InstrType::J}},
+    {"halt",  {HALT,  InstrType::J, { }, { } }},
 };
 
 
@@ -211,21 +231,32 @@ inline std::pair<ErrorCode, std::vector<uint8_t>> parse_bytes(const std::string&
     }
 }
 
-inline std::pair<ErrorCode, size_t> parse_DD(const std::string& str) {
-    if (str == "DB" || str == "db") return { ErrorCode::OK, static_cast<size_t>(DefineDirective::DB)}; //8b
-    if (str == "DW" || str == "dw") return { ErrorCode::OK, static_cast<size_t>(DefineDirective::DW)}; //16b
-    if (str == "DD" || str == "dd") return { ErrorCode::OK, static_cast<size_t>(DefineDirective::DD)}; //32b
-    if (str == "DQ" || str == "dq") return { ErrorCode::OK, static_cast<size_t>(DefineDirective::DQ)};
-    return { ErrorCode::INVALID_ARG, 0 };
+inline size_t parse_DD(const std::string& str) {
+    if (str == "DB" || str == "db") return static_cast<size_t>(DefineDirective::DB); //8b
+    if (str == "DW" || str == "dw") return static_cast<size_t>(DefineDirective::DW); //16b
+    if (str == "DD" || str == "dd") return static_cast<size_t>(DefineDirective::DD); //32b
+    if (str == "DQ" || str == "dq") return static_cast<size_t>(DefineDirective::DQ);
+    return 0;
 }
 
-inline std::pair<ErrorCode, size_t> parse_RD(const std::string& str) {
-    if (str == "RESB" || str == "resb") return { ErrorCode::OK, static_cast<size_t>(ReserveDirective::RESB) };
-    if (str == "RESW" || str == "resw") return { ErrorCode::OK, static_cast<size_t>(ReserveDirective::RESW) };
-    if (str == "RESD" || str == "resd") return { ErrorCode::OK, static_cast<size_t>(ReserveDirective::RESD) };
-    if (str == "RESQ" || str == "resq") return { ErrorCode::OK, static_cast<size_t>(ReserveDirective::RESQ) };
-    return { ErrorCode::INVALID_ARG, 0 };
+inline size_t parse_RD(const std::string& str) {
+    if (str == "RESB" || str == "resb") return static_cast<size_t>(ReserveDirective::RESB);
+    if (str == "RESW" || str == "resw") return static_cast<size_t>(ReserveDirective::RESW);
+    if (str == "RESD" || str == "resd") return static_cast<size_t>(ReserveDirective::RESD);
+    if (str == "RESQ" || str == "resq") return static_cast<size_t>(ReserveDirective::RESQ);
+    return 0;
 }
 
+inline std::pair<size_t, int> parse_D(const std::string& str) {
+    size_t dd = parse_DD(str);
+    size_t rd = parse_RD(str);
+    return { dd | rd, dd > rd ? dd : rd };
+}
+
+static int32_t sign_extend_24b(uint32_t value) {
+    if (value & 0x800000) // bit 23 = sign
+        return static_cast<int32_t>(value | 0xFF000000); // extend sign
+    return static_cast<int32_t>(value);
+}
 
 #endif

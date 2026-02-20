@@ -1,9 +1,10 @@
 #ifndef ERGON_ASM_INTERPRETER_H
 #define ERGON_ASM_INTERPRETER_H
 
-#include "../utils.h"
-#include "../error.h"
+#include "utils.h"
+#include "error.h"
 #include "decoder.h"
+#include "../COMPUTER/core.h"
 
 #include <unordered_map>
 #include <string>
@@ -17,20 +18,25 @@ VOIR AUTRES TUTOS sur www.tutorialspoint.com/assembly_programming
 
 A FAIRE:
 
-Add instruction validation tables
-Heap: malloc & free instructions
-Add .data / .text sections (and maybe other) (and maybe a linker mimic)
-Add register aliases (sp, pc, a0, etc.)
-️Add error underlining with exact token span
-Add 2 passes for labels
-MEttre LOADS_ABS imm en 24 bit et STORES_ABS en 16bit!!!!
+ADD Heap: malloc & free instructions
+ADD .data, .text, .bss sections (and maybe other) (and maybe a linker mimic)
+ADD register aliases (sp, pc, a0, etc.)
+ADD 2 passes for labels
+MEILLEURS ERREURS TYPES
+FAIRE FPU
+convert dispatcher to computed goto (use labels as values)
+Unroll the dispatch loop
+Superinstructions (merge addi+cmp+jl)
+JIT (even minimal)
+Profile-guided optimization (PGO) (maybe)
+array access through: BYTE_TABLE[2] or BYTE_TABLE + 2
 */
 
 template <size_t RAM_SIZE = 0x10000, size_t PROGRAM_SIZE = 0xFFFF>
 struct AsmInterpreter {
     std::unordered_map<std::string, size_t> labels; // name and PC
     std::unordered_map<std::string, Var> vars; // name, addr and size
-    std::vector<uint32_t> program;
+    std::vector<DecodedInstr> program;
     size_t max_lines = PROGRAM_SIZE;
     std::vector<std::string> lines;
     size_t cur_data_addr = 0;
@@ -42,7 +48,7 @@ struct AsmInterpreter {
         return -1;
     }
 
-    ErrorCode decode_line(const std::string& line, uint32_t& result) {
+    ErrorCode decode_line(const std::string& line, DecodedInstr& result) {
         // labels
         if (line.ends_with(':')) {
             std::string label = line.substr(0, line.size() - 1);
@@ -54,21 +60,53 @@ struct AsmInterpreter {
 
         auto it = instr_table.find(tokens[0]);
         if (it == instr_table.end()) {
-            //var declaration
-            if (tokens.size() < 2) return ErrorCode::UNKNOWN_INSTR;
-            auto [e_code_4, var_size] = parse_DD(tokens[1]);
-            auto [e_code_5, un_var_size] = parse_RD(tokens[1]);
-            if (e_code_4 != ErrorCode::OK && e_code_5!= ErrorCode::OK) return ErrorCode::INVALID_ARG;
+            //variable / array declaration
+            if (tokens[1] == "times" || tokens[1] == "TIMES") {
+                if (tokens.size() < 4) return ErrorCode::INVALID_ARG;
+                //a changer (voir fonction dans decoder.h)
+                auto [e_code_3, var_count] = parse_imm(tokens[2]);
+                size_t var_size = parse_DD(tokens[3]);
+                size_t un_var_size = parse_RD(tokens[3]);
+                if (e_code_3 != ErrorCode::OK || (!var_size && !un_var_size)) return ErrorCode::INVALID_ARG;
+                if (var_count < 1) return ErrorCode::INVALID_ARG;
 
-            Var v(cur_data_addr, e_code_4 == ErrorCode::OK ? var_size : un_var_size);
-            if (e_code_4 == ErrorCode::OK) {
-                if (tokens.size() == 3) {
-                    auto [e_code_6, res] = parse_bytes(tokens[2], v.init.size());
-                    if (e_code_6 != ErrorCode::OK) return e_code_6;
-                    v.init = res;
+                Var v(cur_data_addr, var_size | un_var_size, var_count);
+
+                if (var_size) {
+                    if (tokens.size() == 5) {
+                        auto [e_init, bytes] = parse_bytes(tokens[4], v.size);
+                        if (e_init != ErrorCode::OK) return e_init;
+                        v.init = bytes;
+                    }
+                    else
+                        return ErrorCode::INVALID_ARG;
                 }
-                else
+
+                if (cur_data_addr + v.size > RAM_SIZE)
+                    return ErrorCode::RAM_OVERFLOW;
+                cur_data_addr += v.size;
+
+                vars[tokens[0]] = v;
+
+                return ErrorCode::OK;
+            }
+            if (line.find(',') != std::string::npos) {
+                //A FAIRE
+                //ex: my_arr db 4, 6, 4, 2
+            }
+            if (tokens.size() < 2) return ErrorCode::UNKNOWN_INSTR;
+
+            size_t var_size = parse_DD(tokens[1]);
+            size_t un_var_size = parse_RD(tokens[1]);
+            if (!var_size && !un_var_size) return ErrorCode::INVALID_ARG;
+
+            Var v(cur_data_addr, var_size | un_var_size);
+            if (var_size) {
+                if (tokens.size() != 3)
                     return ErrorCode::INVALID_ARG;
+                auto [e_code_6, res] = parse_bytes(tokens[2], v.init.size());
+                if (e_code_6 != ErrorCode::OK) return e_code_6;
+                v.init = res;
             }
 
             if (cur_data_addr + v.size > RAM_SIZE)
@@ -82,205 +120,66 @@ struct AsmInterpreter {
 
         InstrDef def = it->second;
 
-        // ---------- R-type ----------
-        if (def.type == InstrType::R) {
-            if (it->first == "cmp" || it->first == "cmpu" || it->first == "test") {
-                if (tokens.size() != 3) return ErrorCode::INVALID_ARG;
-                auto [err_rs1, rs1] = parse_reg(tokens[1]);
-                if (err_rs1 != ErrorCode::OK) return err_rs1;
-
-                auto [err_rs2, rs2] = parse_reg(tokens[2]);
-                if (err_rs2 != ErrorCode::OK) return err_rs2;
-
-                result = static_cast<uint32_t>(def.opcode) | (0 << 8) | (rs1 << 16) | (rs2 << 24);
-                return ErrorCode::OK;
-            }
-            if (tokens.size() < 3) return ErrorCode::INVALID_ARG;
-
-            auto [err_rd, rd] = parse_reg(tokens[1]);
-            if (err_rd != ErrorCode::OK) return err_rd;
-
-            auto [err_rs1, rs1] = parse_reg(tokens[2]);
-            if (err_rs1 != ErrorCode::OK) return err_rs1;
-
-            uint8_t rs2 = 0;
-            if (tokens.size() > 3) {
-                auto [err_rs2, rs2_val] = parse_reg(tokens[3]);
-                if (err_rs2 != ErrorCode::OK) return err_rs2;
-                rs2 = rs2_val;
-            }
-            else {
-                if (!(it->first == "swap" || it->first == "mov"))
-                    return ErrorCode::INVALID_ARG;
-            }
-            result = static_cast<uint32_t>(def.opcode) | (rd << 8) | (rs1 << 16) | (rs2 << 24);
-            return ErrorCode::OK;
-        }
-
-        // ---------- I-type ----------
-        if (def.type == InstrType::I) {
-            if (it->first == "cmp" || it->first == "cmpu" || it->first == "test") {
-                if (tokens.size() != 3) return ErrorCode::INVALID_ARG;
-
-                auto [err_rs1, rs1] = parse_reg(tokens[1]);
-                if (err_rs1 != ErrorCode::OK) return err_rs1;
-
-                uint8_t imm = 0;
-                int var_addr = get_var_addr(tokens[2]);
-                if (var_addr != -1) {
-                    imm = var_addr;
-                }
-                else {
-                    auto [err_imm, imm_val] = parse_imm(tokens[2]);
-                    if (err_imm != ErrorCode::OK) return err_imm;
-                    imm = imm_val;
-                }
-
-                result = static_cast<uint32_t>(def.opcode) | (0 << 8) | (rs1 << 16) | ((imm & 0xFF) << 24);
-                return ErrorCode::OK;
-            }
-
-            if (it->first == "ldb" || it->first == "ldh" || it->first == "ldw") {
-                // ldX rd, addr
-                if (tokens.size() != 3) return ErrorCode::INVALID_ARG;
-
-                auto [e_rd, rd] = parse_reg(tokens[1]);
-                if (e_rd != ErrorCode::OK) return e_rd;
-
-                int addr = get_var_addr(tokens[2]);
-                if (addr == -1) {
-                    auto [e_imm, imm] = parse_imm(tokens[2]);
-                    if (e_imm != ErrorCode::OK) return e_imm;
-                    addr = imm;
-                }
-
-                result = static_cast<uint32_t>(def.opcode) | (rd << 8) | (0 << 16) | ((addr & 0xFF) << 24);
-
-                return ErrorCode::OK;
-            }
-            if (it->first == "stb" || it->first == "sth" || it->first == "stw") {
-                // stX rs, addr
-                if (tokens.size() != 3) return ErrorCode::INVALID_ARG;
-
-                auto [e_rs, rs] = parse_reg(tokens[1]);
-                if (e_rs != ErrorCode::OK) return e_rs;
-
-                int addr = get_var_addr(tokens[2]);
-                if (addr == -1) {
-                    auto [e_imm, imm] = parse_imm(tokens[2]);
-                    if (e_imm != ErrorCode::OK) return e_imm;
-                    addr = imm;
-                }
-
-                result = static_cast<uint32_t>(def.opcode) | (rs << 8) | (0 << 16) | ((addr & 0xFF) << 24); //base 0
-
-                return ErrorCode::OK;
-            }
-            if (it->first == "lbaseb" || it->first == "lbaseh" || it->first == "lbasew") {
-                // lbaseX rd, base, off
-                if (tokens.size() != 4) return ErrorCode::INVALID_ARG;
-
-                auto [e_rd, rd]   = parse_reg(tokens[1]);
-                auto [e_base, rb] = parse_reg(tokens[2]);
-                auto [e_off, off] = parse_imm(tokens[3]);
-
-                if (e_rd != ErrorCode::OK || e_base != ErrorCode::OK || e_off != ErrorCode::OK) return ErrorCode::INVALID_ARG;
-
-                result = static_cast<uint32_t>(def.opcode) | (rd << 8) | (rb << 16) | ((off & 0xFF) << 24);
-
-                return ErrorCode::OK;
-            }
-            if (it->first == "sbaseb" || it->first == "sbaseh" || it->first == "sbasew") {
-                // sbaseX rs, base, off
-                if (tokens.size() != 4) return ErrorCode::INVALID_ARG;
-
-                auto [e_rs, rs]   = parse_reg(tokens[1]);
-                auto [e_base, rb] = parse_reg(tokens[2]);
-                auto [e_off, off] = parse_imm(tokens[3]);
-
-                if (e_rs != ErrorCode::OK || e_base != ErrorCode::OK || e_off != ErrorCode::OK) return ErrorCode::INVALID_ARG;
-
-                result = static_cast<uint32_t>(def.opcode) | (rs << 8) | (rb << 16) | ((off & 0xFF) << 24);
-
-                return ErrorCode::OK;
-            }
-            // (else)
-            // Standard I-type: rd rs1 imm
-            if (tokens.size() < 3) return ErrorCode::INVALID_ARG;
-
-            auto [err_rd, rd] = parse_reg(tokens[1]);
-            if (err_rd != ErrorCode::OK) return err_rd;
-
-            auto [err_rs1, rs1] = parse_reg(tokens[2]);
-            if (err_rs1 != ErrorCode::OK) return err_rs1;
-
-            // immediate could be a literal or a variable
-            int imm = 0;
-            if (tokens.size() > 3) {
-                int var_addr = get_var_addr(tokens[3]);
-                if (var_addr != -1) {
-                    imm = var_addr;
-                }
-                else {
-                    auto [err_imm, imm_val] = parse_imm(tokens[3]);
-                    if (err_imm != ErrorCode::OK) return err_imm;
-                    imm = imm_val;
-                }
-            }
-
-            result = static_cast<uint32_t>(def.opcode) | (rd << 8) | (rs1 << 16) | ((imm & 0xFF) << 24);
-            return ErrorCode::OK;
-        }
-
-        // ---------- J-type ----------
-        if (def.type == InstrType::J) {
-            if (it->first == "jmp" || it->first == "jz" || it->first == "jnz" || it->first == "jg"  || it->first == "jl" || it->first == "call") {
-                if (tokens.size() != 2) return ErrorCode::INVALID_ARG;
-
-                const std::string& label = tokens[1];
-                if (!labels.contains(label)) return ErrorCode::UNKNOWN_LABEL;
-
-                int offset = static_cast<int>(labels[label]) - static_cast<int>(program.size() + 1);
-                if (offset < -(1 << 23) || offset > ((1 << 23) - 1))
-                    return ErrorCode::INVALID_ARG;
-
-                result = static_cast<uint32_t>(def.opcode) | ((static_cast<uint32_t>(offset) & 0x00FFFFFF) << 8);
-                return ErrorCode::OK;
-                }
-
-            if (it->first == "ret" || it->first == "halt") {
-                result = static_cast<uint32_t>(def.opcode);
-                return ErrorCode::OK;
-            }
-
-            if (it->first == "inc" || it->first == "dec" || it->first == "clr" || it->first == "push" || it->first == "pop") {
-                if (tokens.size() != 2) return ErrorCode::INVALID_ARG;
-
-                auto [err, rd] = parse_reg(tokens[1]);
-                if (err != ErrorCode::OK) return err;
-
-                result = (static_cast<uint32_t>(def.opcode)) | (rd << 8);
-                return ErrorCode::OK;
-            }
-
-            // unary
-            if (it->first == "not" || it->first == "abs" || it->first == "neg") {
-                if (tokens.size() != 3) return ErrorCode::INVALID_ARG;
-
-                auto [err_rd, rd] = parse_reg(tokens[1]);
-                if (err_rd != ErrorCode::OK) return err_rd;
-
-                auto [err_rs, rs] = parse_reg(tokens[2]);
-                if (err_rs != ErrorCode::OK) return err_rs;
-
-                result = static_cast<uint32_t>(def.opcode) | (rd << 8) | (rs << 16);
-                return ErrorCode::OK;
-            }
-
+        if (tokens.size() - 1 != def.args.size())
             return ErrorCode::INVALID_ARG;
+
+        std::array<uint8_t, 3> r{}; //rd, rs1, rs2
+        int32_t imm = 0;
+
+        for (size_t i = 0; i < def.args.size(); i++) {
+            switch (def.args[i]) {
+            case ArgType::REG:
+                {
+                    auto [err_rd, temp] = parse_reg(tokens[i + 1]);
+                    if (err_rd != ErrorCode::OK) return err_rd;
+
+                    r[def.args_pos[i]] = temp;
+                    break;
+                }
+            case ArgType::IMM:
+                {
+                    auto [err_imm, imm_val] = parse_imm(tokens[i + 1]);
+                    if (err_imm != ErrorCode::OK) return err_imm;
+
+                    if (it->first == "movi")
+                        imm = sign_extend_24b(imm_val);
+                    else
+                        r[def.args_pos[i]] = imm_val;
+                    break;
+                }
+            case ArgType::LABEL:
+                {
+                    const std::string& label = tokens[i + 1];
+                    if (!labels.contains(label)) return ErrorCode::UNKNOWN_LABEL;
+
+                    //int offset = static_cast<int>(labels[label]) - static_cast<int>(program.size());
+                    int offset = static_cast<int>(labels[label]) - static_cast<int>(program.size() - 1);
+                    if (offset < -(1 << 23) || offset > ((1 << 23) - 1)) return ErrorCode::INVALID_ARG;
+
+                    imm = sign_extend_24b(offset);
+                    break;
+                }
+            case ArgType::VAR:
+                {
+                    int addr = get_var_addr(tokens[2]);
+                    if (addr == -1) return ErrorCode::INVALID_ARG;
+                    if (addr > 0xFFFF) return ErrorCode::INVALID_ARG;
+
+                    imm = sign_extend_24b(addr);
+                    break;
+                }
+            case ArgType::NONE:
+                break;
+            }
         }
 
-        return ErrorCode::UNKNOWN_INSTR;
+        result.opcode = def.opcode;
+        result.rd = r[0];
+        result.rs1 = r[1];
+        result.rs2 = r[2];
+        result.imm = imm;
+
+        return ErrorCode::OK;
     }
 
     ErrorInfo decode(const std::string& asm_program) {
@@ -294,7 +193,7 @@ struct AsmInterpreter {
             std::string cleaned_line = string_utils::normalize(lines[i]);
             if (cleaned_line.empty()) continue;
 
-            program.push_back(0);
+            program.push_back(DecodedInstr());
             ErrorCode error_code = decode_line(cleaned_line, program.back());
             if (error_code != ErrorCode::OK)
                 return {error_code, i};

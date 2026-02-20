@@ -1,7 +1,8 @@
 #ifndef ERGON_ENV_MANAGER_H
 #define ERGON_ENV_MANAGER_H
 
-#include "mother_board.h"
+#include "COMPUTER/mother_board.h"
+#include "COMPUTER/op_handler.h"
 #include "ASM/asm_interpreter.h"
 
 enum class RunMode {
@@ -9,15 +10,38 @@ enum class RunMode {
     STEP
 };
 
-template <size_t RAM_SIZE, size_t PROGRAM_SIZE> //65 5535 lines, 64Kb
+struct StepInfo {
+    std::array<uint32_t, 16> regs{};
+    uint32_t& PC = regs[16 - 1];
+    uint32_t& SP = regs[16 - 2];
+
+    uint8_t opcode = 0;
+    uint8_t rd = 0;
+    uint8_t rs1 = 0;
+    uint8_t rs2 = 0;
+
+    bool running = false;
+
+    StepInfo() = default;
+    StepInfo(const std::array<uint32_t, 16>& regs, const uint32_t instr, bool running) : regs(regs), running(running) {
+        opcode = instr & 0xFF;
+        rd = (instr >> 8) & 0xFF;
+        rs1 = (instr >> 16) & 0xFF;
+        rs2 = (instr >> 24) & 0xFF;
+    }
+};
+
+
+template <size_t PROGRAM_SIZE> //65 5535 lines
 struct EnvironmentManager {
-    std::unique_ptr<MotherBoard<RAM_SIZE, PROGRAM_SIZE>> mb;
-    AsmInterpreter<RAM_SIZE, PROGRAM_SIZE> interpreter;
+    MotherBoard<PROGRAM_SIZE> mb;
+    AsmInterpreter<PROGRAM_SIZE> interpreter;
     RunMode mode = RunMode::STEP;
     std::string error_msg;
+    std::unique_ptr<StepInfo> step_info = nullptr;
 
     EnvironmentManager() {
-        mb = std::make_unique<MotherBoard<RAM_SIZE, PROGRAM_SIZE>>();
+        mb.cpu.core = std::make_unique<SimpleCore>(mb.ram);
     }
 
     void build(std::string input_program) {
@@ -32,31 +56,30 @@ struct EnvironmentManager {
             error_msg += "\n";
         }
 
-        mb->stop();
-        mb->reset();
+        mb.reset();
 
         for (auto& [name, var] : interpreter.vars) {
             for (size_t i = 0; i < var.init.size(); ++i)
-                mb->ram[var.addr + i] = var.init[i];
+                mb.ram[var.addr + i] = var.init[i];
         }
 
-        mb->load_prog(interpreter.program);
+        mb.load_prog(interpreter.program);
     }
 
     int get_from_ram(size_t addr) {
-        if (addr < mb->ram.size())
-            return mb->ram[addr];
+        if (addr < mb.ram.size())
+            return mb.ram[addr];
         return 0;
     }
 
     int get_from_reg(size_t reg) {
-        if (reg < mb->cpu.core.regs.size())
-            return mb->cpu.core.regs[reg];
+        if (reg < mb.cpu.core.regs.size())
+            return mb.cpu.core.regs[reg];
         return 0;
     }
 
     Flags get_cpu_flags() {
-        return mb->cpu.core.flags;
+        return mb.cpu.core.flags;
     }
 
     void set_mod(RunMode new_mode) {
@@ -64,24 +87,17 @@ struct EnvironmentManager {
     }
 
     void start() {
-        mb->start();
-
         if (mode == RunMode::AUTO)
-            while (mb->running) {
-                if (mb->cpu.core.PC < mb->rom.size())
-                    mb->running = mb->cpu.core.step(mb->rom[mb->cpu.core.PC], mb->ram);
-                else
-                    mb->running = false;
+            while (mb.cpu.core->PC < mb.rom.size()) {
+                step_instr(*mb.cpu.core, mb.rom[mb.cpu.core->PC]);
             }
     }
 
-    void step(){
-        if (!mb->running) return;
+    StepInfo step(){
+        if (mb.cpu.core->PC < mb.rom.size())
+            step_instr(mb.cpu.core, mb.rom[mb.cpu.core->PC]);
 
-        if (mb->cpu.core.PC < mb->rom.size())
-            mb->running = mb->cpu.core.step(mb->rom[mb->cpu.core.PC], mb->ram);
-        else
-            mb->running = false;
+        return StepInfo(mb.cpu.core->regs, mb.rom[mb.cpu.core->PC]);
     }
 
     std::string get_error_msg() {

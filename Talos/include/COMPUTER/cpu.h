@@ -3,10 +3,8 @@
 
 #include "core.h"
 
-template <size_t RAM_SIZE>
 struct SimpleCPU {
-    SimpleCore<RAM_SIZE> core;
-
+    std::unique_ptr<SimpleCore> core = nullptr;
 
 };
 

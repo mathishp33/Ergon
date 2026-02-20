@@ -4,7 +4,6 @@
 #include "cpu.h"
 
 #include <atomic>
-#include <array>
 #include <vector>
 
 /*
@@ -21,12 +20,14 @@
  └───────────────────────┘
  */
 
-template <size_t RAM_SIZE = 0x10000, size_t PROGRAM_SIZE = 0xFFFF>
+template <size_t PROGRAM_SIZE = 0xFFFF>
 struct MotherBoard {
-    SimpleCPU<RAM_SIZE> cpu;
+    SimpleCPU cpu;
     std::vector<uint8_t> ram{};
-    std::vector<uint32_t> rom{};
+    std::vector<DecodedInstr> rom{};
     std::atomic<bool> running;
+
+    size_t RAM_SIZE = 65536; //2^16 bits addresses
 
     MotherBoard() {
         ram.resize(RAM_SIZE);
@@ -37,26 +38,18 @@ struct MotherBoard {
         running = false;
 
         for (auto& elem : ram) elem = 0;
-        for (auto& elem : rom) elem = 0;
+        for (auto& elem : rom) elem = DecodedInstr();
     }
 
-    void load_prog(const std::vector<uint32_t>& program) {
+    void load_prog(const std::vector<DecodedInstr>& program) {
         rom = program;
         if (rom.size() > PROGRAM_SIZE)
             rom.resize(PROGRAM_SIZE);
         if (rom.size() < PROGRAM_SIZE) {
             for (size_t i = rom.size(); i < PROGRAM_SIZE; i++) {
-                rom.push_back(0x00000000);
+                rom.push_back(DecodedInstr());
             }
         }
-    }
-
-    void start() {
-        running = true;
-    }
-
-    void stop() {
-        running = false;
     }
 };
 
