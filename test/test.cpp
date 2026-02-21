@@ -7,14 +7,16 @@
 
 int main() {
     std::cout << "---------- TEST PROGRAM ----------\n";
-    std::string program = "rmax dd 2_000_000 \n"
-                          "ldw eax rmax       \n"
-                          "loop_start:       \n"
-                          " addi ecx ecx 1     \n"
-                          " cmpu ecx eax       \n"
-                          " jl loop_start    \n"
-                          ""
-                          "halt              \n";
+    std::string program = ".text \n"
+                          " ldw ebx var \n"
+                          " loop: \n"
+                          "  inc eax \n"
+                          "  cmp eax ebx \n"
+                          "  jl loop \n"
+                          ".data \n"
+                          " var dd 2_000_000 \n"
+                          ".bss \n"
+                          " buffer times 256 resb";
 
     std::cout << program << std::endl;
 

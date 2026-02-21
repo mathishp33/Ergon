@@ -1,9 +1,9 @@
 #ifndef ERGON_ENV_MANAGER_H
 #define ERGON_ENV_MANAGER_H
 
-#include "COMPUTER/mother_board.h"
-#include "COMPUTER/op_handler.h"
-#include "ASM/asm_interpreter.h"
+#include "computer/mother_board.h"
+#include "computer/op_handler.h"
+#include "asm/interpreter.h"
 
 enum class RunMode {
     AUTO,
@@ -58,12 +58,11 @@ struct EnvironmentManager {
 
         mb.reset();
 
-        for (auto& [name, var] : interpreter.vars) {
-            for (size_t i = 0; i < var.init.size(); ++i)
-                mb.ram[var.addr + i] = var.init[i];
+        for (size_t i = 0; i < interpreter.data.size(); i++) {
+            mb.ram[i] = interpreter.data[i];
         }
 
-        mb.load_prog(interpreter.program);
+        mb.load_prog(interpreter.text);
     }
 
     int get_from_ram(size_t addr) {

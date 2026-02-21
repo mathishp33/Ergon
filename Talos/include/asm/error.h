@@ -11,7 +11,12 @@ enum class ErrorCode : uint8_t {
     INVALID_CHAR,
     STOI_OVERFLOW,
     LINE_OVERFLOW,
-    RAM_OVERFLOW
+    RAM_OVERFLOW,
+    INSTR_OUTSIDE_TEXT,
+    VAR_OUTSIDE_DATA,
+    VAR_OUTSIDE_BSS,
+    DUPLICATE_LABEL,
+    INVALID_LABEL_SECTION
 };
 
 // there is padding, but I don't want to #pragma pack(1) bc it gives warning
@@ -43,7 +48,17 @@ inline std::string ErrorCode_to_String(ErrorInfo e) {
     case ErrorCode::LINE_OVERFLOW:
         return "Overflow in line " + std::to_string(e.index_line) + ".";
     case ErrorCode::RAM_OVERFLOW:
-        return "RAM Overflow in line " + std::to_string(e.index_line) + ".";
+        return "RAM Overflow.";
+    case ErrorCode::INSTR_OUTSIDE_TEXT:
+        return "Instruction outside text section.";
+    case ErrorCode::VAR_OUTSIDE_DATA:
+        return "Variable outside data section.";
+    case ErrorCode::VAR_OUTSIDE_BSS:
+        return "Variable outside bss section.";
+    case ErrorCode::DUPLICATE_LABEL:
+        return "Duplicate label at line " + std::to_string(e.index_line) + ".";
+    case ErrorCode::INVALID_LABEL_SECTION:
+        return "Invalid label section at line " + std::to_string(e.index_line) + ".";
     }
     return "Error " + std::to_string(e.index_line) + ".";
 }

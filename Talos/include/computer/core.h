@@ -101,11 +101,15 @@ enum OPCODE : uint8_t {
 };
 
 struct DecodedInstr {
-    uint8_t opcode;
-    uint8_t rd;
-    uint8_t rs1;
-    uint8_t rs2;
-    int32_t imm;     // sign-extended immediate / jump offset
+    uint8_t opcode = 0;
+    uint8_t rd = 0;
+    uint8_t rs1 = 0;
+    uint8_t rs2 = 0;
+    int32_t imm = 0; // sign-extended imm / jump offset
+
+    DecodedInstr() = default;
+
+    DecodedInstr(uint8_t opcode, uint8_t rd, uint8_t rs1, uint8_t rs2, int32_t imm) : opcode(opcode), rd(rd), rs1(rs1), rs2(rs2), imm(imm) {}
 };
 
 struct SimpleCore {

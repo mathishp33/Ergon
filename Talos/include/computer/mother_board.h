@@ -47,7 +47,7 @@ struct MotherBoard {
             rom.resize(PROGRAM_SIZE);
         if (rom.size() < PROGRAM_SIZE) {
             for (size_t i = rom.size(); i < PROGRAM_SIZE; i++) {
-                rom.push_back(DecodedInstr());
+                rom.emplace_back();
             }
         }
     }
