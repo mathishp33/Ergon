@@ -2,11 +2,12 @@
 #define ERGON_ENV_MANAGER_H
 
 #include "computer/mother_board.h"
-#include "computer/op_handler.h"
+#include "computer/instructions_handler/step_handler.h"
+#include "computer/instructions_handler/run_handler.h"
 #include "asm/decoder.h"
 #include "asm/linker.h"
 
-enum class RunMode {
+enum class ExecMode {
     AUTO,
     STEP
 };
@@ -37,12 +38,9 @@ template <size_t PROGRAM_SIZE> //65 5535 lines
 struct EnvironmentManager {
     MotherBoard<PROGRAM_SIZE> mb;
     AsmDecoder<PROGRAM_SIZE> decoder;
-    RunMode mode = RunMode::STEP;
-    std::unique_ptr<StepInfo> step_info = nullptr;
+    ExecMode mode = ExecMode::STEP;
 
-    EnvironmentManager() {
-        mb.cpu.core = std::make_unique<SimpleCore>(mb.ram);
-    }
+    EnvironmentManager() = default;
 
     std::string handle_error(const std::string& file_name, ErrorInfo e_info) {
         std::string e_msg = "Error in " + file_name + ": \n";
@@ -94,7 +92,7 @@ struct EnvironmentManager {
         mb.reset();
         if (load_ram(linked_bin.data, linked_bin.rodata) != ErrorCode::OK) return handle_error("linked binary", ErrorInfo(ErrorCode::RAM_OVERFLOW, 0));
 
-        mb.cpu.core->PC = linked_bin.entry_pc;
+        mb.cpu.core.PC = linked_bin.entry_pc;
         mb.load_prog(linked_bin.text);
         return "";
     }
@@ -106,16 +104,16 @@ struct EnvironmentManager {
     }
 
     int get_from_reg(size_t reg_index) {
-        if (reg_index < mb.cpu.core->regs.size())
-            return mb.cpu.core->regs[reg_index];
+        if (reg_index < mb.cpu.core.regs.size())
+            return mb.cpu.core.regs[reg_index];
         return 0;
     }
     int get_from_reg(const std::string& reg_name) {
         auto [e_code, reg_index] = parse_reg(reg_name);
         if (e_code != ErrorCode::OK) return 0;
 
-        if (reg_index < mb.cpu.core->regs.size())
-            return mb.cpu.core->regs[reg_index];
+        if (reg_index < mb.cpu.core.regs.size())
+            return mb.cpu.core.regs[reg_index];
         return 0;
     }
 
@@ -123,22 +121,19 @@ struct EnvironmentManager {
         return mb.cpu.core.flags;
     }
 
-    void set_mod(RunMode new_mode) {
+    void set_mod(ExecMode new_mode) {
         mode = new_mode;
     }
 
     void start() {
-        if (mode == RunMode::AUTO)
-            while (mb.cpu.core->PC < mb.rom.size()) {
-                step_instr(*mb.cpu.core, mb.rom[mb.cpu.core->PC]);
-            }
+        if (mode == ExecMode::AUTO) run(mb.cpu.core, mb.rom);
+
     }
 
-    StepInfo step(){
-        if (mb.cpu.core->PC < mb.rom.size())
-            step_instr(mb.cpu.core, mb.rom[mb.cpu.core->PC]);
+    StepInfo step() {
+        if (mb.cpu.core.PC < mb.rom.size()) step_instr(mb.cpu.core, mb.rom[mb.cpu.core.PC]);
 
-        return StepInfo(mb.cpu.core->regs, mb.rom[mb.cpu.core->PC]);
+        return StepInfo(mb.cpu.core.regs, mb.rom[mb.cpu.core.PC]);
     }
 };
 

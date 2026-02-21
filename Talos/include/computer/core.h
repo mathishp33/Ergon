@@ -184,17 +184,6 @@ struct SimpleCore {
         ram[addr] = value;
     }
 
-    // void update_flags(uint8_t r, bool C, bool V) {
-    //     flags.Z = (regs[r] == 0);
-    //     flags.N = (regs[r] < 0);
-    //     flags.C = C;
-    //     flags.V = V;
-    // }
-    // void update_flags(uint8_t r, bool V) {
-    //     flags.Z = (regs[r] == 0);
-    //     flags.N = (regs[r] < 0);
-    //     flags.V = V;
-    // }
     void update_flags(uint8_t r) {
         flags.Z = (regs[r] == 0);
         flags.N = (regs[r] < 0);

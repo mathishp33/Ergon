@@ -1,7 +1,7 @@
 #ifndef ERGON_OP_HANDLER_H
 #define ERGON_OP_HANDLER_H
 
-#include "core.h"
+#include "../core.h"
 
 using Handler = void(*)(SimpleCore&, const DecodedInstr&);
 
@@ -347,9 +347,15 @@ static inline Handler dispatch[256] = {
 
 inline void step_instr(SimpleCore& c, const DecodedInstr& i) {
     c.inc_pc = true;
-    dispatch[i.opcode](c, i);
-    if (c.inc_pc)
-        c.PC++;
+
+    Handler h = dispatch[i.opcode];
+    if (!h) {
+        c.PC = 0xFFFFFFFF;
+        return;
+    }
+    h(c, i);
+
+    if (c.inc_pc) c.PC++;
 }
 
 

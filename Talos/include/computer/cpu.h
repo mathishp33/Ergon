@@ -1,10 +1,14 @@
 #ifndef ERGON_CPU_H
 #define ERGON_CPU_H
 
+#include <memory>
+
 #include "core.h"
 
 struct SimpleCPU {
-    std::unique_ptr<SimpleCore> core = nullptr;
+    SimpleCore core;
+
+    SimpleCPU(std::vector<uint8_t>& ram) : core(ram) {};
 
 };
 

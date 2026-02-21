@@ -27,7 +27,7 @@ int main() {
 
 
     //running the program
-    env_m.set_mod(RunMode::AUTO);
+    env_m.set_mod(ExecMode::AUTO);
 
     auto start = std::chrono::high_resolution_clock::now();
     env_m.start();

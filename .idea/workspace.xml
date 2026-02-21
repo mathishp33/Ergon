@@ -31,19 +31,16 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="added two pass detection labels + sections (.text, .data, .bss) + cleaned files">
-      <change afterPath="$PROJECT_DIR$/.idea/dictionaries/project.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Talos/include/asm/linker.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/test_1/CMakeLists.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/test_1/test_1.cpp" afterDir="false" />
+    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="added linker">
+      <change afterPath="$PROJECT_DIR$/Talos/include/computer/instructions_handler/run_handler.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/asm/decoder.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/asm/decoder.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/asm/error.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/asm/error.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/asm/interpreter.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/computer/core.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/computer/core.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/computer/cpu.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/computer/cpu.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/computer/mother_board.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/computer/mother_board.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/computer/op_handler.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/computer/instructions_handler/step_handler.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Talos/include/env_manager.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/env_manager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_0/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_0/test_0.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_0/test_0.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_0/test_0.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_1/test_1.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_1/test_1.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -128,7 +125,7 @@
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "org.rust.first.attach.projects": "true",
-    "settings.editor.selected.configurable": "reference.settingsdialog.IDE.editor.colors.LinkerScript",
+    "settings.editor.selected.configurable": "ml.llm.LLMThirdPartyAiProvidersConfigurable",
     "to.speed.mode.migration.done": "true",
     "vue.rearranger.settings.migration": "true"
   }
@@ -138,14 +135,14 @@
       <recent name="C:\Users\Utilisateur\CLionProjects\Ergon\tests\test_1" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Utilisateur\CLionProjects\Ergon\Talos\include\computer\instructions_handler" />
       <recent name="C:\Users\Utilisateur\CLionProjects\Ergon\tests\test_0" />
       <recent name="C:\Users\Utilisateur\CLionProjects\Ergon\Talos\include\asm" />
       <recent name="C:\Users\Utilisateur\CLionProjects\Ergon\Talos\include\utils" />
       <recent name="C:\Users\Utilisateur\CLionProjects\Ergon\Talos\include\COMPUTER" />
-      <recent name="C:\Users\Utilisateur\CLionProjects\Ergon\Talos\include\ASM" />
     </key>
   </component>
-  <component name="RunManager" selected="CMake Application.ergon_test_1">
+  <component name="RunManager" selected="CMake Application.ergon_test_0">
     <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
         <option name="CLION.EXTERNAL.BUILD" enabled="true" />
@@ -154,7 +151,7 @@
     <configuration name="Ergon" type="CMakeListConfigurationType" factoryName="CMakeListConfigurationFactory" temporary="true">
       <method v="2" />
     </configuration>
-    <configuration name="ergon_test_0" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Ergon" TARGET_NAME="ergon_test_0" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="Ergon" RUN_TARGET_NAME="ergon_test_0">
+    <configuration name="ergon_test_0" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="-O3 -march=native" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Ergon" TARGET_NAME="ergon_test_0" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="Ergon" RUN_TARGET_NAME="ergon_test_0">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
@@ -200,7 +197,7 @@
       <workItem from="1771575004520" duration="1540000" />
       <workItem from="1771578005948" duration="4647000" />
       <workItem from="1771612771651" duration="7571000" />
-      <workItem from="1771673126168" duration="26405000" />
+      <workItem from="1771673126168" duration="34197000" />
     </task>
     <task id="LOCAL-00001" summary="checkpoint commit">
       <option name="closed" value="true" />
@@ -266,7 +263,15 @@
       <option name="project" value="LOCAL" />
       <updated>1771681342875</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="added linker">
+      <option name="closed" value="true" />
+      <created>1771706258066</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1771706258066</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -286,7 +291,8 @@
     <MESSAGE value="optimized everything" />
     <MESSAGE value="added registers names" />
     <MESSAGE value="added two pass detection labels + sections (.text, .data, .bss) + cleaned files" />
-    <option name="LAST_COMMIT_MESSAGE" value="added two pass detection labels + sections (.text, .data, .bss) + cleaned files" />
+    <MESSAGE value="added linker" />
+    <option name="LAST_COMMIT_MESSAGE" value="added linker" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -317,5 +323,9 @@
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
   </component>
 </project>

@@ -29,7 +29,7 @@ struct MotherBoard {
 
     size_t RAM_SIZE = 65536; //2^16 bits addresses
 
-    MotherBoard() {
+    MotherBoard() : cpu(ram) {
         ram.resize(RAM_SIZE);
         for (auto& elem : ram) elem = 0;
     }
