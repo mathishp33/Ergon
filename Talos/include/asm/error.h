@@ -13,10 +13,15 @@ enum class ErrorCode : uint8_t {
     LINE_OVERFLOW,
     RAM_OVERFLOW,
     INSTR_OUTSIDE_TEXT,
-    VAR_OUTSIDE_DATA,
+    VAR_OUTSIDE_R_SECTION,
     VAR_OUTSIDE_BSS,
     DUPLICATE_LABEL,
-    INVALID_LABEL_SECTION
+    INVALID_LABEL_SECTION,
+    DUPLICATE_GLOBAL,
+    UNKNOWN_SYMBOL,
+    UNRESOLVED_EXTERN,
+    UNKNOWN_ENTRY,
+    NO_ENTRY_DEFINED
 };
 
 // there is padding, but I don't want to #pragma pack(1) bc it gives warning
@@ -51,14 +56,24 @@ inline std::string ErrorCode_to_String(ErrorInfo e) {
         return "RAM Overflow.";
     case ErrorCode::INSTR_OUTSIDE_TEXT:
         return "Instruction outside text section.";
-    case ErrorCode::VAR_OUTSIDE_DATA:
-        return "Variable outside data section.";
+    case ErrorCode::VAR_OUTSIDE_R_SECTION:
+        return "Variable outside data or rodata section.";
     case ErrorCode::VAR_OUTSIDE_BSS:
         return "Variable outside bss section.";
     case ErrorCode::DUPLICATE_LABEL:
         return "Duplicate label at line " + std::to_string(e.index_line) + ".";
     case ErrorCode::INVALID_LABEL_SECTION:
         return "Invalid label section at line " + std::to_string(e.index_line) + ".";
+    case ErrorCode::DUPLICATE_GLOBAL:
+        return "Duplicate global label.";
+    case ErrorCode::UNKNOWN_SYMBOL:
+        return "Unknown symbol at line " + std::to_string(e.index_line) + ".";
+    case ErrorCode::UNRESOLVED_EXTERN:
+        return "Unresolved external instruction.";
+    case ErrorCode::UNKNOWN_ENTRY:
+        return "Unknown entry.";
+    case ErrorCode::NO_ENTRY_DEFINED:
+        return "No entry defined.";
     }
     return "Error " + std::to_string(e.index_line) + ".";
 }

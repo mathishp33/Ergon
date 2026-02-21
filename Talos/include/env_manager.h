@@ -3,7 +3,8 @@
 
 #include "computer/mother_board.h"
 #include "computer/op_handler.h"
-#include "asm/interpreter.h"
+#include "asm/decoder.h"
+#include "asm/linker.h"
 
 enum class RunMode {
     AUTO,
@@ -35,34 +36,67 @@ struct StepInfo {
 template <size_t PROGRAM_SIZE> //65 5535 lines
 struct EnvironmentManager {
     MotherBoard<PROGRAM_SIZE> mb;
-    AsmInterpreter<PROGRAM_SIZE> interpreter;
+    AsmDecoder<PROGRAM_SIZE> decoder;
     RunMode mode = RunMode::STEP;
-    std::string error_msg;
     std::unique_ptr<StepInfo> step_info = nullptr;
 
     EnvironmentManager() {
         mb.cpu.core = std::make_unique<SimpleCore>(mb.ram);
     }
 
-    void build(std::string input_program) {
-        error_msg = "";
-        ErrorInfo error_info = interpreter.decode(input_program);
-        if (error_info.error_code != ErrorCode::OK) {
-            error_msg = ErrorCode_to_String(error_info)  + "\n";
-            error_msg += interpreter.lines[error_info.index_line];
-            error_msg += "\n";
-            for (size_t i = 0; i < interpreter.lines[error_info.index_line].size(); i++)
-                error_msg += "^";
-            error_msg += "\n";
+    std::string handle_error(const std::string& file_name, ErrorInfo e_info) {
+        std::string e_msg = "Error in " + file_name + ": \n";
+        e_msg += ErrorCode_to_String(e_info) + "\n";
+        e_msg += decoder.lines[e_info.index_line];
+        e_msg += "\n";
+        for (size_t i = 0; i < decoder.lines[e_info.index_line].size(); i++)
+            e_msg += "^";
+        e_msg += "\n";
+        return e_msg;
+    }
+
+    ErrorCode load_ram( const std::vector<uint8_t>& data, const std::vector<uint8_t>& rodata) {
+        for (size_t i = 0; i < data.size(); i++) {
+            if (i >= mb.ram.size()) return ErrorCode::RAM_OVERFLOW;
+            mb.ram[i] = data[i];
         }
+        for (size_t i = 0; i < rodata.size(); i++) {
+            if (i >= mb.ram.size()) return ErrorCode::RAM_OVERFLOW;
+            mb.ram[i] = rodata[i];
+        }
+        return ErrorCode::OK;
+    }
+
+    //returns error message
+    std::string build_single(std::string input_program) {
+        std::string file_name = "main";
+        auto [obj_file, error_info] = decoder.decode(input_program);
+        if (error_info.error_code != ErrorCode::OK) return handle_error(file_name, error_info);
 
         mb.reset();
+        if (load_ram(obj_file.data, obj_file.rodata) != ErrorCode::OK) return handle_error(file_name, ErrorInfo(ErrorCode::RAM_OVERFLOW, 0));
 
-        for (size_t i = 0; i < interpreter.data.size(); i++) {
-            mb.ram[i] = interpreter.data[i];
+        mb.load_prog(obj_file.text);
+        return "";
+    }
+
+    std::string build_lib(const std::vector<std::string>& input_programs) {
+        std::vector<ObjectFile> obj_files;
+        std::vector<std::string> error_infos;
+        for (size_t i = 0; i < input_programs.size(); i++) {
+            auto [obj_file, error_info] = decoder.decode(input_programs[i]);
+            if (error_info.error_code != ErrorCode::OK) return handle_error("file " + std::to_string(i), error_info);
+            obj_files.emplace_back(obj_file);
         }
 
-        mb.load_prog(interpreter.text);
+        auto [linked_bin, e_code] = link(obj_files);
+
+        mb.reset();
+        if (load_ram(linked_bin.data, linked_bin.rodata) != ErrorCode::OK) return handle_error("linked binary", ErrorInfo(ErrorCode::RAM_OVERFLOW, 0));
+
+        mb.cpu.core->PC = linked_bin.entry_pc;
+        mb.load_prog(linked_bin.text);
+        return "";
     }
 
     int get_from_ram(size_t addr) {
@@ -71,9 +105,17 @@ struct EnvironmentManager {
         return 0;
     }
 
-    int get_from_reg(size_t reg) {
-        if (reg < mb.cpu.core.regs.size())
-            return mb.cpu.core.regs[reg];
+    int get_from_reg(size_t reg_index) {
+        if (reg_index < mb.cpu.core->regs.size())
+            return mb.cpu.core->regs[reg_index];
+        return 0;
+    }
+    int get_from_reg(const std::string& reg_name) {
+        auto [e_code, reg_index] = parse_reg(reg_name);
+        if (e_code != ErrorCode::OK) return 0;
+
+        if (reg_index < mb.cpu.core->regs.size())
+            return mb.cpu.core->regs[reg_index];
         return 0;
     }
 
@@ -98,11 +140,6 @@ struct EnvironmentManager {
 
         return StepInfo(mb.cpu.core->regs, mb.rom[mb.cpu.core->PC]);
     }
-
-    std::string get_error_msg() {
-        return error_msg;
-    }
-
 };
 
 

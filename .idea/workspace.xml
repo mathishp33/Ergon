@@ -20,32 +20,30 @@
   </component>
   <component name="CMakeRunConfigurationManager">
     <generated>
-      <config projectName="Ergon" targetName="ergon_tests" />
+      <config projectName="Ergon" targetName="ergon_test_1" />
+      <config projectName="Ergon" targetName="ergon_test_0" />
     </generated>
   </component>
-  <component name="CMakeSettings">
+  <component name="CMakeSettings" AUTO_RELOAD="true">
     <configurations>
       <configuration PROFILE_NAME="Debug" ENABLED="true" CONFIG_NAME="Debug" />
       <configuration PROFILE_NAME="Release" ENABLED="true" CONFIG_NAME="Release" />
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="added registers names">
-      <change afterPath="$PROJECT_DIR$/Talos/include/asm/instructions.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Talos/include/asm/parser.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Talos/include/asm/variables.h" afterDir="false" />
+    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="added two pass detection labels + sections (.text, .data, .bss) + cleaned files">
+      <change afterPath="$PROJECT_DIR$/.idea/dictionaries/project.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Talos/include/asm/linker.h" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/test_1/CMakeLists.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/test_1/test_1.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/ASM/asm_interpreter.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/asm/interpreter.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/ASM/decoder.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/asm/decoder.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/ASM/error.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/asm/error.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/ASM/utils.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/asm/utils.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/COMPUTER/alu.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/computer/alu.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/COMPUTER/core.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/computer/core.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/COMPUTER/cpu.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/computer/cpu.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/COMPUTER/mother_board.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/computer/mother_board.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/COMPUTER/op_handler.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/computer/op_handler.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/asm/decoder.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/asm/decoder.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/asm/error.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/asm/error.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/asm/interpreter.h" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Talos/include/env_manager.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/env_manager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test/test.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/test/test.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_0/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test/test.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_0/test_0.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -99,75 +97,76 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;C/C++ File.test.cpp - Visual Studio (1).executor&quot;: &quot;Run&quot;,
-    &quot;C/C++ File.test.cpp - Visual Studio.executor&quot;: &quot;Run&quot;,
-    &quot;CMake Application.ergon_tests.executor&quot;: &quot;Run&quot;,
-    &quot;CMake Debug.Ergon.executor&quot;: &quot;Debug&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.RadMigrateCodeStyle&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.west.config.association.type.startup.service&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
-    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;org.rust.first.attach.projects&quot;: &quot;true&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;CMakeSettings&quot;,
-    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "C/C++ File.test.cpp - Visual Studio (1).executor": "Run",
+    "C/C++ File.test.cpp - Visual Studio.executor": "Run",
+    "CMake Application.ergon_test_0.executor": "Run",
+    "CMake Application.ergon_test_1.executor": "Debug",
+    "CMake Application.ergon_tests.executor": "Run",
+    "CMake Debug.Ergon.executor": "Debug",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.RadMigrateCodeStyle": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "RunOnceActivity.west.config.association.type.startup.service": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "git-widget-placeholder": "master",
+    "junie.onboarding.icon.badge.shown": "true",
+    "last_opened_file_path": "C:/Users/Utilisateur/CLionProjects/Ergon/tests/test_1",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "org.rust.first.attach.projects": "true",
+    "settings.editor.selected.configurable": "reference.settingsdialog.IDE.editor.colors.LinkerScript",
+    "to.speed.mode.migration.done": "true",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Utilisateur\CLionProjects\Ergon\tests\test_1" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Utilisateur\CLionProjects\Ergon\tests\test_0" />
       <recent name="C:\Users\Utilisateur\CLionProjects\Ergon\Talos\include\asm" />
       <recent name="C:\Users\Utilisateur\CLionProjects\Ergon\Talos\include\utils" />
       <recent name="C:\Users\Utilisateur\CLionProjects\Ergon\Talos\include\COMPUTER" />
       <recent name="C:\Users\Utilisateur\CLionProjects\Ergon\Talos\include\ASM" />
     </key>
   </component>
-  <component name="RunManager" selected="CMake Application.ergon_tests">
+  <component name="RunManager" selected="CMake Application.ergon_test_1">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="Ergon" type="CMakeListConfigurationType" factoryName="CMakeListConfigurationFactory" temporary="true">
       <method v="2" />
     </configuration>
-    <configuration name="ergon_tests" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Ergon" TARGET_NAME="ergon_tests" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="Ergon" RUN_TARGET_NAME="ergon_tests">
+    <configuration name="ergon_test_0" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Ergon" TARGET_NAME="ergon_test_0" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="Ergon" RUN_TARGET_NAME="ergon_test_0">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="test.cpp - Visual Studio (1)" type="CppFileRunConfiguration" factoryName="CppFileRunConfiguration" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Ergon" TARGET_NAME="test.cpp - Visual Studio (1)" CONFIG_NAME="test.cpp - Visual Studio (1)">
-      <option name="compilerOptions" value="-O3 -DNDEBUG" />
-      <option name="sourceFile" value="test\test.cpp" />
+    <configuration name="ergon_test_1" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Ergon" TARGET_NAME="ergon_test_1" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="Ergon" RUN_TARGET_NAME="ergon_test_1">
       <method v="2">
-        <option name="com.jetbrains.cidr.cpp.runfile.CppFileBuildBeforeRunTaskProvider$BasicBuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="test.cpp - Visual Studio" type="CppFileRunConfiguration" factoryName="CppFileRunConfiguration" nameIsGenerated="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" WORKING_DIR="file://$PROJECT_DIR$" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Ergon" TARGET_NAME="test.cpp - Visual Studio" CONFIG_NAME="test.cpp - Visual Studio">
-      <option name="compilerOptions" value="-O3 -DNDEBUG" />
-      <option name="sourceFile" value="C:\Users\Utilisateur\CLionProjects\Ergon\test\test.cpp" />
-      <option name="toolchainName" value="Visual Studio" />
-      <method v="2">
-        <option name="com.jetbrains.cidr.cpp.runfile.CppFileBuildBeforeRunTaskProvider$BasicBuildBeforeRunTask" enabled="true" />
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
     <list>
-      <item itemvalue="C/C++ File.test.cpp - Visual Studio (1)" />
-      <item itemvalue="C/C++ File.test.cpp - Visual Studio" />
-      <item itemvalue="CMake Application.ergon_tests" />
+      <item itemvalue="CMake Application.ergon_test_0" />
+      <item itemvalue="CMake Application.ergon_test_1" />
       <item itemvalue="CMake Debug.Ergon" />
     </list>
     <recent_temporary>
@@ -201,7 +200,7 @@
       <workItem from="1771575004520" duration="1540000" />
       <workItem from="1771578005948" duration="4647000" />
       <workItem from="1771612771651" duration="7571000" />
-      <workItem from="1771673126168" duration="5025000" />
+      <workItem from="1771673126168" duration="26405000" />
     </task>
     <task id="LOCAL-00001" summary="checkpoint commit">
       <option name="closed" value="true" />
@@ -259,7 +258,15 @@
       <option name="project" value="LOCAL" />
       <updated>1771576532911</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="added two pass detection labels + sections (.text, .data, .bss) + cleaned files">
+      <option name="closed" value="true" />
+      <created>1771681342875</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1771681342875</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -278,18 +285,35 @@
     <MESSAGE value="FIXED a bug with JUMPs instructions" />
     <MESSAGE value="optimized everything" />
     <MESSAGE value="added registers names" />
-    <option name="LAST_COMMIT_MESSAGE" value="added registers names" />
+    <MESSAGE value="added two pass detection labels + sections (.text, .data, .bss) + cleaned files" />
+    <option name="LAST_COMMIT_MESSAGE" value="added two pass detection labels + sections (.text, .data, .bss) + cleaned files" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/Talos/include/asm/interpreter.h</url>
-          <line>18</line>
+          <url>file://$PROJECT_DIR$/Talos/include/asm/decoder.h</url>
+          <line>17</line>
           <properties>
             <option name="hitCountValue" value="1" />
           </properties>
           <option name="timeStamp" value="12" />
+        </line-breakpoint>
+        <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/Talos/include/asm/linker.h</url>
+          <line>100</line>
+          <properties>
+            <option name="hitCountValue" value="1" />
+          </properties>
+          <option name="timeStamp" value="84" />
+        </line-breakpoint>
+        <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/Talos/include/asm/linker.h</url>
+          <line>102</line>
+          <properties>
+            <option name="hitCountValue" value="1" />
+          </properties>
+          <option name="timeStamp" value="85" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

@@ -1,12 +1,11 @@
 #include <iostream>
 
-#include "../Talos/include/env_manager.h"
+#include "../../Talos/include/env_manager.h"
 
 #include <string>
 #include <chrono>
 
 int main() {
-    std::cout << "---------- TEST PROGRAM ----------\n";
     std::string program = ".text \n"
                           " ldw ebx var \n"
                           " loop: \n"
@@ -18,15 +17,11 @@ int main() {
                           ".bss \n"
                           " buffer times 256 resb";
 
-    std::cout << program << std::endl;
-
-    auto env_m = EnvironmentManager<0xFFFF>();
-
-    env_m.build(program);
+    EnvironmentManager<0xFFFF> env_m = EnvironmentManager<0xFFFF>();
 
     std::cout << "\n---------- BUILD RESULT ----------\n";
 
-    std::cout << "ERROR: " << env_m.get_error_msg() << std::endl;
+    std::cout << env_m.build_single(program) << std::endl;
 
     //running the program
     env_m.set_mod(RunMode::AUTO);
