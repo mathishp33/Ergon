@@ -17,7 +17,7 @@ Talos is composed of:
         * 16 registers
   * a from 1 to 516Kb RAM
   * a ROM where all the instructions (32-bit) are stored
-* a ASM <a href="#interpreter">interpreter</a> to convert assembly code to 32-bit bytecode
+* an <a href="#Assembler">Assembler</a> mixing NASM and ARM syntax.
 
 ## Architecture
 
@@ -173,7 +173,7 @@ The CPU has 16 (32-bit) registers:
 
 | Index | Name | Purpose |
 |----|------|----------|
-| 0 | zero | Always 0 |
+| 0 | zero | General-purpose, used for cache |
 | 1	| eax	|	General-purpose, accumulator |
 | 2	| ebx	|	General-purpose, base |
 | 3	| ecx	|	Counter / loop index |
@@ -191,24 +191,11 @@ The CPU has 16 (32-bit) registers:
 | 15	| r15	|	Extra general-purpose |
 
 
+### Assembler
 
-### ASM interpreter
-
-The ASM interpreter translate Assembly code into 32-bit bytecode (ex: add 4 6 7 -> 0x00040607).
-
-The interpreter operates this way:
-* it slices the program in lines
-* it trims spaces and get rid of comments
-* for each line it:
-    * checks if a label is declared (ex: `my_label:`)
-    * checks if a variable (ex: `my_var db 5)` or array (ex: `my_arr times 9 resb`) is declared 
-    * it not, it translates the line into bytecode (ex: `addi ebx eax 5`)
-
-The interpreter has specific error codes:
-* 0 = no error
-* 1 = unknown instruction
-* 2 = invalid argument for instruction
-* 3 = unknown label
-* 4 = invalid character (stoi error)
-* 5 = overflow (stoi error)
+The assembler is composed of: 
+ * a decoder
+ * a parser
+ * a interpreter
+ * a linker
 
