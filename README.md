@@ -194,8 +194,16 @@ The CPU has 16 (32-bit) registers:
 ### Assembler
 
 The assembler is composed of: 
- * a decoder
- * a parser
- * a interpreter
- * a linker
+
+ASM source code ─► Assembler (per file)
+
+Assembler (per file) ─► ObjectFile (.o-like)
+
+ObjectFile (.o-like) ─► Linker (multi-file, static libs)
+ 
+Linker (multi-file, static libs) ─► Executable image (ELF-like)
+
+Executable (ELF-like) ─► Loader (ROM)
+   
+Loader (ROM) ─► Interpreter (CPU level)
 
