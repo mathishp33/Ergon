@@ -169,26 +169,26 @@ The CPU is composed of a single Core:
 
 ### Registers
 
-The CPU has 16 (32-bit) registers:
+The CPU has 16 general-purpose (32-bit) registers (kind of like ARM):
 
-| Index | Name | Purpose |
-|----|------|----------|
-| 0 | zero | General-purpose, used for cache |
-| 1	| eax	|	General-purpose, accumulator |
-| 2	| ebx	|	General-purpose, base |
-| 3	| ecx	|	Counter / loop index |
-| 4	| edx	|	Data / temp |
-| 5	| esi	|	Source index / arg |
-| 6	| edi	|	Destination index / arg |
-| 7	| r8	| Scratch / temp |
-| 8	| r9	| Scratch / temp |
-| 9	| r10	|	Preserved / callee-saved |
-| 10	| r11	|	Preserved / callee-saved |
-| 11	| r12	|	Preserved / callee-saved |
-| 12	| r13	|	Frame pointer (optional) |
-| 13	| sp	|	Stack pointer |
-| 14	| bp	| Base pointer |
-| 15	| r15	|	Extra general-purpose |
+| Name |
+|------|
+| r0 |
+| r1	|
+| r2	|
+| r3	|
+| r4	|
+| r5	|
+| r6	|
+| r7	|
+| r8	|
+| r9	|
+| r10	|
+| r11	|
+| r12	|
+| r13	|
+| r14	|
+| r15	|
 
 
 ### Assembler
