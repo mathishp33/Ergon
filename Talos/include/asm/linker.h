@@ -129,7 +129,7 @@ inline std::pair<ErrorInfo, LinkedBinary> link(std::vector<ObjectFile>& objects)
         }
     }
 
-    if (!entry_found) return { { ErrorCode::NO_ENTRY_DEFINED, "no entry defined, cannot know what should the starting PC" }, out };
+    //if (!entry_found) return { { ErrorCode::NO_ENTRY_DEFINED, "no entry defined, cannot know what should the starting PC" }, out };
 
     return { { }, out };
 }

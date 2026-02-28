@@ -36,11 +36,10 @@ inline void run(SimpleCore& c, const std::vector<DecodedInstr>& prog) {
     //magie noire >w<
     #define FETCH() instr = &prog[c.PC];
     #define DISPATCH() goto *dispatch_table[instr->opcode]
-    // #define NEXT() \
-    // if (c.PC + 1 >= prog.size()) return; \
-    // c.PC++; FETCH(); DISPATCH();
     #define NEXT() \
-    c.PC++; FETCH(); DISPATCH();
+    c.PC++; \
+    if (c.PC >= prog.size()) return; \
+    FETCH(); DISPATCH();
 
     const DecodedInstr* instr;
 

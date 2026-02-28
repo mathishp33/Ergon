@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "../../Talos/include/env_manager.h"
+#include "../../Talos/include/environment_manager.h"
 
 #include <string>
 #include <chrono>
@@ -10,12 +10,15 @@ int main() {
                           " ldw r0 var \n"
                           " loop: \n"
                           "  inc r1 \n"
-                          "  cmp r0 r1 \n"
+                          "  cmp r1 r0 \n"
                           "  jl loop \n"
+                          " stb "
                           "section .data \n"
-                          " var dd 20_000_000 \n";
+                          " var dd 20_000_000 \n"
+                          "section .rodata \n"
+                          " var2 db 4\n";
 
-    EnvironmentManager env_m = EnvironmentManager();
+    EnvironmentManager env_m = EnvironmentManager(0xFFFFFFFF);
 
     std::cout << "\n---------- BUILD RESULT ----------\n";
 

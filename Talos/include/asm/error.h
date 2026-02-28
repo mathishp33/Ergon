@@ -23,6 +23,7 @@ enum class ErrorCode : uint8_t {
     VAR_OUTSIDE_RIGHT_SECTION, //variable is outside ...
     VAR_OUTSIDE_BSS, //variable is outside bss section
     RAM_OVERFLOW, //ram overflow
+    RODATA_VAR_MODIFIED, //rodata variable ... is being modified
 
 };
 

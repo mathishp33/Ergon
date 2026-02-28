@@ -31,10 +31,10 @@ struct StepInfo {
 
 struct EnvironmentManager {
     size_t RAM_SIZE = 65535; // 2^16 - 1
-    MotherBoard mb = MotherBoard(RAM_SIZE);
+    MotherBoard mb;
     AsmDecoder decoder;
 
-    EnvironmentManager() = default;
+    EnvironmentManager(size_t RAM_SIZE = 65535) : RAM_SIZE(RAM_SIZE), mb(MotherBoard(RAM_SIZE)) {}
 
     std::string handle_error(const std::string& file_name, ErrorInfo e) {
         std::string e_msg = "Error at line " + std::to_string(e.index_line) + " in file " + file_name + ": \n";
@@ -113,6 +113,7 @@ struct EnvironmentManager {
     }
 
     StepInfo step() {
+        if (mb.cpu.core.PC >= mb.rom.size()) return { };
         step_instr(mb.cpu.core, mb.rom[mb.cpu.core.PC]);
 
         return { mb };

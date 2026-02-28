@@ -19,7 +19,6 @@ A FAIRE:
 
 ADD Heap: malloc & free instructions (.heap & .stack sections)
 FAIRE FPU
-Unroll the dispatch loop
 Super-instructions (merge addi+cmp+jl)
 AJOUTER JIT
 Profile-guided optimization (PGO) (maybe)
@@ -28,7 +27,7 @@ AJOUTER constantes (equ, assign, define)
 AJOUTER un truc qui détecte les modifications de constantes (rodata, equ, assign, define)
 AJOUTER solveur numérique pour les imm (ex: 0x3 + 0b11001 * (-133))
 AJOUTER truc qui détecte les ram overflow lors des store et load !!
-//FINIR/UPDATE le readme
+//UPDATE le readme
 */
 
 
@@ -96,6 +95,13 @@ static int32_t sign_extend_24b(uint32_t value) {
     return static_cast<int32_t>(value);
 }
 
+//true if not good
+inline bool check_if_constant(const std::string& instr) {
+    if (instr == "stb") return true;
+    if (instr == "sth") return true;
+    if (instr == "stw") return true;
+    return false;
+}
 
 struct AsmDecoder {
     ObjectFile obj_file;
@@ -189,6 +195,9 @@ struct AsmDecoder {
                 {
                     const std::string& name = tokens[i + 1];
                     if (!obj_file.symbols.contains(name)) return { ErrorCode::UNKNOWN_SYMBOL, "unknown symbol \"" + name + "\"" };
+                    if (obj_file.symbols[name].section == Section::RODATA)
+                        if (check_if_constant(tokens[0]))
+                            return { ErrorCode::RODATA_VAR_MODIFIED, "rodata variable \"" + name + "\" is being modified" };
 
                     obj_file.relocations.push_back({
                         Section::TEXT,
@@ -279,7 +288,7 @@ struct AsmDecoder {
             }
             if (tokens[0] == ".entry") {
                 if (tokens.size() != 2)
-                    return { ErrorCode::INVALID_ARG_SIZE, "invalid arg size, expected 1", i };
+                    return { ErrorCode::INVALID_ARG_SIZE, "invalid argument size, expected 1", i };
 
                 obj_file.entry_symbol = tokens[1];
                 continue;
@@ -287,7 +296,7 @@ struct AsmDecoder {
 
             if (it == instr_table.end()) {
                 if (tokens[1] == "times" || tokens[1] == "TIMES") {
-                    if (tokens.size() < 4) return { ErrorCode::INVALID_ARG_SIZE, "invalid arg size, expected more than 3", i };
+                    if (tokens.size() < 4) return { ErrorCode::INVALID_ARG_SIZE, "invalid argument size, expected more than 3", i };
                     auto [e_0, var_count] = parse_imm(tokens[2]);
                     if (e_0.code != ErrorCode::OK) return { e_0.code, e_0.message, i };
                     auto [var_size, needs_init] = parse_D(tokens[3]);

@@ -25,6 +25,7 @@ struct InstrDef {
     }
 };
 
+// { <instruction_name>, { <opcode>, <instruction_type>, { <argument_type>, ... } } }
 inline std::unordered_map<std::string, InstrDef> instr_table = {
     {"add",  {ADD,  InstrType::R, { ArgType::REG, ArgType::REG, ArgType::REG }, { 0, 1, 2 } }}, //rd, rs1, rs2/imm
     {"sub",  {SUB,  InstrType::R, { ArgType::REG, ArgType::REG, ArgType::REG }, { 0, 1, 2 } }},

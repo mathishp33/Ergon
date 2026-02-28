@@ -6,19 +6,6 @@
 #include <atomic>
 #include <vector>
 
-/*
- ----------------- VM SCHEMATIC -----------------
- ┌──────────CPU──────────┐
- │                       │    ┌───┐
- │                 ┌───┐ ◄────►RAM│
- │                 │ALU│ │    └───┘
- │                 └─▲─┘ │
- │                   │   │
- │┌───────────┐   ┌──▼─┐ │    ┌───┐
- ││ registers │◄──┤Core│ │◄───┤ROM│
- │└───────────┘   └────┘ │    └───┘
- └───────────────────────┘
- */
 
 struct MotherBoard {
     SimpleCPU cpu;
@@ -27,8 +14,9 @@ struct MotherBoard {
     bool running = false;
 
     MotherBoard(size_t RAM_SIZE) : cpu(ram) {
+        if (RAM_SIZE >= 0xFFFFFF - 1) RAM_SIZE = 0xFFFFFF - 1;
         ram.resize(RAM_SIZE);
-        for (auto& elem : ram) elem = 0;
+        std::ranges::fill(ram, 0);
     }
 
     void reset() {
@@ -38,7 +26,8 @@ struct MotherBoard {
         std::ranges::fill(rom, DecodedInstr());
     }
 
-    void load_prog(const std::vector<DecodedInstr>& program, size_t max_size = 0xFFFFFFFF - 1) {
+    void load_prog(const std::vector<DecodedInstr>& program, size_t max_size = 0xFFFFFF - 1) {
+        if (max_size >= 0xFFFFFF - 1) max_size = 0xFFFFFF - 1;
         rom = program;
         if (rom.size() > max_size) rom.resize(max_size);
     }
