@@ -7,47 +7,42 @@
 #include "asm/decoder.h"
 #include "asm/linker.h"
 
-enum class ExecMode {
-    AUTO,
-    STEP
-};
-
 struct StepInfo {
     std::array<uint32_t, 16> regs{};
+    std::array<uint32_t, 16> fregs{};
+    ALUFlags alu_flags;
     uint32_t& PC = regs[16 - 1];
     uint32_t& SP = regs[16 - 2];
 
-    uint8_t opcode = 0;
-    uint8_t rd = 0;
-    uint8_t rs1 = 0;
-    uint8_t rs2 = 0;
-
-    bool running = false;
+    DecodedInstr instr;
 
     StepInfo() = default;
-    StepInfo(const std::array<uint32_t, 16>& regs, const uint32_t instr, bool running) : regs(regs), running(running) {
-        opcode = instr & 0xFF;
-        rd = (instr >> 8) & 0xFF;
-        rs1 = (instr >> 16) & 0xFF;
-        rs2 = (instr >> 24) & 0xFF;
+    StepInfo(const MotherBoard& mb) {
+        regs = mb.cpu.core.regs;
+        fregs = mb.cpu.core.fregs;
+        alu_flags = mb.cpu.core.alu_flags;
+        PC = mb.cpu.core.PC;
+        SP = mb.cpu.core.SP;
+
+        instr = mb.rom[mb.cpu.core.PC];
     }
 };
 
 
-template <size_t PROGRAM_SIZE> //65 5535 lines
 struct EnvironmentManager {
-    MotherBoard<PROGRAM_SIZE> mb;
-    AsmDecoder<PROGRAM_SIZE> decoder;
-    ExecMode mode = ExecMode::STEP;
+    size_t RAM_SIZE = 65535; // 2^16 - 1
+    MotherBoard mb = MotherBoard(RAM_SIZE);
+    AsmDecoder decoder;
 
     EnvironmentManager() = default;
 
-    std::string handle_error(const std::string& file_name, ErrorInfo e_info) {
-        std::string e_msg = "Error in " + file_name + ": \n";
-        e_msg += ErrorCode_to_String(e_info) + "\n";
-        e_msg += decoder.lines[e_info.index_line];
+    std::string handle_error(const std::string& file_name, ErrorInfo e) {
+        std::string e_msg = "Error at line " + std::to_string(e.index_line) + " in file " + file_name + ": \n";
+        e_msg += e.message + "\n";
         e_msg += "\n";
-        for (size_t i = 0; i < decoder.lines[e_info.index_line].size(); i++)
+        e_msg += decoder.lines[e.index_line];
+        e_msg += "\n";
+        for (size_t i = 0; i < decoder.lines[e.index_line].size(); i++)
             e_msg += "^";
         e_msg += "\n";
         return e_msg;
@@ -65,29 +60,21 @@ struct EnvironmentManager {
         return ErrorCode::OK;
     }
 
-    //returns error message
-    std::string build_single(std::string input_program) {
-        std::string file_name = "main";
-        auto [obj_file, error_info] = decoder.decode(input_program);
-        if (error_info.error_code != ErrorCode::OK) return handle_error(file_name, error_info);
-
-        mb.reset();
-        if (load_ram(obj_file.data, obj_file.rodata) != ErrorCode::OK) return handle_error(file_name, ErrorInfo(ErrorCode::RAM_OVERFLOW, 0));
-
-        mb.load_prog(obj_file.text);
-        return "";
+    std::string build_single(const std::string& program) {
+        return build({ { "main" , program } });
     }
 
-    std::string build_lib(const std::vector<std::string>& input_programs) {
+    //args are { { <name/path>, <my_program> } }, returns error message
+    std::string build(const std::vector<std::pair<std::string, std::string>>& inputs) {
         std::vector<ObjectFile> obj_files;
         std::vector<std::string> error_infos;
-        for (size_t i = 0; i < input_programs.size(); i++) {
-            auto [obj_file, error_info] = decoder.decode(input_programs[i]);
-            if (error_info.error_code != ErrorCode::OK) return handle_error("file " + std::to_string(i), error_info);
+        for (const auto& [name, program] : inputs) {
+            auto [obj_file, error_info] = decoder.decode(program);
+            if (error_info.code != ErrorCode::OK) return handle_error(name, error_info);
             obj_files.emplace_back(obj_file);
         }
-
-        auto [linked_bin, e_code] = link(obj_files);
+        auto [e, linked_bin] = link(obj_files);
+        if (e.code != ErrorCode::OK) return handle_error("linked binary", e);
 
         mb.reset();
         if (load_ram(linked_bin.data, linked_bin.rodata) != ErrorCode::OK) return handle_error("linked binary", ErrorInfo(ErrorCode::RAM_OVERFLOW, 0));
@@ -103,37 +90,32 @@ struct EnvironmentManager {
         return 0;
     }
 
-    int get_from_reg(size_t reg_index) {
+    uint32_t get_from_reg(size_t reg_index) {
         if (reg_index < mb.cpu.core.regs.size())
             return mb.cpu.core.regs[reg_index];
         return 0;
     }
-    int get_from_reg(const std::string& reg_name) {
-        auto [e_code, reg_index] = parse_reg(reg_name);
-        if (e_code != ErrorCode::OK) return 0;
+    uint32_t get_from_reg(const std::string& reg_name) {
+        auto [e, reg_index] = parse_reg(reg_name);
+        if (e.code != ErrorCode::OK) return 0;
 
         if (reg_index < mb.cpu.core.regs.size())
             return mb.cpu.core.regs[reg_index];
         return 0;
     }
 
-    Flags get_cpu_flags() {
-        return mb.cpu.core.flags;
-    }
-
-    void set_mod(ExecMode new_mode) {
-        mode = new_mode;
+    std::pair<ALUFlags, FPUFlags> get_cpu_flags() {
+        return { mb.cpu.core.alu_flags, mb.cpu.core.fpu_flags };
     }
 
     void start() {
-        if (mode == ExecMode::AUTO) run(mb.cpu.core, mb.rom);
-
+        run(mb.cpu.core, mb.rom);
     }
 
     StepInfo step() {
-        if (mb.cpu.core.PC < mb.rom.size()) step_instr(mb.cpu.core, mb.rom[mb.cpu.core.PC]);
+        step_instr(mb.cpu.core, mb.rom[mb.cpu.core.PC]);
 
-        return StepInfo(mb.cpu.core.regs, mb.rom[mb.cpu.core.PC]);
+        return { mb };
     }
 };
 

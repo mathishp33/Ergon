@@ -2,8 +2,8 @@
 #define ERGON_CORE_H
 
 #include "alu.h"
+#include "fpu.h"
 
-#include <cstdint>
 #include <vector>
 #include <array>
 
@@ -114,39 +114,16 @@ struct DecodedInstr {
 
 struct SimpleCore {
     std::array<uint32_t, 16> regs{};
-    uint32_t& SP = regs[14]; // Stack Pointer
+    std::array<uint32_t, 16> fregs{};
+    uint32_t& SP = regs[15]; // Stack Pointer
     uint32_t PC = 0; // Program Counter
-    Flags flags;
-    bool inc_pc = true;
+    ALUFlags alu_flags;
+    FPUFlags fpu_flags;
 
     std::vector<uint8_t>& ram;
 
-    ALU alu;
-
     SimpleCore(std::vector<uint8_t>& ram) : ram(ram) {
         SP = ram.size() - 1;
-    }
-
-    void R_type_instr(ALUOp op, uint8_t rd, uint8_t rs1, uint8_t rs2) {
-        auto r = ALU::exec(op, regs[rs1], regs[rs2]);
-        if (r.writeback) regs[rd] = r.value;
-        flags = r.flags;
-    }
-    void I_type_instr(ALUOp op, uint8_t rd, uint8_t rs, uint8_t imm) {
-        int32_t imm32 = static_cast<int8_t>(imm);
-        auto r = alu.exec(op, regs[rs], imm32);
-        if (r.writeback) regs[rd] = r.value;
-        flags = r.flags;
-    }
-    void J_type_instr(ALUOp op, uint8_t rd, uint8_t rs) {
-        auto r = ALU::exec(op, regs[rs], regs[rs]);
-        if (r.writeback) regs[rd] = r.value;
-        flags = r.flags;
-    }
-    void J_type_instr(ALUOp op, uint8_t rd) {
-        auto r = ALU::exec(op, regs[rd], 0);
-        if (r.writeback) regs[rd] = r.value;
-        flags = r.flags;
     }
 
     // <- memory[addr]
@@ -185,14 +162,17 @@ struct SimpleCore {
     }
 
     void update_flags(uint8_t r) {
-        flags.Z = (regs[r] == 0);
-        flags.N = (regs[r] < 0);
+        alu_flags.Z = (regs[r] == 0);
+        alu_flags.N = (regs[r] < 0);
     }
 
     void reset() {
-        std::fill(regs.begin(), regs.end(), 0);
-        flags = Flags();
-        SP = ram.size();
+        std::ranges::fill(regs, 0);
+        std::ranges::fill(fregs, 0);
+        alu_flags = ALUFlags();
+        fpu_flags = FPUFlags();
+        SP = ram.size() - 1;
+        PC = 0;
     }
 };
 

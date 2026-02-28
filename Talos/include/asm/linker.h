@@ -33,7 +33,7 @@ struct LinkedBinary {
     uint32_t entry_pc = 0;
 };
 
-inline std::pair<LinkedBinary, ErrorCode> link(std::vector<ObjectFile>& objects) {
+inline std::pair<ErrorInfo, LinkedBinary> link(std::vector<ObjectFile>& objects) {
     LinkedBinary out;
 
     uint32_t text_cursor = 0;
@@ -54,7 +54,7 @@ inline std::pair<LinkedBinary, ErrorCode> link(std::vector<ObjectFile>& objects)
 
         for (auto& [name, sym] : obj.symbols) {
             if (sym.bind == SymbolBinding::GLOBAL) {
-                if (globals.contains(name)) return { out, ErrorCode::DUPLICATE_GLOBAL };
+                if (globals.contains(name)) return { { ErrorCode::DUPLICATE_GLOBAL_SYMBOL, "duplicate global symbol" }, out };
 
                 Symbol resolved = sym;
                 switch (sym.section) {
@@ -78,13 +78,10 @@ inline std::pair<LinkedBinary, ErrorCode> link(std::vector<ObjectFile>& objects)
         bss_cursor += obj.bss_size;
     }
     // pass 2
-    for (auto& obj : objects) {
-        for (auto& [name, sym] : obj.symbols) {
-            if (sym.bind == SymbolBinding::EXTERN && !globals.contains(name)) {
-                return { out, ErrorCode::UNRESOLVED_EXTERN };
-            }
-        }
-    }
+    for (auto& obj : objects)
+        for (auto& [name, sym] : obj.symbols)
+            if (sym.bind == SymbolBinding::EXTERN && !globals.contains(name))
+                return { { ErrorCode::UNRESOLVED_EXTERN_SYMBOL, "unresolved extern symbol \"" + name + "\"" }, out };
 
     // merge sections
     for (auto& obj : objects) {
@@ -97,7 +94,7 @@ inline std::pair<LinkedBinary, ErrorCode> link(std::vector<ObjectFile>& objects)
     // apply relocations
     for (auto& obj : objects) {
         if (!obj.entry_symbol.empty()) {
-            if (!globals.contains(obj.entry_symbol)) return { out, ErrorCode::UNKNOWN_ENTRY };
+            if (!globals.contains(obj.entry_symbol)) return { { ErrorCode::UNKNOWN_ENTRY_SYBOL, "unknown entry symbol \"" + obj.entry_symbol + "\"" }, out };
 
             out.entry_pc = globals[obj.entry_symbol].value;
             entry_found = true;
@@ -126,15 +123,15 @@ inline std::pair<LinkedBinary, ErrorCode> link(std::vector<ObjectFile>& objects)
                 auto pc = static_cast<int32_t>(obj.text_base + rel.offset + 1);
                 I.imm = sign_extend_24b(sym_addr - (pc - 1));
             }
-            if (rel.type == RelocType::ABS_32) {
+            if (rel.type == RelocType::ABS_32)
                 I.imm = static_cast<int32_t>(sym_addr);
-            }
+
         }
     }
 
-    if (!entry_found) return { out, ErrorCode::NO_ENTRY_DEFINED };
+    if (!entry_found) return { { ErrorCode::NO_ENTRY_DEFINED, "no entry defined, cannot know what should the starting PC" }, out };
 
-    return { out, ErrorCode::OK };
+    return { { }, out };
 }
 
 

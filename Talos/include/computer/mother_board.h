@@ -20,16 +20,13 @@
  └───────────────────────┘
  */
 
-template <size_t PROGRAM_SIZE = 0xFFFF>
 struct MotherBoard {
     SimpleCPU cpu;
     std::vector<uint8_t> ram{};
     std::vector<DecodedInstr> rom{};
-    std::atomic<bool> running;
+    bool running = false;
 
-    size_t RAM_SIZE = 65536; //2^16 bits addresses
-
-    MotherBoard() : cpu(ram) {
+    MotherBoard(size_t RAM_SIZE) : cpu(ram) {
         ram.resize(RAM_SIZE);
         for (auto& elem : ram) elem = 0;
     }
@@ -37,19 +34,13 @@ struct MotherBoard {
     void reset() {
         running = false;
 
-        for (auto& elem : ram) elem = 0;
-        for (auto& elem : rom) elem = DecodedInstr();
+        std::ranges::fill(ram, 0);
+        std::ranges::fill(rom, DecodedInstr());
     }
 
-    void load_prog(const std::vector<DecodedInstr>& program) {
+    void load_prog(const std::vector<DecodedInstr>& program, size_t max_size = 0xFFFFFFFF - 1) {
         rom = program;
-        if (rom.size() > PROGRAM_SIZE)
-            rom.resize(PROGRAM_SIZE);
-        if (rom.size() < PROGRAM_SIZE) {
-            for (size_t i = rom.size(); i < PROGRAM_SIZE; i++) {
-                rom.emplace_back();
-            }
-        }
+        if (rom.size() > max_size) rom.resize(max_size);
     }
 };
 

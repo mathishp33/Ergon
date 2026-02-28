@@ -19,14 +19,16 @@ A FAIRE:
 
 ADD Heap: malloc & free instructions (.heap & .stack sections)
 FAIRE FPU
-convert dispatcher to computed goto (use labels as values)
 Unroll the dispatch loop
 Super-instructions (merge addi+cmp+jl)
 AJOUTER JIT
 Profile-guided optimization (PGO) (maybe)
-AJOUTER acès array avec: BYTE_TABLE[2] or BYTE_TABLE + 2
-AJOUTER constantes
+AJOUTER acès array avec: BYTE_TABLE[2] ou BYTE_TABLE + 2 ou BYTE_TABLE + 2 * 3 ...
+AJOUTER constantes (equ, assign, define)
+AJOUTER un truc qui détecte les modifications de constantes (rodata, equ, assign, define)
 AJOUTER solveur numérique pour les imm (ex: 0x3 + 0b11001 * (-133))
+AJOUTER truc qui détecte les ram overflow lors des store et load !!
+//FINIR/UPDATE le readme
 */
 
 
@@ -53,9 +55,9 @@ struct Label {
 
 struct Symbol {
     std::string name;
-    Section section;
-    uint32_t value; // offset in section
-    SymbolBinding bind;
+    Section section = Section::NONE;
+    uint32_t value = 0; // offset in section
+    SymbolBinding bind = SymbolBinding::LOCAL;
 };
 
 enum class RelocType {
@@ -95,11 +97,9 @@ static int32_t sign_extend_24b(uint32_t value) {
 }
 
 
-template <size_t RAM_SIZE = 0x10000, size_t PROGRAM_SIZE = 0xFFFF>
 struct AsmDecoder {
     ObjectFile obj_file;
     std::unordered_map<std::string, Var> vars;
-    size_t max_lines = PROGRAM_SIZE;
     std::vector<std::string> lines;
     Section cur_section = Section::TEXT;
     size_t cur_pc = 0;
@@ -111,34 +111,38 @@ struct AsmDecoder {
         return -1;
     }
 
-    ErrorCode decode_line(const std::string& line) {
+    ErrorInfo decode_line(const std::string& line) {
         //sections
-        if (line == ".text") {
+        if (line == "section .text" || line == ".text") {
             cur_section = Section::TEXT;
-            return ErrorCode::OK;
+            return { };
         }
-        if (line == ".data") {
+        if (line == "section .data" || line == ".data") {
             cur_section = Section::DATA;
-            return ErrorCode::OK;
+            return { };
         }
-        if (line == ".bss") {
+        if (line == "section .rodata" || line == ".rodata") {
+            cur_section = Section::RODATA;
+            return { };
+        }
+        if (line == "section .bss" || line == ".bss") {
             cur_section = Section::BSS;
-            return ErrorCode::OK;
+            return { };
         }
 
         //labels
-        if (line.ends_with(':')) return ErrorCode::OK;
+        if (line.ends_with(':')) return { };
 
         const std::vector<std::string> tokens = string_utils::slice_str(line, ' ');
 
         auto it = instr_table.find(tokens[0]);
 
-        if (cur_section != Section::TEXT) return ErrorCode::OK;
-        if (tokens[0] == ".global" || tokens[0] == ".extern" || tokens[0] == ".entry") return ErrorCode::OK;
+        if (cur_section != Section::TEXT) return { };
+        if (tokens[0] == ".global" || tokens[0] == ".extern" || tokens[0] == ".entry") return { };
 
         InstrDef def = it->second;
 
-        if (tokens.size() - 1 != def.args.size()) return ErrorCode::INVALID_ARG;
+        if (tokens.size() - 1 != def.args.size()) return { };
 
         std::array<uint8_t, 3> r{}; // rd, rs1, rs2
         int32_t imm = 0;
@@ -147,29 +151,27 @@ struct AsmDecoder {
             switch (def.args[i]) {
             case ArgType::REG:
                 {
-                    auto [err_rd, temp] = parse_reg(tokens[i + 1]);
-                    if (err_rd != ErrorCode::OK) return err_rd;
+                    auto [e, temp] = parse_reg(tokens[i + 1]);
+                    if (e.code != ErrorCode::OK) return e;
 
                     r[def.args_pos[i]] = temp;
                     break;
                 }
             case ArgType::IMM:
                 {
-                    auto [err_imm, imm_val] = parse_imm(tokens[i + 1]);
-                    if (err_imm != ErrorCode::OK) return err_imm;
+                    auto [e, imm_val] = parse_imm(tokens[i + 1]);
+                    if (e.code != ErrorCode::OK) return e;
 
-                    if (it->first == "movi")
-                        imm = sign_extend_24b(imm_val);
-                    else
-                        r[def.args_pos[i]] = imm_val;
+                    if (it->first == "movi") imm = sign_extend_24b(imm_val);
+                    else r[def.args_pos[i]] = imm_val;
+
                     break;
                 }
             case ArgType::LABEL:
                 {
                     const std::string& label = tokens[i + 1];
 
-                    if (!obj_file.symbols.contains(label))
-                        return ErrorCode::UNKNOWN_SYMBOL;
+                    if (!obj_file.symbols.contains(label)) return { ErrorCode::UNKNOWN_SYMBOL, "unknown symbol \"" + label + "\"" };
 
                     const Symbol& S = obj_file.symbols[label];
 
@@ -186,7 +188,7 @@ struct AsmDecoder {
             case ArgType::VAR:
                 {
                     const std::string& name = tokens[i + 1];
-                    if (!obj_file.symbols.contains(name)) return ErrorCode::UNKNOWN_SYMBOL;
+                    if (!obj_file.symbols.contains(name)) return { ErrorCode::UNKNOWN_SYMBOL, "unknown symbol \"" + name + "\"" };
 
                     obj_file.relocations.push_back({
                         Section::TEXT,
@@ -208,7 +210,7 @@ struct AsmDecoder {
         if (it != instr_table.end()) cur_pc++;
         obj_file.text.emplace_back(result);
 
-        return ErrorCode::OK;
+        return { };
     }
 
     ErrorInfo first_pass() {
@@ -220,16 +222,16 @@ struct AsmDecoder {
             if (line.empty()) continue;
 
             // sections
-            if (line == ".text") { cur_section = Section::TEXT; continue; }
-            if (line == ".data") { cur_section = Section::DATA; continue; }
-            if (line == ".bss") { cur_section = Section::BSS; continue; }
-            if (line == ".rodata") { cur_section = Section::RODATA; continue; }
+            if (line == "section .text") { cur_section = Section::TEXT; continue; }
+            if (line == "section .data") { cur_section = Section::DATA; continue; }
+            if (line == "section .bss") { cur_section = Section::BSS; continue; }
+            if (line == "section .rodata") { cur_section = Section::RODATA; continue; }
 
             // labels
             if (line.ends_with(':')) {
                 std::string name = line.substr(0, line.size() - 1);
 
-                if (obj_file.symbols.contains(name) && obj_file.symbols[name].bind == SymbolBinding::LOCAL) return { ErrorCode::DUPLICATE_LABEL, i };
+                if (obj_file.symbols.contains(name) && obj_file.symbols[name].bind == SymbolBinding::LOCAL) return { ErrorCode::DUPLICATE_LABEL, "duplicate label \"" + name + "\"", i };
 
 
                 uint32_t value = 0;
@@ -277,7 +279,7 @@ struct AsmDecoder {
             }
             if (tokens[0] == ".entry") {
                 if (tokens.size() != 2)
-                    return { ErrorCode::INVALID_ARG, i };
+                    return { ErrorCode::INVALID_ARG_SIZE, "invalid arg size, expected 1", i };
 
                 obj_file.entry_symbol = tokens[1];
                 continue;
@@ -285,30 +287,29 @@ struct AsmDecoder {
 
             if (it == instr_table.end()) {
                 if (tokens[1] == "times" || tokens[1] == "TIMES") {
-                    if (tokens.size() < 4) return { ErrorCode::INVALID_ARG, i };
-                    auto [e_code_3, var_count] = parse_imm(tokens[2]);
+                    if (tokens.size() < 4) return { ErrorCode::INVALID_ARG_SIZE, "invalid arg size, expected more than 3", i };
+                    auto [e_0, var_count] = parse_imm(tokens[2]);
+                    if (e_0.code != ErrorCode::OK) return { e_0.code, e_0.message, i };
                     auto [var_size, needs_init] = parse_D(tokens[3]);
-                    if (e_code_3 != ErrorCode::OK || !var_size) return { ErrorCode::INVALID_ARG, i };
+                    if (!var_size) return { ErrorCode::INVALID_ARG, "invalid argument, expected a declaration directive or a reserve directive", i };
                     if (var_count < 1) return { ErrorCode::INVALID_ARG, i };
 
                     Var v(needs_init ? obj_file.data.size() : obj_file.bss_size, var_size, var_count);
 
                     if (needs_init) {
                         if (tokens.size() != 5) return { ErrorCode::INVALID_ARG, i };
-
-                        auto [e_init, bytes] = parse_bytes(tokens[4], v.size);
-                        if (e_init != ErrorCode::OK) return { e_init, i };
+                        auto [e_1, bytes] = parse_bytes(tokens[4], v.size);
+                        if (e_1.code != ErrorCode::OK) return { e_1.code, e_1.message, i };
 
                         if (cur_section == Section::DATA)
                             obj_file.data.insert(obj_file.data.end(), bytes.begin(), bytes.end());
                         else if (cur_section == Section::RODATA)
                             obj_file.rodata.insert(obj_file.rodata.end(), bytes.begin(), bytes.end());
                         else
-                            return { ErrorCode::VAR_OUTSIDE_R_SECTION, i };
-
+                            return { ErrorCode::VAR_OUTSIDE_RIGHT_SECTION, "variable \""+ tokens[0] + " \" is outside data or rodata section", i };
                     }
                     else {
-                        if (cur_section != Section::BSS) return { ErrorCode::VAR_OUTSIDE_BSS, i };
+                        if (cur_section != Section::BSS) return { ErrorCode::VAR_OUTSIDE_BSS, "variable \""+ tokens[0] + " \" is outside bss section", i };
                         obj_file.bss_size += var_size;
                     }
 
@@ -329,18 +330,18 @@ struct AsmDecoder {
                 if (needs_init) {
                     if (tokens.size() != 3) return { ErrorCode::INVALID_ARG, i };
 
-                    auto [e_code_6, res] = parse_bytes(tokens[2], var_size);
-                    if (e_code_6 != ErrorCode::OK) return { e_code_6, i };
+                    auto [e, res] = parse_bytes(tokens[2], var_size);
+                    if (e.code != ErrorCode::OK) return { e.code, e.message, i };
 
                     if (cur_section == Section::DATA)
                         obj_file.data.insert(obj_file.data.end(), res.begin(), res.end());
                     else if (cur_section == Section::RODATA)
                         obj_file.rodata.insert(obj_file.rodata.end(), res.begin(), res.end());
                     else
-                        return { ErrorCode::VAR_OUTSIDE_R_SECTION, i };
+                        return { ErrorCode::VAR_OUTSIDE_RIGHT_SECTION, "variable \""+ tokens[0] + " \" is outside data or rodata section", i };
                 }
                 else {
-                    if (cur_section != Section::BSS) return { ErrorCode::VAR_OUTSIDE_BSS, i };
+                    if (cur_section != Section::BSS) return { ErrorCode::VAR_OUTSIDE_BSS, "variable \""+ tokens[0] + " \" is outside bss section", i };
                     obj_file.bss_size += var_size;
                 }
 
@@ -363,29 +364,20 @@ struct AsmDecoder {
         cur_pc = 0;
 
         lines = string_utils::slice_str(asm_program, '\n');
-        if (lines.size() > max_lines) return { obj_file, { ErrorCode::LINE_OVERFLOW, lines.size() - 1 } };
+        if (lines.empty()) return {};
 
-        auto e_info_f_pass = first_pass();
-        if (e_info_f_pass.error_code != ErrorCode::OK)
-            return { obj_file, e_info_f_pass };
+        auto e_fp = first_pass();
+        if (e_fp.code != ErrorCode::OK) return { obj_file, e_fp };
 
         cur_section = Section::TEXT;
-
-        if (lines.empty()) return {};
-        if (lines.size() > max_lines) return { obj_file, { ErrorCode::LINE_OVERFLOW, lines.size() - 1 } };
-
-
         for (size_t i = 0; i < lines.size(); i++) {
             std::string cleaned_line = string_utils::normalize(lines[i]);
             if (cleaned_line.empty()) continue;
 
-            ErrorCode e_code_text = decode_line(cleaned_line);
-            if (e_code_text != ErrorCode::OK)
-                return { obj_file, { e_code_text, i } };
+            ErrorInfo e = decode_line(cleaned_line);
+            e.index_line = i;
+            if (e.code != ErrorCode::OK) return { obj_file, e };
         }
-
-        if (obj_file.data.size() + obj_file.rodata.size() > RAM_SIZE) return { obj_file, { ErrorCode::RAM_OVERFLOW, 0 } };
-
         return {obj_file, {} };
     }
 };

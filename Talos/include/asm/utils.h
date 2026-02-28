@@ -64,15 +64,15 @@ namespace string_utils {
     }
 
     // returns { error_code, result }
-    inline std::pair<ErrorCode, int> better_stoi(const std::string& str, size_t* idx = nullptr, int base = 10) {
+    inline std::pair<ErrorInfo, int> better_stoi(const std::string& str, size_t* idx = nullptr, int base = 10) {
         if (base < 2 || base > 36)
-            return {ErrorCode::STOI_OVERFLOW, 0};
+            return { { ErrorCode::INVALID_BASE, "invalid base in stoi (base should be between 2 and 36)" }, 0};
 
         size_t i = 0;
         int sign = 1;
 
         const std::string cleaned_str = replace_null(str, '_');
-        if (cleaned_str.empty()) return { ErrorCode::OK, 0 };
+        if (cleaned_str.empty()) return { { }, 0 };
 
         if (cleaned_str[i] == '+' || cleaned_str[i] == '-') {
             if (cleaned_str[i] == '-') sign = -1;
@@ -88,20 +88,20 @@ namespace string_utils {
                 break;
 
             if (sign == 1 && result > (INT_MAX - digit) / base)
-                return {ErrorCode::STOI_OVERFLOW, 0};
+                return { { ErrorCode::STOI_POS_OVERFLOW, "positive overflow in stoi"}, 0};
             if (sign == -1 && result > (INT_MAX - digit + 1) / base)
-                return {ErrorCode::STOI_OVERFLOW, 0};
+                return { { ErrorCode::STOI_NEG_OVERFLOW, "negative overflow in stoi" }, 0};
 
             result = result * base + digit;
         }
 
         if (i == start)
-            return {ErrorCode::INVALID_CHAR, 0};
+            return { { ErrorCode::STOI_INVALID_CHAR, "invalid char in stoi" }, 0};
 
         if (idx)
             *idx = i;
 
-        return {ErrorCode::OK, result * sign};
+        return {{ ErrorCode::OK, ""}, result * sign};
     }
 
     static std::string normalize(std::string line) {

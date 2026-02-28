@@ -6,25 +6,20 @@
 #include <chrono>
 
 int main() {
-    std::string program = ".text \n"
-                          " ldw ebx var \n"
+    std::string program = "section .text \n"
+                          " ldw r0 var \n"
                           " loop: \n"
-                          "  inc eax \n"
-                          "  cmp eax ebx \n"
+                          "  inc r1 \n"
+                          "  cmp r0 r1 \n"
                           "  jl loop \n"
-                          ".data \n"
-                          " var dd 2_000_000 \n"
-                          ".bss \n"
-                          " buffer times 256 resb";
+                          "section .data \n"
+                          " var dd 20_000_000 \n";
 
-    EnvironmentManager<0xFFFF> env_m = EnvironmentManager<0xFFFF>();
+    EnvironmentManager env_m = EnvironmentManager();
 
     std::cout << "\n---------- BUILD RESULT ----------\n";
 
-    std::cout << env_m.build_single(program) << std::endl;
-
-    //running the program
-    env_m.set_mod(ExecMode::AUTO);
+    std::cout << env_m.build({ { "main", program } }) << std::endl;
 
     auto start = std::chrono::high_resolution_clock::now();
     env_m.start();

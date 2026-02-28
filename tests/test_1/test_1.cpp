@@ -6,14 +6,14 @@
 #include <chrono>
 
 int main() {
-    std::string lib = ".text \n"
+    std::string lib = "section .text \n"
                       ".global add_two \n"
                       "add_two: \n"
                       "  addi eax eax 2 \n"
                       "  ret \n";
     std::string main = ".entry main \n"
                        ".extern add_two \n"
-                       ".text \n"
+                       "section .text \n"
                        ".global main \n"
                        "main: \n"
                        "  call add_two \n"
