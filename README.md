@@ -9,6 +9,12 @@ Ergon is composed of:
 
 # Talos
 
+## Usage
+
+Talos is a headers-only librairy that can only be compiled by Clang or GCC.
+
+## Architecture
+
 Talos is composed of:
 * a Mother Board
   * a 32-bit <a href="#CPU">CPU</a>
@@ -18,8 +24,6 @@ Talos is composed of:
   * a from 1 to 516Kb RAM
   * a ROM where all the instructions (32-bit) are stored
 * an <a href="#Assembler">Assembler</a> mixing NASM and ARM syntax.
-
-## Architecture
 
 ### ALU
 
