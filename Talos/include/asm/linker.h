@@ -1,28 +1,13 @@
 #ifndef ERGON_LINKER_H
 #define ERGON_LINKER_H
 
+#include <algorithm>
+
 #include "decoder.h"
 #include "error.h"
 
 #include <string>
 
-/*
-
-* ASM source //DONE
-   ↓
-Assembler (per file) //DONE
-   ↓
-ObjectFile (.o-like) //DONE
-   ↓
-Linker (multi-file, static libs) //PARTIALLY DONE
-   ↓
-Executable image (ELF-like)
-   ↓
-Loader
-   ↓
-Interpreter → Tier-2 JIT
-
- */
 
 struct LinkedBinary {
     std::vector<DecodedInstr> text;
@@ -31,6 +16,20 @@ struct LinkedBinary {
     uint32_t bss_size = 0;
 
     uint32_t entry_pc = 0;
+};
+
+struct GlobalSymbol {
+    std::string name;
+    Section section = Section::NONE;
+    uint32_t value = 0;
+    size_t obj_index = 0;
+    GlobalSymbol() = default;
+    GlobalSymbol(const Symbol& sym, size_t index) {
+        name = sym.name;
+        section = sym.section;
+        value = sym.value;
+        obj_index = index;
+    }
 };
 
 inline std::pair<ErrorInfo, LinkedBinary> link(std::vector<ObjectFile>& objects) {
@@ -43,10 +42,12 @@ inline std::pair<ErrorInfo, LinkedBinary> link(std::vector<ObjectFile>& objects)
 
     bool entry_found = false;
 
-    std::unordered_map<std::string, Symbol> globals;
+    std::unordered_map<std::string, GlobalSymbol> globals;
 
     // zssign bases + collect globals
-    for (auto& obj : objects) {
+    for (size_t i = 0; i < objects.size(); i++) {
+        auto& obj = objects[i];
+
         obj.text_base = text_cursor;
         obj.data_base = data_cursor;
         obj.rodata_base = rodata_cursor;
@@ -69,7 +70,7 @@ inline std::pair<ErrorInfo, LinkedBinary> link(std::vector<ObjectFile>& objects)
                 default: break;
                 }
 
-                globals[name] = resolved;
+                globals[name] = { resolved, i };
             }
         }
         text_cursor += obj.text.size();
@@ -101,27 +102,31 @@ inline std::pair<ErrorInfo, LinkedBinary> link(std::vector<ObjectFile>& objects)
         }
 
         for (auto& rel : obj.relocations) {
-            Symbol S = obj.symbols.contains(rel.symbol) ? obj.symbols[rel.symbol] : globals.at(rel.symbol);
-
-            //uint32_t sym_addr = (S.section == Section::TEXT) ? obj.text_base + S.value : (S.section == Section::DATA) ? obj.data_base + S.value : obj.bss_base + S.value;
             uint32_t sym_addr = 0;
-            switch (S.section) {
+            if (!globals.contains(rel.symbol)) {
+                Symbol S = obj.symbols[rel.symbol];
+                sym_addr = obj.text_base + S.value;
+            }
+            else {
+                const GlobalSymbol& GS = globals.at(rel.symbol);
+                switch (GS.section) {
                 case Section::TEXT:
-                    sym_addr = obj.text_base + S.value; break;
+                    sym_addr = GS.value; break;
                 case Section::DATA:
-                    sym_addr = obj.data_base + S.value; break;
+                    sym_addr = GS.value; break; //pas sur si c'est bon (voir ancien commit)
                 case Section::RODATA:
-                    sym_addr = obj.rodata_base + S.value; break;
+                    sym_addr = GS.value; break; //pas sur si c'est bon (voir ancien commit)
                 case Section::BSS:
-                    sym_addr = obj.bss_base + S.value; break;
+                    sym_addr = GS.value; break; //pas sur si c'est bon (voir ancien commit)
                 default: break;
+                }
             }
 
             DecodedInstr& I = out.text[obj.text_base + rel.offset];
 
-            if (rel.type == RelocType::PC_REL_24) {
-                auto pc = static_cast<int32_t>(obj.text_base + rel.offset + 1);
-                I.imm = sign_extend_24b(sym_addr - (pc - 1));
+            if (rel.type == RelocType::PC_REL_32) {
+                auto pc = static_cast<int32_t>(obj.text_base + rel.offset);
+                I.imm = static_cast<int32_t>(sym_addr) - (pc + 1);
             }
             if (rel.type == RelocType::ABS_32)
                 I.imm = static_cast<int32_t>(sym_addr);

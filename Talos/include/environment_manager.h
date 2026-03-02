@@ -10,7 +10,6 @@
 struct StepInfo {
     std::array<uint32_t, 16> regs{};
     std::array<uint32_t, 16> fregs{};
-    ALUFlags alu_flags;
     uint32_t& PC = regs[16 - 1];
     uint32_t& SP = regs[16 - 2];
 
@@ -20,7 +19,6 @@ struct StepInfo {
     StepInfo(const MotherBoard& mb) {
         regs = mb.cpu.core.regs;
         fregs = mb.cpu.core.fregs;
-        alu_flags = mb.cpu.core.alu_flags;
         PC = mb.cpu.core.PC;
         SP = mb.cpu.core.SP;
 
@@ -102,10 +100,6 @@ struct EnvironmentManager {
         if (reg_index < mb.cpu.core.regs.size())
             return mb.cpu.core.regs[reg_index];
         return 0;
-    }
-
-    std::pair<ALUFlags, FPUFlags> get_cpu_flags() {
-        return { mb.cpu.core.alu_flags, mb.cpu.core.fpu_flags };
     }
 
     void start() {

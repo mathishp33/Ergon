@@ -100,25 +100,12 @@ enum OPCODE : uint8_t {
     HALT // halt (stops program)
 };
 
-struct DecodedInstr {
-    uint8_t opcode = 0;
-    uint8_t rd = 0;
-    uint8_t rs1 = 0;
-    uint8_t rs2 = 0;
-    int32_t imm = 0; // sign-extended imm / jump offset
-
-    DecodedInstr() = default;
-
-    DecodedInstr(uint8_t opcode, uint8_t rd, uint8_t rs1, uint8_t rs2, int32_t imm) : opcode(opcode), rd(rd), rs1(rs1), rs2(rs2), imm(imm) {}
-};
 
 struct SimpleCore {
     std::array<uint32_t, 16> regs{};
     std::array<uint32_t, 16> fregs{};
     uint32_t& SP = regs[15]; // Stack Pointer
     uint32_t PC = 0; // Program Counter
-    ALUFlags alu_flags;
-    FPUFlags fpu_flags;
 
     std::vector<uint8_t>& ram;
 
@@ -161,16 +148,9 @@ struct SimpleCore {
         ram[addr] = value;
     }
 
-    void update_flags(uint8_t r) {
-        alu_flags.Z = (regs[r] == 0);
-        alu_flags.N = (regs[r] < 0);
-    }
-
     void reset() {
         std::ranges::fill(regs, 0);
         std::ranges::fill(fregs, 0);
-        alu_flags = ALUFlags();
-        fpu_flags = FPUFlags();
         SP = ram.size() - 1;
         PC = 0;
     }

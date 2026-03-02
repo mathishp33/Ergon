@@ -31,17 +31,21 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="j'ai fait des trucs importants voila tout ...">
-      <change afterPath="$PROJECT_DIR$/LICENSE" afterDir="false" />
+    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="added license + fixed code">
+      <change afterPath="$PROJECT_DIR$/Talos/include/asm/data.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Talos/include/asm/decoder.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/asm/decoder.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/asm/error.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/asm/error.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/asm/instructions.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/asm/instructions.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Talos/include/asm/linker.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/asm/linker.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/asm/parser.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/asm/parser.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/asm/utils.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/asm/utils.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/computer/alu.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/computer/alu.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/computer/core.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/computer/core.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/computer/fpu.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/computer/fpu.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Talos/include/computer/instructions_handler/run_handler.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/computer/instructions_handler/run_handler.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/computer/instructions_handler/step_handler.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/computer/instructions_handler/step_handler.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Talos/include/computer/mother_board.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/computer/mother_board.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/env_manager.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/environment_manager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/environment_manager.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/environment_manager.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tests/test_0/test_0.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_0/test_0.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tests/test_1/test_1.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_1/test_1.cpp" afterDir="false" />
     </list>
@@ -54,9 +58,9 @@
     <option name="formatViaClangd" value="false" />
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="274" />
+    <option name="cachedIndexableFilesCount" value="276" />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Release" />
+  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
@@ -102,7 +106,7 @@
     "C/C++ File.test.cpp - Visual Studio (1).executor": "Run",
     "C/C++ File.test.cpp - Visual Studio.executor": "Run",
     "CMake Application.ergon_test_0.executor": "Run",
-    "CMake Application.ergon_test_1.executor": "Debug",
+    "CMake Application.ergon_test_1.executor": "Run",
     "CMake Application.ergon_tests.executor": "Run",
     "CMake Debug.Ergon.executor": "Debug",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
@@ -146,7 +150,7 @@
       <recent name="C:\Users\Utilisateur\CLionProjects\Ergon\Talos\include\COMPUTER" />
     </key>
   </component>
-  <component name="RunManager" selected="CMake Application.ergon_test_0">
+  <component name="RunManager" selected="CMake Application.ergon_test_1">
     <configuration name="Ergon" type="CMakeListConfigurationType" factoryName="CMakeListConfigurationFactory" temporary="true">
       <method v="2" />
     </configuration>
@@ -208,7 +212,11 @@
       <workItem from="1772219390217" duration="4987000" />
       <workItem from="1772265747435" duration="13198000" />
       <workItem from="1772283743685" duration="113000" />
-      <workItem from="1772293729299" duration="14150000" />
+      <workItem from="1772293729299" duration="15991000" />
+      <workItem from="1772353952534" duration="17849000" />
+      <workItem from="1772378518964" duration="10708000" />
+      <workItem from="1772398099170" duration="952000" />
+      <workItem from="1772475662409" duration="5368000" />
     </task>
     <task id="LOCAL-00001" summary="checkpoint commit">
       <option name="closed" value="true" />
@@ -298,7 +306,15 @@
       <option name="project" value="LOCAL" />
       <updated>1772302421512</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="added license + fixed code">
+      <option name="closed" value="true" />
+      <created>1772315022633</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1772315022633</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -321,14 +337,15 @@
     <MESSAGE value="added linker" />
     <MESSAGE value="the AUTO execution mode is now super fast" />
     <MESSAGE value="j'ai fait des trucs importants voila tout ..." />
-    <option name="LAST_COMMIT_MESSAGE" value="j'ai fait des trucs importants voila tout ..." />
+    <MESSAGE value="added license + fixed code" />
+    <option name="LAST_COMMIT_MESSAGE" value="added license + fixed code" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/Talos/include/asm/decoder.h</url>
-          <line>17</line>
+          <line>18</line>
           <properties>
             <option name="hitCountValue" value="1" />
           </properties>

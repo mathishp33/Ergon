@@ -1,24 +1,21 @@
-#include <iostream>
-
 #include "../../Talos/include/environment_manager.h"
 
+#include <iostream>
 #include <string>
 #include <chrono>
 
 int main() {
-    std::string program = "section .text \n"
-                          " ldw r0 var \n"
+    std::string program = ".section .text \n"
+                          " ldw r0, var \n"
                           " loop: \n"
                           "  inc r1 \n"
-                          "  cmp r1 r0 \n"
-                          "  jl loop \n"
-                          " stb "
-                          "section .data \n"
-                          " var dd 20_000_000 \n"
-                          "section .rodata \n"
-                          " var2 db 4\n";
+                          "  cmp r0, r1 \n"
+                          "  jz loop \n"
+                          ".section .data \n"
+                          " var: \n"
+                          "   .word 200_000_000\n";
 
-    EnvironmentManager env_m = EnvironmentManager(0xFFFFFFFF);
+    auto env_m = EnvironmentManager(0xFFFFFFFF);
 
     std::cout << "\n---------- BUILD RESULT ----------\n";
 

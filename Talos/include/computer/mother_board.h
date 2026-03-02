@@ -2,6 +2,7 @@
 #define ERGON_MOTHER_BOARD_H
 
 #include "cpu.h"
+#include "asm/data.h"
 
 #include <atomic>
 #include <vector>

@@ -2,13 +2,6 @@
 #define ERGON_ALU_H
 
 
-struct ALUFlags {
-    bool Z = false; // Zero
-    bool N = false; // Negative
-    bool C = false; // Carry
-    bool V = false; // Overflow
-};
-
 enum class ALUOp {
     ADD, // a + b
     SUB, // a - b

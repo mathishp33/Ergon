@@ -104,15 +104,29 @@ namespace string_utils {
         return {{ ErrorCode::OK, ""}, result * sign};
     }
 
+    inline std::string remove_char(const std::string& s, char c) {
+        std::string result;
+        result.reserve(s.size());
+
+        for (char ch : s)
+            if (ch != c)
+                result.push_back(ch);
+
+        return result;
+    }
+
+    inline std::string trim_spaces(const std::string& str) {
+        auto l = str.find_first_not_of(" \t");
+        auto r = str.find_last_not_of(" \t");
+        if (l == std::string::npos) return "";
+        return str.substr(l, r - l + 1);
+    }
+
     static std::string normalize(std::string line) {
         //comments
         line = line.substr(0, line.find(';'));
 
-        //trim spaces
-        auto l = line.find_first_not_of(" \t");
-        auto r = line.find_last_not_of(" \t");
-        if (l == std::string::npos) return "";
-        return line.substr(l, r - l + 1);
+        return trim_spaces(line);
     }
 }
 

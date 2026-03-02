@@ -5,14 +5,6 @@
 #include <cstdint>
 #include <cstring>
 
-struct FPUFlags {
-    bool Z = false; // Zero
-    bool N = false; // Negative
-    bool I = false; // Invalid operation (nan)
-    bool O = false; // Overflow (inf)
-    bool U = false; // Underflow
-    bool D = false; // Divide by zero
-};
 
 enum class FPUOp {
     FADD, // a + b
@@ -33,7 +25,6 @@ enum class FPUOp {
 
 struct FPUResult {
     uint32_t value; // bits IEEE754
-    FPUFlags flags;
     bool writeback = true;
     bool trap = false;
 };
@@ -73,7 +64,6 @@ static FPUResult exec(FPUOp op, uint32_t a, uint32_t b, uint32_t c = 0) {
 
     case FPUOp::FDIV:
         if (fb == 0.0f) {
-            r.flags.D = true;
             r.trap = true;
             return r;
         }
@@ -103,12 +93,7 @@ static FPUResult exec(FPUOp op, uint32_t a, uint32_t b, uint32_t c = 0) {
     default: ;
     }
 
-    if (std::isnan(fr)) r.flags.I = true;
-    if (std::isinf(fr)) r.flags.O = true;
-
     r.value = float_to_bits(fr);
-    r.flags.Z = (fr == 0.0f);
-    r.flags.N = std::signbit(fr);
 
     return r;
 }

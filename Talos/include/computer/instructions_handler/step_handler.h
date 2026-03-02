@@ -41,373 +41,154 @@ inline void step_instr(SimpleCore& c, const DecodedInstr& prog) {
     DISPATCH();
 
 OP_ADD:
-    c.regs[instr->rd] =
-        (uint32_t)((uint64_t)c.regs[instr->rs1] + (uint64_t)c.regs[instr->rs2]);
-    c.alu_flags.C =
-        ((uint64_t)c.regs[instr->rs1] + (uint64_t)c.regs[instr->rs2]) > 0xFFFFFFFF;
-    c.alu_flags.V =
-        ((int64_t)(int32_t)c.regs[instr->rs1] + (int64_t)(int32_t)c.regs[instr->rs2]) > INT32_MAX ||
-        ((int64_t)(int32_t)c.regs[instr->rs1] + (int64_t)(int32_t)c.regs[instr->rs2]) < INT32_MIN;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
+    c.regs[instr->rd] = (uint32_t)((uint64_t)c.regs[instr->rs1] + (uint64_t)c.regs[instr->rs2]);
     STEP();
 OP_SUB:
-    c.regs[instr->rd] =
-        (uint32_t)((uint64_t)c.regs[instr->rs1] - (uint64_t)c.regs[instr->rs2]);
-    c.alu_flags.C = c.regs[instr->rs1] >= c.regs[instr->rs2];
-    c.alu_flags.V =
-        ((int64_t)(int32_t)c.regs[instr->rs1] - (int64_t)(int32_t)c.regs[instr->rs2]) > INT32_MAX ||
-        ((int64_t)(int32_t)c.regs[instr->rs1] - (int64_t)(int32_t)c.regs[instr->rs2]) < INT32_MIN;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
+    c.regs[instr->rd] = (uint32_t)((uint64_t)c.regs[instr->rs1] - (uint64_t)c.regs[instr->rs2]);
     STEP();
 OP_MUL:
-    c.regs[instr->rd] =
-        (uint32_t)((int64_t)(int32_t)c.regs[instr->rs1] *
-                   (int64_t)(int32_t)c.regs[instr->rs2]);
-    c.alu_flags.C = false;
-    c.alu_flags.V =
-        ((int64_t)(int32_t)c.regs[instr->rs1] *
-         (int64_t)(int32_t)c.regs[instr->rs2]) > INT32_MAX ||
-        ((int64_t)(int32_t)c.regs[instr->rs1] *
-         (int64_t)(int32_t)c.regs[instr->rs2]) < INT32_MIN;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
+    c.regs[instr->rd] = (uint32_t)((int64_t)(int32_t)c.regs[instr->rs1] * (int64_t)(int32_t)c.regs[instr->rs2]);
     STEP();
 OP_DIV:
-    if ((int32_t)c.regs[instr->rs2] != 0 &&
-        !((int32_t)c.regs[instr->rs1] == INT32_MIN &&
-          (int32_t)c.regs[instr->rs2] == -1))
+    if ((int32_t)c.regs[instr->rs2] != 0 && !((int32_t)c.regs[instr->rs1] == INT32_MIN && (int32_t)c.regs[instr->rs2] == -1))
         c.regs[instr->rd] = (uint32_t)((int32_t)c.regs[instr->rs1] / (int32_t)c.regs[instr->rs2]);
-    c.alu_flags.C = false;
-    c.alu_flags.V = false;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
     STEP();
 OP_MOD:
     if ((int32_t)c.regs[instr->rs2] != 0)
-        c.regs[instr->rd] =
-            (uint32_t)((int32_t)c.regs[instr->rs1] % (int32_t)c.regs[instr->rs2]);
-    c.alu_flags.C = false;
-    c.alu_flags.V = false;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
+        c.regs[instr->rd] = (uint32_t)((int32_t)c.regs[instr->rs1] % (int32_t)c.regs[instr->rs2]);
     STEP();
-    OP_ADDI:
-    c.regs[instr->rd] =
-        (uint32_t)((uint64_t)c.regs[instr->rs1] +
-                   (uint64_t)(int32_t)instr->rs2);
-    c.alu_flags.C =
-        ((uint64_t)c.regs[instr->rs1] +
-         (uint64_t)(int32_t)instr->rs2) > 0xFFFFFFFF;
-    c.alu_flags.V =
-        ((int64_t)(int32_t)c.regs[instr->rs1] +
-         (int64_t)(int32_t)instr->rs2) > INT32_MAX ||
-        ((int64_t)(int32_t)c.regs[instr->rs1] +
-         (int64_t)(int32_t)instr->rs2) < INT32_MIN;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
+OP_ADDI:
+    c.regs[instr->rd] = (uint32_t)((uint64_t)c.regs[instr->rs1] + (uint64_t)instr->rs2);
     STEP();
 OP_SUBI:
-    c.regs[instr->rd] =
-        (uint32_t)((uint64_t)c.regs[instr->rs1] -
-                   (uint64_t)(int32_t)instr->rs2);
-    c.alu_flags.C =
-        c.regs[instr->rs1] >= (uint32_t)(int32_t)instr->rs2;
-    c.alu_flags.V =
-        ((int64_t)(int32_t)c.regs[instr->rs1] -
-         (int64_t)(int32_t)instr->rs2) > INT32_MAX ||
-        ((int64_t)(int32_t)c.regs[instr->rs1] -
-         (int64_t)(int32_t)instr->rs2) < INT32_MIN;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
+    c.regs[instr->rd] = (uint32_t)((uint64_t)c.regs[instr->rs1] - (uint64_t)(int32_t)instr->rs2);
     STEP();
 OP_MULI:
-    c.regs[instr->rd] =
-        (uint32_t)((int64_t)(int32_t)c.regs[instr->rs1] *
-                   (int64_t)(int32_t)instr->rs2);
-    c.alu_flags.C = false;
-    c.alu_flags.V =
-        ((int64_t)(int32_t)c.regs[instr->rs1] *
-         (int64_t)(int32_t)instr->rs2) > INT32_MAX ||
-        ((int64_t)(int32_t)c.regs[instr->rs1] *
-         (int64_t)(int32_t)instr->rs2) < INT32_MIN;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
+    c.regs[instr->rd] = (uint32_t)((int64_t)(int32_t)c.regs[instr->rs1] * (int64_t)(int32_t)instr->rs2);
     STEP();
 OP_DIVI:
-    if ((int32_t)instr->rs2 != 0 &&
-        !((int32_t)c.regs[instr->rs1] == INT32_MIN &&
-          (int32_t)instr->rs2 == -1))
-        c.regs[instr->rd] =
-            (uint32_t)((int32_t)c.regs[instr->rs1] /
-                       (int32_t)instr->rs2);
-    c.alu_flags.C = false;
-    c.alu_flags.V = false;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
+    if ((int32_t)instr->rs2 != 0 && !((int32_t)c.regs[instr->rs1] == INT32_MIN && (int32_t)instr->rs2 == -1))
+        c.regs[instr->rd] = (uint32_t)((int32_t)c.regs[instr->rs1] / (int32_t)instr->rs2);
     STEP();
 OP_MODI:
-    if ((int32_t)instr->rs2 != 0)
-        c.regs[instr->rd] =
-            (uint32_t)((int32_t)c.regs[instr->rs1] %
-                       (int32_t)instr->rs2);
-    c.alu_flags.C = false;
-    c.alu_flags.V = false;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
+    if ((int32_t)instr->rs2 != 0) c.regs[instr->rd] = (uint32_t)((int32_t)c.regs[instr->rs1] % (int32_t)instr->rs2);
     STEP();
 
 OP_AND:
     c.regs[instr->rd] = c.regs[instr->rs1] & c.regs[instr->rs2];
-    c.alu_flags.C = false;
-    c.alu_flags.V = false;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
     STEP();
 OP_OR:
     c.regs[instr->rd] = c.regs[instr->rs1] | c.regs[instr->rs2];
-    c.alu_flags.C = false;
-    c.alu_flags.V = false;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
     STEP();
 OP_XOR:
     c.regs[instr->rd] = c.regs[instr->rs1] ^ c.regs[instr->rs2];
-    c.alu_flags.C = false;
-    c.alu_flags.V = false;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
     STEP();
 OP_ANDI:
     c.regs[instr->rd] = c.regs[instr->rs1] & (uint32_t)(int32_t)instr->rs2;
-    c.alu_flags.C = false;
-    c.alu_flags.V = false;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
     STEP();
 OP_ORI:
     c.regs[instr->rd] = c.regs[instr->rs1] | (uint32_t)(int32_t)instr->rs2;
-    c.alu_flags.C = false;
-    c.alu_flags.V = false;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
     STEP();
 OP_XORI:
     c.regs[instr->rd] = c.regs[instr->rs1] ^ (uint32_t)(int32_t)instr->rs2;
-    c.alu_flags.C = false;
-    c.alu_flags.V = false;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
     STEP();
 
 OP_SHL:
     c.regs[instr->rd] = c.regs[instr->rs1] << (c.regs[instr->rs2] & 31);
-    c.alu_flags.C = (c.regs[instr->rs1] >> (32 - (c.regs[instr->rs2] & 31))) & 1;
-    c.alu_flags.V = false;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
     STEP();
 OP_SHR:
     c.regs[instr->rd] = c.regs[instr->rs1] >> (c.regs[instr->rs2] & 31);
-    c.alu_flags.C = (c.regs[instr->rs1] >> ((c.regs[instr->rs2] & 31) - 1)) & 1;
-    c.alu_flags.V = false;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
     STEP();
 OP_SAR:
     c.regs[instr->rd] = static_cast<uint32_t>(static_cast<int32_t>(c.regs[instr->rs1]) >> (c.regs[instr->rs2] & 31));
-    c.alu_flags.C = false;
-    c.alu_flags.V = false;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
     STEP();
 OP_ROL:
     c.regs[instr->rd] = (c.regs[instr->rs1] << (c.regs[instr->rs2] & 31)) | (c.regs[instr->rs1] >> (32 - (c.regs[instr->rs2] & 31)));
-    c.alu_flags.C = false;
-    c.alu_flags.V = false;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
     STEP();
 OP_ROR:
     c.regs[instr->rd] = (c.regs[instr->rs1] >> (c.regs[instr->rs2] & 31)) | (c.regs[instr->rs1] << (32 - (c.regs[instr->rs2] & 31)));
-    c.alu_flags.C = false;
-    c.alu_flags.V = false;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
     STEP();
 OP_SHLI:
     c.regs[instr->rd] = c.regs[instr->rs1] << ((uint32_t)instr->rs2 & 31);
-    c.alu_flags.C = false;
-    c.alu_flags.V = false;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
     STEP();
 OP_SHRI:
     c.regs[instr->rd] = c.regs[instr->rs1] >> ((uint32_t)instr->rs2 & 31);
-    c.alu_flags.C = false;
-    c.alu_flags.V = false;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
     STEP();
 OP_SARI:
     c.regs[instr->rd] = (uint32_t)((int32_t)c.regs[instr->rs1] >> ((uint32_t)instr->rs2 & 31));
-    c.alu_flags.C = false;
-    c.alu_flags.V = false;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
     STEP();
 OP_ROLI:
     c.regs[instr->rd] = (c.regs[instr->rs1] << ((uint32_t)instr->rs2 & 31)) | (c.regs[instr->rs1] >> (32 - ((uint32_t)instr->rs2 & 31)));
-    c.alu_flags.C = false;
-    c.alu_flags.V = false;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
     STEP();
 OP_RORI:
     c.regs[instr->rd] = (c.regs[instr->rs1] >> ((uint32_t)instr->rs2 & 31)) | (c.regs[instr->rs1] << (32 - ((uint32_t)instr->rs2 & 31)));
-    c.alu_flags.C = false;
-    c.alu_flags.V = false;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
     STEP();
-
 OP_CMP:
-    c.alu_flags.Z = ((int32_t)c.regs[instr->rs1] - (int32_t)c.regs[instr->rs2]) == 0;
-    c.alu_flags.N = ((int32_t)c.regs[instr->rs1] - (int32_t)c.regs[instr->rs2]) < 0;
-    c.alu_flags.C = c.regs[instr->rs1] >= c.regs[instr->rs2];
-    c.alu_flags.V = (((int32_t)c.regs[instr->rs1] ^ (int32_t)c.regs[instr->rs2]) & ((int32_t)c.regs[instr->rs1] ^ ((int32_t)c.regs[instr->rs1] - (int32_t)c.regs[instr->rs2]))) < 0;
+    c.regs[13] = ((int32_t)c.regs[instr->rs1] < (int32_t)c.regs[instr->rs2]) ? 1 : 0;
     STEP();
 OP_CMPU:
-    c.alu_flags.Z = c.regs[instr->rs1] == c.regs[instr->rs2];
-    c.alu_flags.N = c.regs[instr->rs1] < c.regs[instr->rs2];
-    c.alu_flags.C = c.regs[instr->rs1] >= c.regs[instr->rs2];
-    c.alu_flags.V = ((c.regs[instr->rs1] ^ c.regs[instr->rs2]) & (c.regs[instr->rs1] ^ (c.regs[instr->rs1] - c.regs[instr->rs2]))) < 0;
-    STEP();
-OP_TEST:
-    c.alu_flags.Z = ((c.regs[instr->rs1] & c.regs[instr->rs2]) == 0);
-    c.alu_flags.N = ((c.regs[instr->rs1] & c.regs[instr->rs2]) >> 31) & 1;
-    c.alu_flags.C = false;
-    c.alu_flags.V = false;
+    c.regs[13] = (c.regs[instr->rs1] < c.regs[instr->rs2]) ? 1 : 0;
     STEP();
 OP_CMPI:
-    c.alu_flags.Z = ((int32_t)c.regs[instr->rs1] - (int32_t)instr->rs2) == 0;
-    c.alu_flags.N = ((int32_t)c.regs[instr->rs1] - (int32_t)instr->rs2) < 0;
-    c.alu_flags.C = c.regs[instr->rs1] >= (uint32_t)(int32_t)instr->rs2;
-    c.alu_flags.V = (((int32_t)c.regs[instr->rs1] ^ (int32_t)instr->rs2) & ((int32_t)c.regs[instr->rs1] ^ ((int32_t)c.regs[instr->rs1] - (int32_t)instr->rs2))) < 0;
+    c.regs[13] = ((int32_t)c.regs[instr->rs1] < (int32_t)instr->rs2) ? 1 : 0;
     STEP();
 OP_CMPUI:
-    c.alu_flags.Z = c.regs[instr->rs1] == (uint32_t)(int32_t)instr->rs2;
-    c.alu_flags.N = c.regs[instr->rs1] < (uint32_t)(int32_t)instr->rs2;
-    c.alu_flags.C = c.regs[instr->rs1] >= (uint32_t)(int32_t)instr->rs2;
-    c.alu_flags.V = ((c.regs[instr->rs1] ^ (uint32_t)(int32_t)instr->rs2) & (c.regs[instr->rs1] ^ (c.regs[instr->rs1] - (uint32_t)(int32_t)instr->rs2))) < 0;
+    c.regs[13] = (c.regs[instr->rs1] < (uint32_t)instr->rs2) ? 1 : 0;
+    STEP();
+OP_TEST:
+    c.regs[13] = ((c.regs[instr->rs1] & c.regs[instr->rs2]) != 0) ? 1 : 0;
     STEP();
 OP_TESTI:
-    c.alu_flags.Z = ((c.regs[instr->rs1] & (uint32_t)(int32_t)instr->rs2) == 0);
-    c.alu_flags.N = ((c.regs[instr->rs1] & (uint32_t)(int32_t)instr->rs2) >> 31) & 1;
-    c.alu_flags.C = false;
-    c.alu_flags.V = false;
+    c.regs[13] = ((c.regs[instr->rs1] & (uint32_t)instr->rs2) != 0) ? 1 : 0;
     STEP();
 
 OP_INC:
     c.regs[instr->rd] = (uint32_t)(int64_t)(int32_t)c.regs[instr->rd] + 1;
-    c.alu_flags.C = false;
-    c.alu_flags.V = (int64_t)(int32_t)c.regs[instr->rd] + 1 > INT32_MAX;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
     STEP();
 OP_DEC:
     c.regs[instr->rd] = (uint32_t)(int64_t)(int32_t)c.regs[instr->rd] - 1;
-    c.alu_flags.C = false;
-    c.alu_flags.V = (int64_t)(int32_t)c.regs[instr->rd] - 1 > INT32_MAX;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
     STEP();
 OP_NOT:
     c.regs[instr->rd] = ~c.regs[instr->rs1];
-    c.alu_flags.C = false;
-    c.alu_flags.V = false;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
     STEP();
 OP_ABS:
     if ((int32_t)c.regs[instr->rs1] < 0) c.regs[instr->rd] = (uint32_t)-(int32_t)c.regs[instr->rs1];
     else c.regs[instr->rd] = c.regs[instr->rs1];
-    c.alu_flags.C = false;
-    c.alu_flags.V = false;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
     STEP();
 OP_NEG:
     if ((int32_t)c.regs[instr->rs1] != INT32_MIN) c.regs[instr->rd] = (uint32_t)-(int32_t)c.regs[instr->rs1];
-    c.alu_flags.C = false;
-    c.alu_flags.V = false;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
     STEP();
 OP_MIN:
     if (c.regs[instr->rs1] < c.regs[instr->rs2]) c.regs[instr->rd] = c.regs[instr->rs1];
     else c.regs[instr->rd] = c.regs[instr->rs2];
-    c.alu_flags.C = false;
-    c.alu_flags.V = false;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
     STEP();
 OP_MAX:
     if (c.regs[instr->rs1] > c.regs[instr->rs2]) c.regs[instr->rd] = c.regs[instr->rs1];
     else c.regs[instr->rd] = c.regs[instr->rs2];
-    c.alu_flags.C = false;
-    c.alu_flags.V = false;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
     STEP();
 OP_MINI:
     if (c.regs[instr->rs1] < instr->rs2) c.regs[instr->rd] = instr->rs1;
     else c.regs[instr->rd] = instr->rs2;
-    c.alu_flags.C = false;
-    c.alu_flags.V = false;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
     STEP();
 OP_MAXI:
     if (c.regs[instr->rs1] > instr->rs2) c.regs[instr->rd] = instr->rs1;
     else c.regs[instr->rd] = instr->rs2;
-    c.alu_flags.C = false;
-    c.alu_flags.V = false;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
     STEP();
 
 OP_MOV_IMM:
     c.regs[instr->rd] = instr->imm;
-    c.alu_flags.C = false;
-    c.alu_flags.V = false;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
     STEP();
 OP_MOV_REG:
     c.regs[instr->rd] = c.regs[instr->rs1];
     STEP();
 OP_LDB_ABS:
     c.regs[instr->rd] = static_cast<int8_t>(c.load8(instr->imm));
-    c.alu_flags.C = false;
-    c.alu_flags.V = false;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
     STEP();
 OP_LDH_ABS:
     c.regs[instr->rd] = static_cast<int16_t>(c.load16(instr->imm));
-    c.alu_flags.C = false;
-    c.alu_flags.V = false;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
     STEP();
 OP_LDW_ABS:
     c.regs[instr->rd] = c.load32(instr->imm);
-    c.alu_flags.C = false;
-    c.alu_flags.V = false;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
     STEP();
 OP_STB_ABS:
     c.store8(instr->imm, c.regs[instr->rd] & 0xFF);
@@ -420,24 +201,12 @@ OP_STW_ABS:
     STEP();
 OP_LDB_BASE:
     c.regs[instr->rd] = static_cast<int8_t>(c.load8(c.regs[instr->rs1] + static_cast<int8_t>(instr->imm)));
-    c.alu_flags.C = false;
-    c.alu_flags.V = false;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
     STEP();
 OP_LDH_BASE:
     c.regs[instr->rd] = static_cast<int16_t>(c.load16(c.regs[instr->rs1] + static_cast<int8_t>(instr->imm)));
-    c.alu_flags.C = false;
-    c.alu_flags.V = false;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
     STEP();
 OP_LDW_BASE:
     c.regs[instr->rd] = c.load32(c.regs[instr->rs1] + static_cast<int8_t>(instr->imm));
-    c.alu_flags.C = false;
-    c.alu_flags.V = false;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
     STEP();
 OP_STB_BASE:
     c.store8(c.regs[instr->rs1] + static_cast<int8_t>(instr->imm), c.regs[instr->rd] & 0xFF);
@@ -455,28 +224,16 @@ OP_PUSH:
     STEP();
 OP_POP:
     c.regs[instr->rd] = c.load32(c.SP);
-    c.alu_flags.C = false;
-    c.alu_flags.V = false;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
     c.SP += 4;
     STEP();
 OP_LEA:
     c.regs[instr->rd] = c.regs[instr->rs1] + static_cast<int8_t>(instr->imm);
-    c.alu_flags.C = false;
-    c.alu_flags.V = false;
-    c.alu_flags.Z = (c.regs[instr->rd] == 0);
-    c.alu_flags.N = (c.regs[instr->rd] >> 31) & 1;
     STEP();
 OP_SWAP:
     std::swap(c.regs[instr->rd], c.regs[instr->rs1]);
     STEP();
 OP_CLR:
     c.regs[instr->rd] = 0;
-    c.alu_flags.C = false;
-    c.alu_flags.V = false;
-    c.alu_flags.Z = true;
-    c.alu_flags.N = false;
     STEP();
 OP_MEMCPY:
     {
@@ -493,28 +250,20 @@ OP_JMP:
     c.PC += instr->imm;
     DISPATCH();
 OP_JZ:
-    if (c.alu_flags.Z) {
-        c.PC += instr->imm;
-        DISPATCH();
-    }
+    if(c.regs[13] == 0)
+        c.PC += instr->imm; DISPATCH();
     STEP();
 OP_JNZ:
-    if (!c.alu_flags.Z) {
-        c.PC += instr->imm;
-        DISPATCH();
-    }
-    STEP();
-OP_JG:
-    if (!c.alu_flags.Z && !c.alu_flags.N) {
-        c.PC += instr->imm;
-        DISPATCH();
-    }
+    if(c.regs[13] != 0)
+        c.PC += instr->imm; DISPATCH();
     STEP();
 OP_JL:
-    if (c.alu_flags.N) {
-        c.PC += instr->imm;
-        DISPATCH();
-    }
+    if((int32_t)c.regs[13] < 0)
+        c.PC += instr->imm; DISPATCH();
+    STEP();
+OP_JG:
+    if((int32_t)c.regs[13] > 0)
+        c.PC += instr->imm; DISPATCH();
     STEP();
 OP_CALL:
     c.SP -= 4;
@@ -527,7 +276,6 @@ OP_RET:
     DISPATCH();
 
 OP_HALT:
-    //c.PC = 0xFFFFFFFF;
     return;
 }
 
