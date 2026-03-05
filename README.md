@@ -97,9 +97,8 @@ The CPU is composed of a single Core:
 ### Core
 
 A core has:
-* 16 general-purpose (32-bit) registers
+* 12 general-purpose (32-bit) registers (12 + TMP, CMP, SP, Zero)
 * 16 float registers
-* a modifiable (&regs[15]) Stack Pointer (SP)
 * a Program Counter
 * ALU Flags
 * FPU Flags
