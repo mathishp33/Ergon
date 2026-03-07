@@ -139,6 +139,21 @@ inline std::pair<ErrorInfo, LinkedBinary> link(std::vector<ObjectFile>& objects)
     return { { }, out };
 }
 
+//you may loose some data
+inline ObjectFile unlink(const LinkedBinary& lb, const std::unordered_map<std::string, Symbol>& symbols, const std::vector<Relocation>& relocations, const std::string& entry_symbol) {
+    ObjectFile out;
+
+    out.text = lb.text;
+    out.data = lb.data;
+    out.rodata = lb.rodata;
+    out.bss_size = lb.bss_size;
+
+    out.symbols = symbols;
+    out.relocations = relocations;
+    out.entry_symbol = entry_symbol;
+
+    return out;
+}
 
 
 #endif

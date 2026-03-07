@@ -23,7 +23,24 @@ inline std::unordered_map<std::string, uint8_t> reg_table = {
     { "tmp", 12 },
     { "cmp", 13 },
     { "sp", 14 },
-    { "zero", 15 }
+    { "zero", 15 },
+
+    { "f0", 0 },
+    { "f1", 1 },
+    { "f2", 2 },
+    { "f3", 3 },
+    { "f4", 4 },
+    { "f5", 5 },
+    { "f6", 6 },
+    { "f7", 7 },
+    { "f8", 8 },
+    { "f9", 9 },
+    { "f10", 10 },
+    { "f11", 11 },
+    { "f12", 12 },
+    { "f13", 13 },
+    { "f14", 14 },
+    { "f15", 15 }
 };
 
 static std::pair<ErrorInfo, uint8_t> parse_reg(const std::string& s) {

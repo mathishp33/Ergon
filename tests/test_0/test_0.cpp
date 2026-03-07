@@ -6,14 +6,17 @@
 
 int main() {
     std::string program = ".section .text \n"
-                          " ldw r0, var \n"
+                          " fldw f0, var \n"
+                          " fldw f2, increment \n"
                           " loop: \n"
-                          "  inc r1 \n"
-                          "  cmp r0, r1 \n"
+                          "  fadd f1, f1, f2 \n"
+                          "  fcmp f0, f1 \n"
                           "  jz loop \n"
                           ".section .data \n"
                           " var: \n"
-                          "   .word 200_000_000\n";
+                          "   .word 0x41200000 ; 10.0 en float\n"
+                          " increment: \n"
+                          "   .word 0x3F800000 ; 1.0 en float\n";
 
     auto env_m = EnvironmentManager(0xFFFFFFFF);
 
@@ -27,6 +30,7 @@ int main() {
     auto duration = duration_cast<std::chrono::microseconds>(stop - start);
 
     std::cout << "\n---------- RUN RESULT ----------\n";
+
     std::cout << "RUN DURATION: " << duration.count() << " micro_sec" << std::endl;
     return 0;
 }

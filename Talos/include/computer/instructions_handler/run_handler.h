@@ -12,23 +12,33 @@ inline void run(SimpleCore& c, const std::vector<DecodedInstr>& prog) {
         static void* dispatch_table[256] = {
             &&OP_ADD, &&OP_SUB, &&OP_MUL, &&OP_DIV, &&OP_MOD,
             &&OP_ADDI, &&OP_SUBI, &&OP_MULI, &&OP_DIVI, &&OP_MODI,
+
             &&OP_AND, &&OP_OR, &&OP_XOR, &&OP_ANDI, &&OP_ORI, &&OP_XORI,
             &&OP_SHL, &&OP_SHR, &&OP_SAR, &&OP_ROL, &&OP_ROR,
             &&OP_SHLI, &&OP_SHRI, &&OP_SARI, &&OP_ROLI, &&OP_RORI,
+
             &&OP_CMP, &&OP_CMPU, &&OP_TEST,
             &&OP_CMPI, &&OP_CMPUI, &&OP_TESTI,
+
             &&OP_INC, &&OP_DEC, &&OP_NOT, &&OP_ABS, &&OP_NEG,
             &&OP_MIN, &&OP_MAX, &&OP_MINI, &&OP_MAXI,
-            /* FPU gap */
-            nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+
+            &&OP_FADD, &&OP_FSUB, &&OP_FMUL, &&OP_FDIV, &&OP_FMA,
+            &&OP_FSQRT, &&OP_FABS, &&OP_FNEG, &&OP_FCMP, &&OP_ITOF, &&OP_FTOI,
+            &&OP_FMOV, &&OP_MOVF, &&OP_FLDW_ABS, &&OP_FSDW_ABS, &&OP_FLDW_BASE, &&OP_FSDW_BASE,
+
             &&OP_MOV_IMM, &&OP_MOV_REG,
             &&OP_LDB_ABS, &&OP_LDH_ABS, &&OP_LDW_ABS,
             &&OP_STB_ABS, &&OP_STH_ABS, &&OP_STW_ABS,
             &&OP_LDB_BASE, &&OP_LDH_BASE, &&OP_LDW_BASE,
             &&OP_STB_BASE, &&OP_STH_BASE, &&OP_STW_BASE,
+
             &&OP_PUSH, &&OP_POP,
+
             &&OP_LEA, &&OP_SWAP, &&OP_CLR, &&OP_MEMCPY,
+
             &&OP_JMP, &&OP_JZ, &&OP_JNZ, &&OP_JG, &&OP_JL,
+
             &&OP_CALL, &&OP_RET,
             &&OP_HALT
         };
@@ -130,16 +140,16 @@ OP_RORI:
     c.regs[instr->rd] = (c.regs[instr->rs1] >> ((uint32_t)instr->rs2 & 31)) | (c.regs[instr->rs1] << (32 - ((uint32_t)instr->rs2 & 31)));
     NEXT();
 OP_CMP:
-    c.regs[13] = ((int32_t)c.regs[instr->rs1] < (int32_t)c.regs[instr->rs2]) ? 1 : 0;
+    c.regs[13] = ((int32_t)c.regs[instr->rs1] < (int32_t)c.regs[instr->rs2]) ? -1 : (((int32_t)c.regs[instr->rs1] > (int32_t)c.regs[instr->rs2]) ? 1 : 0);
     NEXT();
 OP_CMPU:
-    c.regs[13] = (c.regs[instr->rs1] < c.regs[instr->rs2]) ? 1 : 0;
+    c.regs[13] = (c.regs[instr->rs1] < c.regs[instr->rs2]) ? -1 : ((c.regs[instr->rs1] > c.regs[instr->rs2]) ? 1 : 0);
     NEXT();
 OP_CMPI:
-    c.regs[13] = ((int32_t)c.regs[instr->rs1] < (int32_t)instr->rs2) ? 1 : 0;
+    c.regs[13] = ((int32_t)c.regs[instr->rs1] < (int32_t)instr->rs2) ? -1 : (((int32_t)c.regs[instr->rs1] > (int32_t)instr->rs2) ? 1 : 0);
     NEXT();
 OP_CMPUI:
-    c.regs[13] = (c.regs[instr->rs1] < (uint32_t)instr->rs2) ? 1 : 0;
+    c.regs[13] = (c.regs[instr->rs1] < (uint32_t)instr->rs2) ? -1 : ((c.regs[instr->rs1] < (uint32_t)instr->rs2) ? 1 : 0);
     NEXT();
 OP_TEST:
     c.regs[13] = ((c.regs[instr->rs1] & c.regs[instr->rs2]) != 0) ? 1 : 0;
@@ -179,6 +189,58 @@ OP_MINI:
 OP_MAXI:
     if (c.regs[instr->rs1] > instr->rs2) c.regs[instr->rd] = instr->rs1;
     else c.regs[instr->rd] = instr->rs2;
+    NEXT();
+
+OP_FADD:
+    c.fregs[instr->rd] = std::bit_cast<uint32_t>(std::bit_cast<float>(c.fregs[instr->rs1]) + std::bit_cast<float>(c.fregs[instr->rs2]));
+    NEXT();
+OP_FSUB:
+    c.fregs[instr->rd] = std::bit_cast<uint32_t>(std::bit_cast<float>(c.fregs[instr->rs1]) - std::bit_cast<float>(c.fregs[instr->rs2]));
+    NEXT();
+OP_FMUL:
+    c.fregs[instr->rd] = std::bit_cast<uint32_t>(std::bit_cast<float>(c.fregs[instr->rs1]) * std::bit_cast<float>(c.fregs[instr->rs2]));
+    NEXT();
+OP_FDIV:
+    c.fregs[instr->rd] = std::bit_cast<uint32_t>(std::bit_cast<float>(c.fregs[instr->rs1]) / std::bit_cast<float>(c.fregs[instr->rs2]));
+    NEXT();
+OP_FMA:
+    c.fregs[instr->rd] = std::bit_cast<uint32_t>( std::fma(std::bit_cast<float>(c.fregs[instr->rd]), std::bit_cast<float>(c.fregs[instr->rs1]), std::bit_cast<float>(c.fregs[instr->rs2])));
+    NEXT();
+OP_FSQRT:
+    c.fregs[instr->rd] = std::bit_cast<uint32_t>(std::sqrt(std::bit_cast<float>(c.fregs[instr->rs1])));
+    NEXT();
+OP_FABS:
+    c.fregs[instr->rd] = std::bit_cast<uint32_t>(std::abs(std::bit_cast<float>(c.fregs[instr->rs1])));
+    NEXT();
+OP_FNEG:
+    c.fregs[instr->rd] = std::bit_cast<uint32_t>(-std::bit_cast<float>(c.fregs[instr->rs1]));
+    NEXT();
+OP_FCMP:
+    c.regs[13] = std::bit_cast<uint32_t>(std::bit_cast<float>(c.fregs[instr->rs1]) < std::bit_cast<float>(c.fregs[instr->rs2]) ? -1 : std::bit_cast<float>(c.fregs[instr->rs1]) > std::bit_cast<float>(c.fregs[instr->rs2]) ? 1 : 0);
+    NEXT();
+OP_ITOF:
+    c.fregs[instr->rd] = std::bit_cast<uint32_t>(std::bit_cast<float>(c.regs[instr->rs1]));
+    NEXT();
+OP_FTOI:
+    c.regs[instr->rd] = std::bit_cast<uint32_t>(c.fregs[instr->rs1]);
+    NEXT();
+OP_FMOV:
+    c.fregs[instr->rd] = c.regs[instr->rs1];
+    NEXT();
+OP_MOVF:
+    c.regs[instr->rd] = c.fregs[instr->rs1];
+    NEXT();
+OP_FLDW_ABS:
+    c.fregs[instr->rd] = c.load32(instr->imm);
+    NEXT();
+OP_FSDW_ABS:
+    c.store32(instr->imm, c.fregs[instr->rd]);
+    NEXT();
+OP_FLDW_BASE:
+    c.fregs[instr->rd] = c.load32(c.regs[instr->rs1] + static_cast<int8_t>(instr->imm));
+    NEXT();
+OP_FSDW_BASE:
+    c.store32(c.regs[instr->rs1] + static_cast<int8_t>(instr->imm), c.fregs[instr->rd]);
     NEXT();
 
 OP_MOV_IMM:

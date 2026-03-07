@@ -12,19 +12,17 @@
 #include <string>
 
 /*
-www.tutorialspoint.com/assembly_programming/assembly_system_calls.htm
-VOIR AUTRES TUTOS sur www.tutorialspoint.com/assembly_programming
-
+VOIR TUTOS sur www.tutorialspoint.com/assembly_programming
 
 A FAIRE:
 
-ADD Heap: malloc & free instructions (.heap & .stack sections)
+AJOUTER heap & stack: malloc & free instructions, (garbage collector (kind of) ?) (.heap & .stack sections)
 FAIRE FPU
 Super-instructions (merge addi+cmp+jl)
 AJOUTER JIT
 Profile-guided optimization (PGO) (maybe)
 AJOUTER acès array avec: BYTE_TABLE[2] ou BYTE_TABLE + 2 ou BYTE_TABLE + 2 * 3 ...
-AJOUTER constantes (equ, assign, define)
+AJOUTER constantes (assign, define)
 AJOUTER un truc qui détecte les modifications de constantes (equ, assign, define)
 AJOUTER solveur numérique pour les imm (ex: 0x3 + 0b11001 * (-133))
 AJOUTER truc qui détecte les ram overflow lors des store et load !!
@@ -106,7 +104,7 @@ struct AsmDecoder {
 
         InstrDef def = it->second;
 
-        //trim instruction from line -> remove spaces (", " -> ",") -> slice into arguments
+
         if (def.args.empty()) {
             DecodedInstr result = DecodedInstr(def.opcode, 0, 0, 0, 0);
 
@@ -114,6 +112,7 @@ struct AsmDecoder {
             obj_file.text.emplace_back(result);
             return { };
         }
+        //trim instruction from line -> remove spaces (", " -> ",") -> slice into arguments
         const std::vector<std::string> args = string_utils::slice_str(string_utils::remove_char(line.substr(instr.size() + 1), ' '), ',');
         if (args.size() != def.args.size()) return { ErrorCode::INVALID_ARG_SIZE, "invalid argument size, expected " + std::to_string(def.args.size()) + " arguments" };
 

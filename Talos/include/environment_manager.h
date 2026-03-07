@@ -88,17 +88,14 @@ struct EnvironmentManager {
         return 0;
     }
 
-    uint32_t get_from_reg(size_t reg_index) {
-        if (reg_index < mb.cpu.core.regs.size())
-            return mb.cpu.core.regs[reg_index];
-        return 0;
-    }
     uint32_t get_from_reg(const std::string& reg_name) {
         auto [e, reg_index] = parse_reg(reg_name);
         if (e.code != ErrorCode::OK) return 0;
 
-        if (reg_index < mb.cpu.core.regs.size())
+        if (reg_index < mb.cpu.core.regs.size()) {
+            if (reg_name[0] == 'f') return mb.cpu.core.fregs[reg_index];
             return mb.cpu.core.regs[reg_index];
+        }
         return 0;
     }
 

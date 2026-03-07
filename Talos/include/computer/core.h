@@ -58,13 +58,23 @@ enum OPCODE : uint8_t {
 
     //----------------- FPU OPERATIONS -----------------
 
-    AFAIRE0,
-    AFAIRE1,
-    AFAIRE2,
-    AFAIRE3,
-    AFAIRE4,
-    AFAIRE5,
-    AFAIRE6,
+    FADD,
+    FSUB,
+    FMUL,
+    FDIV,
+    FMA,
+    FSQRT,
+    FABS,
+    FNEG,
+    FCMP,
+    ITOF,
+    FTOI,
+    FMOV,
+    MOVF,
+    FLDW_ABS,
+    FSTW_ABS,
+    FLDW_BASE,
+    FSTW_BASE,
 
     //----------------- MEMORY OPERATIONS -----------------
     MOV_IMM , // mov rd, imm

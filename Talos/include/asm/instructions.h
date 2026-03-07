@@ -1,6 +1,8 @@
 #ifndef ERGON_INSTRUCTIONS_H
 #define ERGON_INSTRUCTIONS_H
 
+#include "computer/core.h"
+
 #include <unordered_map>
 
 
@@ -72,6 +74,22 @@ inline std::unordered_map<std::string, InstrDef> instr_table = {
     {"max", {MAX, InstrType::R, { ArgType::REG, ArgType::REG, ArgType::REG }, { 0, 1, 2 } }},
     {"mini",{MINI,InstrType::I, { ArgType::REG, ArgType::REG, ArgType::IMM }, { 0, 1, 2 } }},
     {"maxi",{MAXI,InstrType::I, { ArgType::REG, ArgType::REG, ArgType::IMM }, { 0, 1, 2 } }},
+
+    {"fadd", {FADD, InstrType::R, { ArgType::REG, ArgType::REG, ArgType::REG }, { 0, 1, 2 } }},
+    {"fsub", {FSUB, InstrType::R, { ArgType::REG, ArgType::REG, ArgType::REG }, { 0, 1, 2 } }},
+    {"fmul", {FMUL, InstrType::R, { ArgType::REG, ArgType::REG, ArgType::REG }, { 0, 1, 2 } }},
+    {"fdiv", {FDIV, InstrType::R, { ArgType::REG, ArgType::REG, ArgType::REG }, { 0, 1, 2 } }},
+    {"fma", {FMA, InstrType::R, { ArgType::REG, ArgType::REG, ArgType::REG }, { 0, 1, 2 } }},
+    {"fsqrt", {FSQRT, InstrType::R, { ArgType::REG, ArgType::REG }, { 0, 1 } }},
+    {"fabs", {FABS, InstrType::R, { ArgType::REG, ArgType::REG }, { 0, 1 } }},
+    {"fneg", {FNEG, InstrType::R, { ArgType::REG, ArgType::REG }, { 0, 1 } }},
+    {"fcmp", {FCMP, InstrType::R, { ArgType::REG, ArgType::REG }, { 1, 2 } }},
+    {"fmov", {FMOV, InstrType::R, { ArgType::REG, ArgType::REG }, { 0, 1 } }},
+    {"movf", {MOVF, InstrType::R, { ArgType::REG, ArgType::REG }, { 0, 1 } }},
+    {"fldw", {FLDW_ABS, InstrType::I, { ArgType::REG, ArgType::VAR }, { 0, 2 } }},
+    {"fstw", {FSTW_ABS, InstrType::I, { ArgType::REG, ArgType::VAR }, { 0, 2 } }},
+    {"flbasew", {FLDW_BASE, InstrType::I, { ArgType::REG, ArgType::REG, ArgType::IMM }, { 0, 1, 2 } }},
+    {"fsbasew", {FSTW_BASE, InstrType::I, { ArgType::REG, ArgType::REG, ArgType::IMM }, { 0, 1, 2 } }},
 
     {"mov",   {MOV_REG, InstrType::R, { ArgType::REG, ArgType::REG }, { 0, 1 } }},
     {"movi",  {MOV_IMM, InstrType::I, { ArgType::REG, ArgType::IMM }, { 0, 2 } }},
