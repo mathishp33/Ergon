@@ -17,17 +17,23 @@ VOIR TUTOS sur www.tutorialspoint.com/assembly_programming
 A FAIRE:
 
 AJOUTER heap & stack: malloc & free instructions, (garbage collector (kind of) ?) (.heap & .stack sections)
-FAIRE FPU
 Super-instructions (merge addi+cmp+jl)
-AJOUTER JIT
 Profile-guided optimization (PGO) (maybe)
+AJOUTER les fonctions de la libraire standart (std::...) C
 AJOUTER acès array avec: BYTE_TABLE[2] ou BYTE_TABLE + 2 ou BYTE_TABLE + 2 * 3 ...
 AJOUTER constantes (assign, define)
 AJOUTER un truc qui détecte les modifications de constantes (equ, assign, define)
-AJOUTER solveur numérique pour les imm (ex: 0x3 + 0b11001 * (-133))
+AJOUTER parser numérique pour les imm (ex: 0x3 + 0b11001 * (-133))
 AJOUTER truc qui détecte les ram overflow lors des store et load !!
 UPDATE le readme
 AJOUTER les struct, offset, .asciz
+AJOUTER float type (my var:
+                        .float 4.56
+AJOUTER meilleurs arrays
+AJOUTER meilleur accès arrays
+AJOUTER %if, %rep et %ifdef
+FINIR le parser
+FINIR le preproccesseur (macro, define)
 */
 
 
@@ -40,7 +46,7 @@ struct ObjectFile {
     uint32_t text_base = 0;
     uint32_t data_base = 0;
     uint32_t rodata_base = 0;
-    uint32_t bss_base  = 0;
+    uint32_t bss_base = 0;
 
     std::unordered_map<std::string, Symbol> symbols;
     std::vector<Relocation> relocations;
@@ -49,18 +55,74 @@ struct ObjectFile {
 };
 
 
-//true if not good
-inline bool check_if_constant(const std::string& instr) {
-    if (instr == "stb") return true;
-    if (instr == "sth") return true;
-    if (instr == "stw") return true;
-    return false;
-}
+struct PreProcesser {
+    std::unordered_map<std::string, Value> constants; // %equ
+    std::unordered_map<std::string, Value> variables; // %assign
+    std::unordered_map<std::string, Define> defines; // %define
+    std::unordered_map<std::string, Macro> macros; // %macro
+
+    ErrorInfo preprocess(const std::string& file) {
+        std::vector<std::string> lines = string_utils::slice_str(file, '\n');
+        for (size_t i = 0; i < lines.size(); i++) {
+            std::string line = string_utils::normalize(lines[i]);
+
+            if (line.empty()) continue;
+
+            if (!line.starts_with("%")) continue;
+
+            const std::vector<std::string> tokens = string_utils::slice_str(line, ' ');
+            const std::string& instr = tokens[0];
+
+
+            if (instr == ".equ") {
+                if (tokens.size() != 3)
+                    return { ErrorCode::INVALID_ARG_SIZE, "invalid argument size, expected 2", i };
+
+                auto [e, value] = parse_expr(tokens[2], constants, variables);
+                if (e.code != ErrorCode::OK) return e;
+
+                if (!string_utils::check_cst_name(tokens[1]))
+                    return { ErrorCode::INVALID_NAME, "invalid name, expected only letters, numbers and '_' ", i };
+                constants[tokens[1]] = value;
+                return { };
+            }
+            if (instr == "%assign") {
+                if (tokens.size() != 3)
+                    return { ErrorCode::INVALID_ARG_SIZE, "invalid argument size, expected 2 arguments" };
+
+                auto [e, value] = parse_expr(tokens[2], constants, variables);
+                if (e.code != ErrorCode::OK) return e;
+
+                if (!string_utils::check_cst_name(tokens[1]))
+                    return { ErrorCode::INVALID_NAME, "invalid name, expected only letters, numbers and '_' ", i };
+                variables[tokens[1]] = value;
+            }
+            if (instr == "%define") {
+
+            }
+            if (instr == "%macro") {
+
+            }
+
+        }
+
+        return { };
+    }
+
+    // a rajouter
+    // %if
+    // %ifdef
+    // %rep
+
+};
+
+
 
 struct AsmDecoder {
+    PreProcesser preproc;
     ObjectFile obj_file;
     std::unordered_map<std::string, Var> vars;
-    std::unordered_map<std::string, int32_t> constants;
+
     std::vector<std::string> lines;
     Section cur_section = Section::TEXT;
     size_t cur_pc = 0;
@@ -131,7 +193,7 @@ struct AsmDecoder {
                 }
             case ArgType::IMM:
                 {
-                    auto [e, imm_val] = parse_imm(args[i], constants);
+                    auto [e, imm_val] = parse_expr(args[i], preproc.constants, preproc.variables);
                     if (e.code != ErrorCode::OK) return e;
 
                     if (it->first == "movi") imm = imm_val;
@@ -160,9 +222,10 @@ struct AsmDecoder {
             case ArgType::VAR:
                 {
                     const std::string& name = args[i];
+                    //a changer pour mettre arrays ( var[3] ou var[3+5])
                     if (!obj_file.symbols.contains(name)) return { ErrorCode::UNKNOWN_SYMBOL, "unknown symbol \"" + name + "\"" };
                     if (obj_file.symbols[name].section == Section::RODATA)
-                        if (check_if_constant(instr))
+                        if (var_is_constant(instr))
                             return { ErrorCode::RODATA_VAR_MODIFIED, "rodata variable \"" + name + "\" is being modified" };
 
                     obj_file.relocations.push_back({
@@ -246,7 +309,7 @@ struct AsmDecoder {
         return {};
     }
 
-    size_t current_section_size() {
+    size_t current_section_size() const {
         switch (cur_section) {
         case Section::DATA:
             return obj_file.data.size();
@@ -300,7 +363,6 @@ struct AsmDecoder {
     ErrorInfo handle_directive(const std::string& line, size_t i) {
         const auto tokens = string_utils::slice_str(line, ' ');
         const std::string& instr = tokens[0];
-        const auto it = instr_table.find(instr);
 
         const std::vector<std::string> args = string_utils::slice_str(string_utils::remove_char(line.substr(instr.size() + 1), ' '), ',');
 
@@ -326,20 +388,9 @@ struct AsmDecoder {
                 return { ErrorCode::INVALID_ARG_SIZE, "invalid argument size, expected 1", i };
             obj_file.entry_symbol = args[0];
         }
-
-        if (instr == ".equ") {
-            if (args.size() != 2)
-                return { ErrorCode::INVALID_ARG_SIZE, "invalid argument size, expected 2", i };
-
-            auto [e, value] = parse_imm(args[1], constants);
-            if (e.code != ErrorCode::OK) return e;
-
-            constants[args[0]] = value;
-            return {};
-        }
         if (instr == ".byte") {
             for (auto& a : args) {
-                auto [e, v] = parse_imm(a, constants);
+                auto [e, v] = parse_expr(a, preproc.constants, preproc.variables);
                 if (e.code != ErrorCode::OK) return e;
 
                 if (cur_section == Section::BSS)
@@ -347,12 +398,12 @@ struct AsmDecoder {
                 else
                     emit_u8(static_cast<uint8_t>(v));
             }
-            return {};
+            return { };
         }
         if (instr == ".hword") {
             align_section(2);
             for (auto& a : args) {
-                auto [e, v] = parse_imm(a, constants);
+                auto [e, v] = parse_expr(a, preproc.constants, preproc.variables);
                 if (e.code != ErrorCode::OK) return e;
 
                 if (cur_section == Section::BSS)
@@ -360,12 +411,12 @@ struct AsmDecoder {
                 else
                     emit_u16(static_cast<uint16_t>(v));
             }
-            return {};
+            return { };
         }
         if (instr == ".word") {
             align_section(4);
             for (auto& a : args) {
-                auto [e, v] = parse_imm(a, constants);
+                auto [e, v] = parse_expr(a, preproc.constants, preproc.variables);
                 if (e.code != ErrorCode::OK) return e;
 
                 if (cur_section == Section::BSS)
@@ -374,13 +425,13 @@ struct AsmDecoder {
                     emit_u32(static_cast<uint32_t>(v));
                 }
             }
-            return {};
+            return { };
         }
         if (instr == ".space") {
             if (args.size() != 1)
                 return { ErrorCode::INVALID_ARG_SIZE, ".space expects 1 arg", i };
 
-            auto [e, size] = parse_imm(args[0], constants);
+            auto [e, size] = parse_expr(args[0], preproc.constants, preproc.variables);
             if (e.code != ErrorCode::OK) return e;
 
             align_section(1);
@@ -391,27 +442,30 @@ struct AsmDecoder {
                 auto& buf = (cur_section == Section::DATA) ? obj_file.data : obj_file.rodata;
                 buf.resize(buf.size() + size, 0);
             }
-            return {};
+            return { };
         }
 
         if (instr == ".align") {
-            auto [e, pow] = parse_imm(args[0], constants);
+            auto [e, pow] = parse_expr(args[0], preproc.constants, preproc.variables);
             if (e.code != ErrorCode::OK) return e;
 
             align_section(1u << pow);
-            return {};
+            return { };
         }
 
         return { };
     }
 
-    std::pair<ObjectFile, ErrorInfo> decode(const std::string& asm_program) {
+    std::pair<ObjectFile, ErrorInfo> decode(const std::string& file) {
         obj_file = ObjectFile();
         vars.clear();
         cur_pc = 0;
 
-        lines = string_utils::slice_str(asm_program, '\n');
-        if (lines.empty()) return {};
+        lines = string_utils::slice_str(file, '\n');
+        if (lines.empty()) return { };
+
+        preproc = PreProcesser();
+        //preproc.preprocess(file);
 
         auto e_fp = first_pass();
         if (e_fp.code != ErrorCode::OK) return { obj_file, e_fp };
@@ -425,7 +479,7 @@ struct AsmDecoder {
             e.index_line = i;
             if (e.code != ErrorCode::OK) return { obj_file, e };
         }
-        return {obj_file, {} };
+        return {obj_file, { } };
     }
 };
 

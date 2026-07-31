@@ -5,18 +5,23 @@
 #include <chrono>
 
 int main() {
-    std::string program = ".section .text \n"
-                          " fldw f0, var \n"
-                          " fldw f2, increment \n"
-                          " loop: \n"
-                          "  fadd f1, f1, f2 \n"
-                          "  fcmp f0, f1 \n"
-                          "  jz loop \n"
-                          ".section .data \n"
-                          " var: \n"
-                          "   .word 0x41200000 ; 10.0 en float\n"
-                          " increment: \n"
-                          "   .word 0x3F800000 ; 1.0 en float\n";
+    std::string program = R"(
+
+    .section .text
+     fldw f0, var
+     fldw f2, increment
+     loop:
+       fadd f1, f1, f2
+       fcmp f0, f1
+       jz loop
+    .section .data
+     var:
+       .word 10.0
+     increment:
+       .word 1.0
+
+
+)";
 
     auto env_m = EnvironmentManager(0xFFFFFFFF);
 

@@ -6,9 +6,16 @@
 #include <vector>
 #include <string>
 #include <cctype>
-#include <limits>
+#include <charconv>
 
 namespace string_utils {
+
+    inline std::string trim_spaces(const std::string& str) {
+        auto l = str.find_first_not_of(" \t");
+        auto r = str.find_last_not_of(" \t");
+        if (l == std::string::npos) return "";
+        return str.substr(l, r - l + 1);
+    }
 
     inline std::vector<std::string> slice_str(const std::string& str, char wanted_char) {
         std::vector<std::string> result;
@@ -18,7 +25,8 @@ namespace string_utils {
             if (c == wanted_char) {
                 result.push_back(buffer);
                 buffer.clear();
-            } else
+            }
+            else
                 buffer += c;
         }
         result.push_back(buffer);
@@ -63,45 +71,39 @@ namespace string_utils {
         return s;
     }
 
-    // returns { error_code, result }
-    inline std::pair<ErrorInfo, int> better_stoi(const std::string& str, size_t* idx = nullptr, int base = 10) {
-        if (base < 2 || base > 36)
-            return { { ErrorCode::INVALID_BASE, "invalid base in stoi (base should be between 2 and 36)" }, 0};
-
-        size_t i = 0;
-        int sign = 1;
-
-        const std::string cleaned_str = replace_null(str, '_');
-        if (cleaned_str.empty()) return { { }, 0 };
-
-        if (cleaned_str[i] == '+' || cleaned_str[i] == '-') {
-            if (cleaned_str[i] == '-') sign = -1;
-            ++i;
+    inline std::pair<ErrorInfo, int32_t> better_stoi(const std::string& str) {
+        int base = 10;
+        if (str.length() > 2) {
+            if (str.starts_with("0x"))
+                base = 16;
+            if (str.starts_with("0b"))
+                base = 2;
+            if (str.starts_with("0o"))
+                base = 8;
         }
+        std::string cleaned_str = str;
+        if (base != 10)
+            cleaned_str = str.substr(2);
 
-        int result = 0;
-        size_t start = i;
+        int32_t result = 0;
+        auto r = std::from_chars(cleaned_str.data(), cleaned_str.data() + cleaned_str.size(), result, base);
 
-        for (; i < cleaned_str.size(); ++i) {
-            int digit = char_to_int(cleaned_str[i]);
-            if (digit < 0 || digit >= base)
-                break;
+        if (r.ec == std::errc::invalid_argument)
+            return { { ErrorCode::STOI_INVALID_CHAR, "invalid char in stoi" }, 0 };
+        if (r.ec == std::errc::result_out_of_range)
+            return { { ErrorCode::STOI_OVERFLOW, "overflow in stoi" }, 0 };
+        return { { }, result };
+    }
 
-            if (sign == 1 && result > (INT_MAX - digit) / base)
-                return { { ErrorCode::STOI_POS_OVERFLOW, "positive overflow in stoi"}, 0};
-            if (sign == -1 && result > (INT_MAX - digit + 1) / base)
-                return { { ErrorCode::STOI_NEG_OVERFLOW, "negative overflow in stoi" }, 0};
+    inline std::pair<ErrorInfo, float> better_stof(const std::string& str) {
+        float result = 0;
+        auto r = std::from_chars(str.data(), str.data() + str.size(), result); // false error
 
-            result = result * base + digit;
-        }
-
-        if (i == start)
-            return { { ErrorCode::STOI_INVALID_CHAR, "invalid char in stoi" }, 0};
-
-        if (idx)
-            *idx = i;
-
-        return {{ ErrorCode::OK, ""}, result * sign};
+        if (r.ec == std::errc::invalid_argument)
+            return { { ErrorCode::STOF_INVALID_CHAR, "invalid char in stof" }, 0.0f };
+        if (r.ec == std::errc::result_out_of_range)
+            return { { ErrorCode::STOF_OVERFLOW, "overflow in stof" }, 0.0f };
+        return { { }, result };
     }
 
     inline std::string remove_char(const std::string& s, char c) {
@@ -115,19 +117,32 @@ namespace string_utils {
         return result;
     }
 
-    inline std::string trim_spaces(const std::string& str) {
-        auto l = str.find_first_not_of(" \t");
-        auto r = str.find_last_not_of(" \t");
-        if (l == std::string::npos) return "";
-        return str.substr(l, r - l + 1);
-    }
-
     static std::string normalize(std::string line) {
         //comments
         line = line.substr(0, line.find(';'));
 
         return trim_spaces(line);
     }
+
+    inline bool check_cst_name(const std::string& s) {
+        if (s.empty())
+            return false;
+        for (char c : s)
+            if (!(std::isdigit(c) || std::isalpha(c) || c == '_'))
+                return false;
+        if (std::isdigit(s.front()))
+            return false;
+        return true;
+    }
+}
+
+//true if not good
+inline bool var_is_constant(const std::string& instr) {
+    if (instr == "stb") return true;
+    if (instr == "sth") return true;
+    if (instr == "stw") return true;
+    if (instr == "fstw") return true;
+    return false;
 }
 
 

@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <string>
+#include <vector>
 
 
 enum class Section {
@@ -31,6 +32,16 @@ struct Symbol {
     Section section = Section::NONE;
     uint32_t value = 0; // offset in section
     SymbolBinding bind = SymbolBinding::LOCAL;
+};
+
+struct Define {
+    std::vector<std::string> parameters;
+    std::string replacement;
+};
+
+struct Macro {
+    std::vector<std::string> parameters;
+    std::vector<std::string> body;
 };
 
 enum class RelocType {

@@ -10,8 +10,8 @@
 
 struct MotherBoard {
     SimpleCPU cpu;
-    std::vector<uint8_t> ram{};
-    std::vector<DecodedInstr> rom{};
+    std::vector<uint8_t> ram{ };
+    std::vector<DecodedInstr> rom{ };
     bool running = false;
 
     MotherBoard(size_t RAM_SIZE) : cpu(ram) {

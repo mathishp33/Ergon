@@ -21,6 +21,7 @@
   <component name="CMakeRunConfigurationManager">
     <generated>
       <config projectName="Ergon" targetName="ergon_test_1" />
+      <config projectName="Ergon" targetName="ergon_test_2" />
       <config projectName="Ergon" targetName="ergon_test_0" />
     </generated>
   </component>
@@ -31,17 +32,18 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="fixed linker problem">
+    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="added fpu">
+      <change afterPath="$PROJECT_DIR$/tests/test_2/CMakeLists.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/test_2/test_2.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/asm/data.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/asm/data.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Talos/include/asm/decoder.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/asm/decoder.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/asm/instructions.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/asm/instructions.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/asm/linker.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/asm/linker.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/asm/error.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/asm/error.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Talos/include/asm/parser.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/asm/parser.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/computer/core.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/computer/core.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/computer/fpu.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/computer/fpu.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/computer/instructions_handler/run_handler.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/computer/instructions_handler/run_handler.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/asm/utils.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/asm/utils.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Talos/include/computer/instructions_handler/step_handler.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/computer/instructions_handler/step_handler.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/computer/mother_board.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/computer/mother_board.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Talos/include/environment_manager.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/environment_manager.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tests/test_0/test_0.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_0/test_0.cpp" afterDir="false" />
     </list>
@@ -54,7 +56,7 @@
     <option name="formatViaClangd" value="false" />
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="276" />
+    <option name="cachedIndexableFilesCount" value="350" />
   </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
   <component name="Git.Settings">
@@ -103,6 +105,7 @@
     "C/C++ File.test.cpp - Visual Studio.executor": "Run",
     "CMake Application.ergon_test_0.executor": "Run",
     "CMake Application.ergon_test_1.executor": "Run",
+    "CMake Application.ergon_test_2.executor": "Run",
     "CMake Application.ergon_tests.executor": "Run",
     "CMake Debug.Ergon.executor": "Debug",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
@@ -122,7 +125,7 @@
     "git-widget-placeholder": "master",
     "ignore.virus.scanning.warn.message": "true",
     "junie.onboarding.icon.badge.shown": "true",
-    "last_opened_file_path": "C:/Users/Utilisateur/CLionProjects/Ergon/tests/test_1",
+    "last_opened_file_path": "C:/Users/Utilisateur/CLionProjects/Ergon/tests",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -136,6 +139,7 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Utilisateur\CLionProjects\Ergon\tests" />
       <recent name="C:\Users\Utilisateur\CLionProjects\Ergon\tests\test_1" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
@@ -160,9 +164,15 @@
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
+    <configuration name="ergon_test_2" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Ergon" TARGET_NAME="ergon_test_2" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="Ergon" RUN_TARGET_NAME="ergon_test_2">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
     <list>
       <item itemvalue="CMake Application.ergon_test_0" />
       <item itemvalue="CMake Application.ergon_test_1" />
+      <item itemvalue="CMake Application.ergon_test_2" />
       <item itemvalue="CMake Debug.Ergon" />
     </list>
     <recent_temporary>
@@ -221,7 +231,32 @@
       <workItem from="1772806901795" duration="3545000" />
       <workItem from="1772811839709" duration="5669000" />
       <workItem from="1772867263777" duration="9422000" />
-      <workItem from="1772903359031" duration="3119000" />
+      <workItem from="1772903359031" duration="3345000" />
+      <workItem from="1772988895680" duration="2723000" />
+      <workItem from="1773000421174" duration="2820000" />
+      <workItem from="1773068333951" duration="7656000" />
+      <workItem from="1773164538190" duration="3772000" />
+      <workItem from="1773250258780" duration="6100000" />
+      <workItem from="1773325992069" duration="46000" />
+      <workItem from="1784568396678" duration="5789000" />
+      <workItem from="1784629833282" duration="4163000" />
+      <workItem from="1784814960239" duration="12764000" />
+      <workItem from="1784837008401" duration="2593000" />
+      <workItem from="1784841362511" duration="511000" />
+      <workItem from="1784890040663" duration="1466000" />
+      <workItem from="1784907117463" duration="11208000" />
+      <workItem from="1785003708504" duration="1197000" />
+      <workItem from="1785014525639" duration="3351000" />
+      <workItem from="1785020297750" duration="451000" />
+      <workItem from="1785022019083" duration="2440000" />
+      <workItem from="1785061918187" duration="3766000" />
+      <workItem from="1785092587214" duration="2356000" />
+      <workItem from="1785161187118" duration="1850000" />
+      <workItem from="1785334677966" duration="5604000" />
+      <workItem from="1785408698556" duration="14853000" />
+      <workItem from="1785444910576" duration="1362000" />
+      <workItem from="1785487640306" duration="2424000" />
+      <workItem from="1785492665043" duration="9215000" />
     </task>
     <task id="LOCAL-00001" summary="checkpoint commit">
       <option name="closed" value="true" />
@@ -327,7 +362,15 @@
       <option name="project" value="LOCAL" />
       <updated>1772485466684</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="added fpu">
+      <option name="closed" value="true" />
+      <created>1772914642474</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1772914642474</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -337,6 +380,17 @@
     <isAutomaticCheckingOnLaunch value="false" />
     <isAutomaticFoundErrors value="true" />
     <isAutomaticReloadCMake value="true" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="checkpoint commit" />
@@ -352,7 +406,8 @@
     <MESSAGE value="j'ai fait des trucs importants voila tout ..." />
     <MESSAGE value="added license + fixed code" />
     <MESSAGE value="fixed linker problem" />
-    <option name="LAST_COMMIT_MESSAGE" value="fixed linker problem" />
+    <MESSAGE value="added fpu" />
+    <option name="LAST_COMMIT_MESSAGE" value="added fpu" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

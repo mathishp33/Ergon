@@ -6,25 +6,30 @@
 
 enum class ErrorCode : uint8_t {
     OK, //
-    INVALID_BASE, //invalid base (base should be between 2 and 36)
-    STOI_POS_OVERFLOW, //posivite overflow in stoi
-    STOI_NEG_OVERFLOW, //negative overflow in stoi
-    STOI_INVALID_CHAR, //invalid char in stoi
-    INVALID_REG, //invalid register name " "
-    INVALID_BYTE_SIZE, //invalid byte size
-    DUPLICATE_GLOBAL_SYMBOL, //duplicate global symbol " "
-    UNRESOLVED_EXTERN_SYMBOL, //unresolved extern symbol " "
-    UNKNOWN_ENTRY_SYBOL, //unknown entry symbol " "
-    NO_ENTRY_DEFINED, //no entry defined, cannot know what should the starting PC
-    UNKNOWN_SYMBOL, //unknown symbol " "
-    DUPLICATE_LABEL, //duplicate label " "
-    INVALID_ARG_SIZE, //invalid arg size expected ...
-    INVALID_ARG, //invalid arg ...
-    VAR_OUTSIDE_RIGHT_SECTION, //variable is outside ...
-    VAR_OUTSIDE_BSS, //variable is outside bss section
-    RAM_OVERFLOW, //ram overflow
-    RODATA_VAR_MODIFIED, //rodata variable ... is being modified
-
+    INVALID_BASE, // invalid base (base should be between 2 and 36)
+    STOI_OVERFLOW, // overflow in stoi
+    STOI_INVALID_CHAR, // invalid char in stoi
+    INVALID_REG, // invalid register name " "
+    INVALID_BYTE_SIZE, // invalid byte size
+    DUPLICATE_GLOBAL_SYMBOL, // duplicate global symbol " "
+    UNRESOLVED_EXTERN_SYMBOL, // unresolved extern symbol " "
+    UNKNOWN_ENTRY_SYBOL, // unknown entry symbol " "
+    NO_ENTRY_DEFINED, // no entry defined, cannot know what should the starting PC
+    UNKNOWN_SYMBOL, // unknown symbol " ... "
+    DUPLICATE_LABEL, // duplicate label " ... "
+    INVALID_ARG_SIZE, // invalid arg size expected ...
+    INVALID_ARG, // invalid arg ...
+    VAR_OUTSIDE_RIGHT_SECTION, // variable is outside ...
+    VAR_OUTSIDE_BSS, // variable is outside bss section
+    RAM_OVERFLOW, // ram overflow
+    RODATA_VAR_MODIFIED, // rodata variable ... is being modified
+    INVALID_IMM, // invalid ... character
+    STOF_INVALID_CHAR, // invalid char in stof
+    STOF_OVERFLOW, // overflow in stof
+    INVALID_NAME, // invalid name, expected only letters, numbers and '_'
+    INVALID_TOKEN, //invalid token " ... "
+    INVALID_OPERATION, //invalid operation " ... "
+    UNKNOWN_VARIABLE, //unknown variable " ... "
 };
 
 // there is padding, but I don't want to #pragma pack(1) bc it gives warning
