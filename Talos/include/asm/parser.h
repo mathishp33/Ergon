@@ -102,18 +102,18 @@ Types:
 
 */
 
-inline std::pair<ErrorInfo, int> convert_to_bytes(std::string s, std::unordered_map<std::string, int32_t>& constants) {
-    if (constants.contains(s))
-        return { { }, constants[s] };
-    if (s.find('.'))
-        return string_utils::better_stof(s.substr(0, s.size() - s.back() == 'f'));
-    if (string_utils::rep_counter(s, '\'') == 2) {
-        if (s.size() != 3)
-            return { { ErrorCode::INVALID_IMM, "invalid" + s.substr(2, s.size() - 3) + "character" }, 0 };
-        return { { }, s[1] };
-    }
-    return string_utils::better_stoi(s);
-}
+// inline std::pair<ErrorInfo, int> convert_to_bytes(std::string s, std::unordered_map<std::string, int32_t>& constants) {
+//     if (constants.contains(s))
+//         return { { }, constants[s] };
+//     if (s.find('.'))
+//         return string_utils::better_stof(s.substr(0, s.size() - s.back() == 'f'));
+//     if (string_utils::rep_counter(s, '\'') == 2) {
+//         if (s.size() != 3)
+//             return { { ErrorCode::INVALID_IMM, "invalid" + s.substr(2, s.size() - 3) + "character" }, 0 };
+//         return { { }, s[1] };
+//     }
+//     return string_utils::better_stoi(s);
+// }
 
 enum class TokenType { Number, Identifier, Op, LParen, RParen, End };
 
@@ -133,7 +133,7 @@ inline std::pair<ErrorInfo, std::vector<Token>> tokenize(const std::string& str)
     while (i < s.size()) {
         char c = s[i];
 
-        if (std::isdigit(c) || c == '.') {
+        if (std::isdigit(c) || c == '.') { //number: int or float
             size_t start = i;
             if (c == '0' && i + 1 < s.size())
                 if (s[i + 1] == 'x' || s[i + 1] == 'X' || s[i + 1] == 'b' || s[i + 1] == 'B')
@@ -142,13 +142,17 @@ inline std::pair<ErrorInfo, std::vector<Token>> tokenize(const std::string& str)
             std::string sub_str = s.substr(start, i - start);
             tokens.emplace_back(TokenType::Number, sub_str, sub_str.find('f') != std::string::npos || sub_str.find('.') != std::string::npos);
         }
-
-        else if (std::isalpha(c) || c == '_') {
+        else if (c == '\'') { //char
+            size_t start = i;
+            while (i < s.size() && s[i] != '\'') i++;
+            if (i - start != 3) return { { ErrorCode::INVALID_TOKEN, "invalid token \"" + s.substr(start, i - start) + "\"" }, { } };
+            tokens.emplace_back(TokenType::Number, s.substr(start, i - start));
+        }
+        else if (std::isalpha(c) || c == '_') { //variable or constant
             size_t start = i;
             while (i < s.size() && (std::isalnum(s[i]) || s[i] == '_')) i++;
             tokens.emplace_back(TokenType::Identifier, s.substr(start, i - start));
         }
-
         else if (c == '(') {
             tokens.emplace_back(TokenType::LParen, std::to_string(c));
             i++;
@@ -157,8 +161,7 @@ inline std::pair<ErrorInfo, std::vector<Token>> tokenize(const std::string& str)
             tokens.emplace_back(TokenType::RParen, std::to_string(c));
             i++;
         }
-
-        else {
+        else { //operation
             if (s[i] == '-') {
                 tokens.emplace_back(TokenType::Op, "-");
                 i++;

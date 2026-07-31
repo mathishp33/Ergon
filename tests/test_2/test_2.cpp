@@ -85,6 +85,10 @@ int main() {
     parser_test("1 + + 2");          //
     parser_test("");                 //
 
+    parser_test("\'a\'");
+    parser_test("\'a4\'");
+    parser_test("\"a\"");
+
 
     return 0;
 }

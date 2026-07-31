@@ -27,12 +27,9 @@ AJOUTER parser numérique pour les imm (ex: 0x3 + 0b11001 * (-133))
 AJOUTER truc qui détecte les ram overflow lors des store et load !!
 UPDATE le readme
 AJOUTER les struct, offset, .asciz
-AJOUTER float type (my var:
-                        .float 4.56
-AJOUTER meilleurs arrays
-AJOUTER meilleur accès arrays
+
+AJOUTER meilleur accès arrays (voir "case VAR:" et "parse_var")
 AJOUTER %if, %rep et %ifdef
-FINIR le parser
 FINIR le preproccesseur (macro, define)
 */
 

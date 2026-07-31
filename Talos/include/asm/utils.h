@@ -72,6 +72,12 @@ namespace string_utils {
     }
 
     inline std::pair<ErrorInfo, int32_t> better_stoi(const std::string& str) {
+        if (str.starts_with("\'") && str.ends_with("\'")) {
+            if (str.size() != 3) return { { ErrorCode::STOI_INVALID_CHAR, "invalid char in stoi" }, 0 };
+            std::string sub_str = str.substr(1, str.size() - 2);
+            return { { }, (int)sub_str[0] };
+        }
+
         int base = 10;
         if (str.length() > 2) {
             if (str.starts_with("0x"))

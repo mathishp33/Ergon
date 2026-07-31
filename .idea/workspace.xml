@@ -32,20 +32,12 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="added fpu">
-      <change afterPath="$PROJECT_DIR$/tests/test_2/CMakeLists.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/test_2/test_2.cpp" afterDir="false" />
+    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="added parser">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/asm/data.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/asm/data.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Talos/include/asm/decoder.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/asm/decoder.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/asm/error.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/asm/error.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Talos/include/asm/parser.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/asm/parser.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Talos/include/asm/utils.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/asm/utils.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/computer/instructions_handler/step_handler.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/computer/instructions_handler/step_handler.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/computer/mother_board.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/computer/mother_board.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/environment_manager.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/environment_manager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_0/test_0.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_0/test_0.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_2/test_2.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_2/test_2.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -150,7 +142,7 @@
       <recent name="C:\Users\Utilisateur\CLionProjects\Ergon\Talos\include\COMPUTER" />
     </key>
   </component>
-  <component name="RunManager" selected="CMake Application.ergon_test_0">
+  <component name="RunManager" selected="CMake Application.ergon_test_2">
     <configuration name="Ergon" type="CMakeListConfigurationType" factoryName="CMakeListConfigurationFactory" temporary="true">
       <method v="2" />
     </configuration>
@@ -256,7 +248,7 @@
       <workItem from="1785408698556" duration="14853000" />
       <workItem from="1785444910576" duration="1362000" />
       <workItem from="1785487640306" duration="2424000" />
-      <workItem from="1785492665043" duration="9215000" />
+      <workItem from="1785492665043" duration="12651000" />
     </task>
     <task id="LOCAL-00001" summary="checkpoint commit">
       <option name="closed" value="true" />
@@ -370,7 +362,15 @@
       <option name="project" value="LOCAL" />
       <updated>1772914642474</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="added parser">
+      <option name="closed" value="true" />
+      <created>1785503529432</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1785503529432</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -407,7 +407,8 @@
     <MESSAGE value="added license + fixed code" />
     <MESSAGE value="fixed linker problem" />
     <MESSAGE value="added fpu" />
-    <option name="LAST_COMMIT_MESSAGE" value="added fpu" />
+    <MESSAGE value="added parser" />
+    <option name="LAST_COMMIT_MESSAGE" value="added parser" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
