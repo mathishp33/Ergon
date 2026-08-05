@@ -207,7 +207,7 @@ It supports:
 |---------|-----------------------------|----------------------------------|
 | %equ    | declare a constant          | %equ my_cst 43                   |
 | %assign | declare a variable          | %assign i 43 + a                 |
-| %define | declare a text substitution | %define DINC(reg) addi reg reg 2 |
+| %define | declare a text substitution | %define DINC(reg) addi reg, reg, 2 |
 
 ### Instructions
 
