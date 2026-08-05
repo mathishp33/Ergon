@@ -164,7 +164,7 @@ ALU Flags:
 
 The assembler is composed of: 
 \
-ASM source code ─► Assembler (per file)
+ASM source code ─► Preprocessor + Assembler (per file)
 \
 Assembler (per file) ─► ObjectFile (.o-like)
 \
@@ -175,6 +175,41 @@ Linker (multi-file, static libs) ─► Executable image (ELF-like)
 Executable (ELF-like) ─► Loader (ROM)
 \
 Loader (ROM) ─► Interpreter (CPU level)
+
+### Parser 
+
+The Preprocessor & the Assembler support an advanced parser for immediate values.
+
+The parser is capable of:
+
+ - Separate float and int parsing (32-bit)
+ - Basics operations (+, -, *, /)
+ - Advanced operations (%, **)
+ - Comparisons (>, <, >=, <=, ==)
+ - Bit operations (>>, <<, &, |, ^, ~)
+ - Parenthesis
+ - Supporting various inputs:
+   - decimal
+   - hexadecimal (0x)
+   - binary (0b)
+   - octet (0o)
+   - char ('')
+   - float (.f)
+   - previously declared constants & variables
+
+### Preprocessor
+
+The preprocessor a useful tool to use especially when programming in assembly.
+
+It supports: 
+
+| name    | description                 | example                          | 
+|---------|-----------------------------|----------------------------------|
+| %equ    | declare a constant          | %equ my_cst 43                   |
+| %assign | declare a variable          | %assign i 43 + a                 |
+| %define | declare a text substitution | %define DINC(reg) addi reg reg 2 |
+
+### Instructions
 
 Here is a complete list of all the instruction: 
 

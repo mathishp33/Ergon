@@ -3,7 +3,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_executable(ergon_test_0
-        test_0.cpp
+        one_file.cpp
 )
 
 target_link_libraries(ergon_test_0

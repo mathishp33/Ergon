@@ -71,6 +71,35 @@ namespace string_utils {
         return s;
     }
 
+    inline void replace_string(std::string& s, const std::string& from, const std::string& to) {
+        if (from.empty() || from == to)
+            return;
+
+        size_t pos = 0;
+        while ((pos = s.find(from, pos)) != std::string::npos) {
+            s.replace(pos, from.length(), to);
+            pos += to.length();
+        }
+    }
+
+    inline void replace_string_as_token(std::string& s, const std::string& from, const std::string& to) {
+        if (from.empty() || from == to)
+            return;
+
+        size_t pos = 0;
+        while ((pos = s.find(from, pos)) != std::string::npos) {
+            size_t dec = pos - 1;
+            size_t inc = pos + from.size();
+            if ((pos == 0 || s[dec] == ',' || s[dec] == ' ' || s[dec] == '\n') && (inc >= s.size() || s[inc] == ',' || s[inc] == ' ' || s[inc] == '\n')) {
+                s.replace(pos, from.length(), to);
+                pos += to.length();
+            }
+            else {
+                pos += from.length();
+            }
+        }
+    }
+
     inline std::pair<ErrorInfo, int32_t> better_stoi(const std::string& str) {
         if (str.starts_with("\'") && str.ends_with("\'")) {
             if (str.size() != 3) return { { ErrorCode::STOI_INVALID_CHAR, "invalid char in stoi" }, 0 };

@@ -10,6 +10,8 @@
 
 #include <unordered_map>
 #include <string>
+#include <functional>
+
 
 /*
 VOIR TUTOS sur www.tutorialspoint.com/assembly_programming
@@ -58,48 +60,107 @@ struct PreProcesser {
     std::unordered_map<std::string, Define> defines; // %define
     std::unordered_map<std::string, Macro> macros; // %macro
 
-    ErrorInfo preprocess(const std::string& file) {
+    static std::string delimit_string(const std::string& s, size_t& idx, const std::function<bool(char, size_t)>& condition ) {
+        size_t start = idx;
+        for (; idx < s.size() && condition(s[idx], idx); idx++) {}
+        return s.substr(start, idx - start);
+    }
+
+    ErrorInfo preprocess(std::string& file) {
         std::vector<std::string> lines = string_utils::slice_str(file, '\n');
         for (size_t i = 0; i < lines.size(); i++) {
             std::string line = string_utils::normalize(lines[i]);
 
             if (line.empty()) continue;
 
+            //handle defines
+            for (const auto& [name, define] : defines) {
+                if (define.parameters.empty()) {
+                    std::string line_copy = line;
+                    string_utils::replace_string_as_token(line_copy, name, define.replacement);
+                    string_utils::replace_string_as_token(file, line, line_copy);
+                }
+                else {
+                    if (line.starts_with(name)) {
+                        std::string line_copy = line;
+                        if (string_utils::rep_counter(line, ')') != 1)
+                            return { ErrorCode::MISMATCHED_PAR, "mismatched parenthesis", i };
+                        if (string_utils::rep_counter(line, '(') != 1)
+                            return { ErrorCode::MISMATCHED_PAR, "mismatched parenthesis", i };
+                        if (line[name.size()] == '(') {
+                            size_t idx = name.size() + 1;
+                            std::string compacted_args = delimit_string(line, idx, [](char c, size_t idx) { return c != ')'; });
+                            std::vector<std::string> args = string_utils::slice_str(compacted_args, ',');
+                            for (auto& arg : args)
+                                arg = string_utils::remove_char(arg, ' ');
+                            string_utils::replace_string_as_token(line_copy, line, define.replacement);
+                            for (size_t j = 0; j < args.size(); j++) {
+                                string_utils::replace_string_as_token(line_copy, define.parameters[j], args[j]);
+                            }
+                            string_utils::replace_string_as_token(file, line, line_copy);
+                        }
+                        else {
+                            return { ErrorCode::MISMATCHED_PAR, "mismatched parenthesis", i };
+                        }
+
+                    }
+                }
+            }
             if (!line.starts_with("%")) continue;
 
-            const std::vector<std::string> tokens = string_utils::slice_str(line, ' ');
-            const std::string& instr = tokens[0];
+            size_t idx = 0;
+            std::string instr = delimit_string(line, idx, [](char c, size_t idx) { return c != ' '; });
+            size_t instr_idx = idx++;
 
+            std::string name = delimit_string(line, idx, [](char c, size_t idx) { return c != ' ' && c != '('; });
+            size_t name_idx = idx++;
+            if (!string_utils::check_cst_name(name))
+                return { ErrorCode::INVALID_NAME, "invalid name, expected only letters, numbers and '_' ", i };
 
-            if (instr == ".equ") {
-                if (tokens.size() != 3)
-                    return { ErrorCode::INVALID_ARG_SIZE, "invalid argument size, expected 2", i };
-
-                auto [e, value] = parse_expr(tokens[2], constants, variables);
+            if (instr == "%equ") {
+                std::string expr = line.substr(name_idx);
+                auto [e, value] = parse_expr(expr, constants, variables);
                 if (e.code != ErrorCode::OK) return e;
 
-                if (!string_utils::check_cst_name(tokens[1]))
-                    return { ErrorCode::INVALID_NAME, "invalid name, expected only letters, numbers and '_' ", i };
-                constants[tokens[1]] = value;
-                return { };
+                if (constants.contains(name))
+                    return { ErrorCode::DUPLICATE_CONSTANT, "duplicate constant \"" + name + "\"", i };
+                constants[name] = value;
             }
             if (instr == "%assign") {
-                if (tokens.size() != 3)
-                    return { ErrorCode::INVALID_ARG_SIZE, "invalid argument size, expected 2 arguments" };
-
-                auto [e, value] = parse_expr(tokens[2], constants, variables);
+                std::string expr = line.substr(name_idx);
+                auto [e, value] = parse_expr(expr, constants, variables);
                 if (e.code != ErrorCode::OK) return e;
 
-                if (!string_utils::check_cst_name(tokens[1]))
-                    return { ErrorCode::INVALID_NAME, "invalid name, expected only letters, numbers and '_' ", i };
-                variables[tokens[1]] = value;
+                variables[name] = value;
             }
             if (instr == "%define") {
+                std::vector<std::string> args;
+                std::string replacement;
+                if (line[idx - 1] == '(') { //with args
+                    if (string_utils::rep_counter(line, ')') != 1)
+                        return { ErrorCode::MISMATCHED_PAR, "mismatched parenthesis", i };
+                    if (string_utils::rep_counter(line, '(') != 1)
+                        return { ErrorCode::MISMATCHED_PAR, "mismatched parenthesis", i };
 
+                    std::string compacted_args = delimit_string(line, idx, [](char c, size_t idx) { return c != ')'; });
+                    args = string_utils::slice_str(compacted_args, ',');
+                    for (auto& arg : args)
+                        arg = string_utils::remove_char(arg, ' ');
+                    replacement = line.substr(++idx);
+                }
+                else { //no args
+                    replacement = line.substr(idx);
+                }
+
+                if (defines.contains(name))
+                    return { ErrorCode::DUPLICATE_DEFINE, "duplicate define \"" + name + "\"", i };
+                defines[name] = { args, replacement };
             }
             if (instr == "%macro") {
 
             }
+
+            string_utils::replace_string_as_token(file, line , "");
 
         }
 
@@ -458,11 +519,13 @@ struct AsmDecoder {
         vars.clear();
         cur_pc = 0;
 
-        lines = string_utils::slice_str(file, '\n');
-        if (lines.empty()) return { };
-
         preproc = PreProcesser();
-        //preproc.preprocess(file);
+        std::string copy_file = file;
+        ErrorInfo e_pp = preproc.preprocess(copy_file);
+        if (e_pp.code != ErrorCode::OK) return { obj_file, e_pp };
+
+        lines = string_utils::slice_str(copy_file, '\n');
+        if (lines.empty()) return { };
 
         auto e_fp = first_pass();
         if (e_fp.code != ErrorCode::OK) return { obj_file, e_fp };

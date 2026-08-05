@@ -52,23 +52,6 @@ static std::pair<ErrorInfo, uint8_t> parse_reg(const std::string& s) {
 }
 
 //temporary IMM parser
-// static std::pair<ErrorInfo, int> parse_imm(const std::string& s, std::unordered_map<std::string, int32_t>& constants) {
-//     if (s.starts_with("0x"))
-//         return string_utils::better_stoi(s.substr(2), nullptr, 16);
-//     if (s.starts_with("0b"))
-//         return string_utils::better_stoi(s.substr(2), nullptr, 2);
-//     if (constants.contains(s))
-//         return { {}, constants[s] };
-//     if (s.find('.')) {
-//         return string_utils::better_stof(s.substr(2), nullptr, 2);
-//     }
-//     if (string_utils::rep_counter(s, '\''))
-//         //do char
-//     if (string_utils::rep_counter(s, '\"'))
-//         //do string enft faut faire mieux parce que on a qu'UN SEUL int
-//
-//     return string_utils::better_stoi(s);
-// }
 
 /*
 Operations:
@@ -97,7 +80,6 @@ Types:
  (U)INT->INT32 (... | numbers)
  FLOAT->INT32 (.... | ...e... | numbers)
  CHAR->INT32 ('...' | letter)
- 4CHAR->INT32 ("..." | letters)
  VAR/CST (... | letters)
 
 */
@@ -143,8 +125,9 @@ inline std::pair<ErrorInfo, std::vector<Token>> tokenize(const std::string& str)
             tokens.emplace_back(TokenType::Number, sub_str, sub_str.find('f') != std::string::npos || sub_str.find('.') != std::string::npos);
         }
         else if (c == '\'') { //char
-            size_t start = i;
+            size_t start = i++;
             while (i < s.size() && s[i] != '\'') i++;
+            i++;
             if (i - start != 3) return { { ErrorCode::INVALID_TOKEN, "invalid token \"" + s.substr(start, i - start) + "\"" }, { } };
             tokens.emplace_back(TokenType::Number, s.substr(start, i - start));
         }
@@ -518,8 +501,7 @@ inline std::pair<ErrorInfo, int32_t> parse_expr(const std::string& expr, const s
     if (e.code != ErrorCode::OK) return { e, 0 };
 
     std::unordered_map<std::string, Value> merged = csts;
-    for (const auto& [s, v] : vars)
-        merged[s] = v;
+    merged.insert(vars.begin(), vars.end());
 
     auto parser = Parser(tokens, merged);
 

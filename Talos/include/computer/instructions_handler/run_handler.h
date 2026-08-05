@@ -43,6 +43,7 @@ inline void run(SimpleCore& c, const std::vector<DecodedInstr>& prog) {
             &&OP_HALT
         };
 
+    if (prog.empty()) return;
     //magie noire >w<
     #define FETCH() instr = &prog[c.PC];
     #define DISPATCH() goto *dispatch_table[instr->opcode]

@@ -89,6 +89,32 @@ int main() {
     parser_test("\'a4\'");
     parser_test("\"a\"");
 
+    std::string s0 = "movi r0, SIZE";
+    string_utils::replace_string(s0, "SIZE", "64");
+    std::cout << s0 << "\n";
+
+    std::string s1 = "addi reg,reg,1";
+    string_utils::replace_string(s1, "reg", "r9");
+    std::cout << s1 << "\n";
+
+    s0 = "movi r0, mSIZE";
+    string_utils::replace_string_as_token(s0, "SIZE", "64");
+    std::cout << s0 << "\n";
+
+    s0 = "movi r0, mSIZEm";
+    string_utils::replace_string_as_token(s0, "SIZE", "64");
+    std::cout << s0 << "\n";
+
+    s0 = "movi r0, mSIZEm";
+    string_utils::replace_string_as_token(s0, "SIZE", "64");
+    std::cout << s0 << "\n";
+
+    s0 = "movi r0, SIZE";
+    string_utils::replace_string_as_token(s0, "SIZE", "64");
+    std::cout << s0 << "\n";
+
+
+
 
     return 0;
 }

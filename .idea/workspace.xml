@@ -20,6 +20,7 @@
   </component>
   <component name="CMakeRunConfigurationManager">
     <generated>
+      <config projectName="Ergon" targetName="ergon_test_3" />
       <config projectName="Ergon" targetName="ergon_test_1" />
       <config projectName="Ergon" targetName="ergon_test_2" />
       <config projectName="Ergon" targetName="ergon_test_0" />
@@ -33,11 +34,22 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="added parser">
+      <change afterPath="$PROJECT_DIR$/tests/test_3/CMakeLists.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/test_3/preproc.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Talos/include/asm/decoder.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/asm/decoder.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/asm/error.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/asm/error.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Talos/include/asm/parser.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/asm/parser.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Talos/include/asm/utils.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/asm/utils.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_2/test_2.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_2/test_2.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/computer/instructions_handler/run_handler.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/computer/instructions_handler/run_handler.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_0/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_0/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_0/test_0.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_0/one_file.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_1/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_1/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_1/test_1.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_1/mul_file.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_2/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_2/CMakeLists.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_2/test_2.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_2/parser.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -48,7 +60,7 @@
     <option name="formatViaClangd" value="false" />
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="350" />
+    <option name="cachedIndexableFilesCount" value="424" />
   </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
   <component name="Git.Settings">
@@ -98,6 +110,7 @@
     "CMake Application.ergon_test_0.executor": "Run",
     "CMake Application.ergon_test_1.executor": "Run",
     "CMake Application.ergon_test_2.executor": "Run",
+    "CMake Application.ergon_test_3.executor": "Run",
     "CMake Application.ergon_tests.executor": "Run",
     "CMake Debug.Ergon.executor": "Debug",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
@@ -142,7 +155,7 @@
       <recent name="C:\Users\Utilisateur\CLionProjects\Ergon\Talos\include\COMPUTER" />
     </key>
   </component>
-  <component name="RunManager" selected="CMake Application.ergon_test_2">
+  <component name="RunManager" selected="CMake Application.ergon_test_3">
     <configuration name="Ergon" type="CMakeListConfigurationType" factoryName="CMakeListConfigurationFactory" temporary="true">
       <method v="2" />
     </configuration>
@@ -161,10 +174,16 @@
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
+    <configuration name="ergon_test_3" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Ergon" TARGET_NAME="ergon_test_3" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="Ergon" RUN_TARGET_NAME="ergon_test_3">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
     <list>
       <item itemvalue="CMake Application.ergon_test_0" />
       <item itemvalue="CMake Application.ergon_test_1" />
       <item itemvalue="CMake Application.ergon_test_2" />
+      <item itemvalue="CMake Application.ergon_test_3" />
       <item itemvalue="CMake Debug.Ergon" />
     </list>
     <recent_temporary>
@@ -248,7 +267,17 @@
       <workItem from="1785408698556" duration="14853000" />
       <workItem from="1785444910576" duration="1362000" />
       <workItem from="1785487640306" duration="2424000" />
-      <workItem from="1785492665043" duration="12651000" />
+      <workItem from="1785492665043" duration="14918000" />
+      <workItem from="1785582614125" duration="7214000" />
+      <workItem from="1785676378324" duration="2778000" />
+      <workItem from="1785690426856" duration="5229000" />
+      <workItem from="1785702031749" duration="144000" />
+      <workItem from="1785767852144" duration="80000" />
+      <workItem from="1785768655045" duration="2535000" />
+      <workItem from="1785791092589" duration="1721000" />
+      <workItem from="1785853404094" duration="1864000" />
+      <workItem from="1785856707581" duration="903000" />
+      <workItem from="1785937267358" duration="4380000" />
     </task>
     <task id="LOCAL-00001" summary="checkpoint commit">
       <option name="closed" value="true" />
@@ -370,7 +399,15 @@
       <option name="project" value="LOCAL" />
       <updated>1785503529432</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="added parser">
+      <option name="closed" value="true" />
+      <created>1785508733212</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1785508733212</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -415,7 +452,7 @@
       <breakpoints>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/Talos/include/asm/decoder.h</url>
-          <line>16</line>
+          <line>18</line>
           <properties>
             <option name="hitCountValue" value="1" />
           </properties>
