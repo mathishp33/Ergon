@@ -159,6 +159,34 @@ namespace string_utils {
         return trim_spaces(line);
     }
 
+    inline void remove_blank_lines(std::string& s) {
+        std::string result;
+
+        size_t begin = 0;
+        while (begin < s.size()) {
+            size_t end = s.find('\n', begin);
+            if (end == std::string::npos)
+                end = s.size();
+
+            bool blank = true;
+            for (size_t i = begin; i < end; ++i) {
+                if (s[i] != ' ' && s[i] != '\t') {
+                    blank = false;
+                    break;
+                }
+            }
+
+            if (!blank) {
+                result.append(s, begin, end - begin);
+
+                if (end != s.size())
+                    result += '\n';
+            }
+            begin = end + 1;
+        }
+        s = std::move(result);
+    }
+
     inline bool check_cst_name(const std::string& s) {
         if (s.empty())
             return false;

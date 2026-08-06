@@ -203,11 +203,12 @@ The preprocessor a useful tool to use especially when programming in assembly.
 
 It supports: 
 
-| name    | description                 | example                          | 
-|---------|-----------------------------|----------------------------------|
-| %equ    | declare a constant          | %equ my_cst 43                   |
-| %assign | declare a variable          | %assign i 43 + a                 |
-| %define | declare a text substitution | %define DINC(reg) addi reg reg 2 |
+| name    | description                  | example                                | 
+|---------|------------------------------|----------------------------------------|
+| %equ    | declares a constant          | %equ my_cst 43                         |
+| %assign | declares a variable          | %assign i 43 + a                       |
+| %define | declares a text substitution | %define DINC(reg) addi reg reg 2       |
+| %macro  | declares a macro             | %macro RET() <br/> ret <br/> %endmacro |
 
 ### Instructions
 

@@ -11,7 +11,9 @@ int main() {
 
     .section .text
      %define SIZE 64
-     %define INC(reg) addi reg, reg, 1
+     %macro INC(reg)
+      addi reg, reg, 1
+     %endmacro
      ldw r0, var
      INC(r0)
     .section .data

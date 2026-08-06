@@ -33,6 +33,8 @@ enum class ErrorCode : uint8_t {
     DUPLICATE_CONSTANT, // duplicate constant " ... "
     DUPLICATE_DEFINE, // duplicate define " ... "
     MISMATCHED_PAR, // mismatched parenthesis
+    DUPLICATE_MACRO, // duplicate macro " ... "
+    MISSING_ENDMACRO, //missing an %endmacro
 };
 
 // there is padding, but I don't want to #pragma pack(1) bc it gives warning

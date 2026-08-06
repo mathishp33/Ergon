@@ -5,7 +5,6 @@
 #include "instructions.h"
 #include "variables.h"
 #include "parser.h"
-#include "../computer/core.h"
 #include "data.h"
 
 #include <unordered_map>
@@ -16,7 +15,7 @@
 /*
 VOIR TUTOS sur www.tutorialspoint.com/assembly_programming
 
-A FAIRE:
+TODO:
 
 AJOUTER heap & stack: malloc & free instructions, (garbage collector (kind of) ?) (.heap & .stack sections)
 Super-instructions (merge addi+cmp+jl)
@@ -32,7 +31,7 @@ AJOUTER les struct, offset, .asciz
 
 AJOUTER meilleur accès arrays (voir "case VAR:" et "parse_var")
 AJOUTER %if, %rep et %ifdef
-FINIR le preproccesseur (macro, define)
+FINIR le preproccesseur (macro)
 */
 
 
@@ -94,9 +93,10 @@ struct PreProcesser {
                             for (auto& arg : args)
                                 arg = string_utils::remove_char(arg, ' ');
                             string_utils::replace_string_as_token(line_copy, line, define.replacement);
-                            for (size_t j = 0; j < args.size(); j++) {
+                            if (define.parameters.size() != args.size())
+                                return { ErrorCode::INVALID_ARG_SIZE, "invalid arg size, expected " + std::to_string(define.parameters.size()), i };
+                            for (size_t j = 0; j < args.size(); j++)
                                 string_utils::replace_string_as_token(line_copy, define.parameters[j], args[j]);
-                            }
                             string_utils::replace_string_as_token(file, line, line_copy);
                         }
                         else {
@@ -106,6 +106,36 @@ struct PreProcesser {
                     }
                 }
             }
+            for (const auto& [name, macro] : macros) {
+                if (line.starts_with(name)) {
+                    if (string_utils::rep_counter(line, ')') != 1)
+                        return { ErrorCode::MISMATCHED_PAR, "mismatched parenthesis", i };
+                    if (string_utils::rep_counter(line, '(') != 1)
+                        return { ErrorCode::MISMATCHED_PAR, "mismatched parenthesis", i };
+                    if (line[name.size()] == '(') {
+                        size_t idx = name.size() + 1;
+                        std::string compacted_args = delimit_string(line, idx, [](char c, size_t idx) { return c != ')'; });
+                        std::vector<std::string> args = string_utils::slice_str(compacted_args, ',');
+                        for (auto& arg : args)
+                            arg = string_utils::remove_char(arg, ' ');
+                        if (macro.parameters.size() != args.size())
+                            return { ErrorCode::INVALID_ARG_SIZE, "invalid arg size, expected " + std::to_string(macro.parameters.size()), i };
+                        std::string body;
+                        for (const auto& local_line : macro.body) {
+                            std::string local_line_copy = local_line;
+                            for (size_t j = 0; j < args.size(); j++)
+                                string_utils::replace_string_as_token(local_line_copy, macro.parameters[j], args[j]);
+                            body += local_line_copy + "\n";
+                        }
+                        string_utils::replace_string_as_token(file, line, body);
+                    }
+                    else {
+                        return { ErrorCode::MISMATCHED_PAR, "mismatched parenthesis", i };
+                    }
+                }
+            }
+
+
             if (!line.starts_with("%")) continue;
 
             size_t idx = 0;
@@ -125,6 +155,7 @@ struct PreProcesser {
                 if (constants.contains(name))
                     return { ErrorCode::DUPLICATE_CONSTANT, "duplicate constant \"" + name + "\"", i };
                 constants[name] = value;
+                string_utils::replace_string_as_token(file, line , "");
             }
             if (instr == "%assign") {
                 std::string expr = line.substr(name_idx);
@@ -132,6 +163,7 @@ struct PreProcesser {
                 if (e.code != ErrorCode::OK) return e;
 
                 variables[name] = value;
+                string_utils::replace_string_as_token(file, line , "");
             }
             if (instr == "%define") {
                 std::vector<std::string> args;
@@ -155,14 +187,49 @@ struct PreProcesser {
                 if (defines.contains(name))
                     return { ErrorCode::DUPLICATE_DEFINE, "duplicate define \"" + name + "\"", i };
                 defines[name] = { args, replacement };
+                string_utils::replace_string_as_token(file, line , "");
             }
             if (instr == "%macro") {
+                std::vector<std::string> args;
+                std::vector<std::string> body;
+                if (line[idx - 1] == '(') { //with args
+                    if (string_utils::rep_counter(line, ')') != 1)
+                        return { ErrorCode::MISMATCHED_PAR, "mismatched parenthesis", i };
+                    if (string_utils::rep_counter(line, '(') != 1)
+                        return { ErrorCode::MISMATCHED_PAR, "mismatched parenthesis", i };
+
+                    std::string compacted_args = delimit_string(line, idx, [](char c, size_t idx) { return c != ')'; });
+                    args = string_utils::slice_str(compacted_args, ',');
+                    for (auto& arg : args)
+                        arg = string_utils::remove_char(arg, ' ');
+
+                    if (file.find_first_of("%endmacro") == std::string::npos)
+                        return { ErrorCode::MISSING_ENDMACRO, "missing an %endmacro", i };
+                    size_t j = i + 1;
+                    for (; j < lines.size(); j++) {
+                        if (string_utils::normalize(lines[j]).starts_with("%endmacro"))
+                            break;
+                        body.emplace_back(lines[j]);
+                    }
+                    for (size_t k = i; k < j + 1; k++)
+                        string_utils::replace_string_as_token(file, lines[k] , "");
+                    i = j + 1;
+                }
+                else {
+                    return { ErrorCode::MISMATCHED_PAR, "mismatched parenthesis", i };
+                }
+
+                if (macros.contains(name))
+                    return { ErrorCode::DUPLICATE_MACRO, "duplicate macro \"" + name + "\"", i };
+                macros[name] = { args, body };
+            }
+            if (instr == "%rep") {
 
             }
 
-            string_utils::replace_string_as_token(file, line , "");
 
         }
+        string_utils::remove_blank_lines(file);
 
         return { };
     }
