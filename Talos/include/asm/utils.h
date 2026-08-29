@@ -90,7 +90,7 @@ namespace string_utils {
         while ((pos = s.find(from, pos)) != std::string::npos) {
             size_t dec = pos - 1;
             size_t inc = pos + from.size();
-            if ((pos == 0 || s[dec] == ',' || s[dec] == ' ' || s[dec] == '\n') && (inc >= s.size() || s[inc] == ',' || s[inc] == ' ' || s[inc] == '\n')) {
+            if ((pos == 0 || s[dec] == ',' || s[dec] == ' ' || s[dec] == '\n' || s[dec] == '{') && (inc >= s.size() || s[inc] == ',' || s[inc] == ' ' || s[inc] == '\n' || s[dec] == '}')) {
                 s.replace(pos, from.length(), to);
                 pos += to.length();
             }

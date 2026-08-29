@@ -30,8 +30,7 @@ UPDATE le readme
 AJOUTER les struct, offset, .asciz
 
 AJOUTER meilleur accès arrays (voir "case VAR:" et "parse_var")
-AJOUTER %if, %rep et %ifdef
-FINIR le preproccesseur (macro)
+AJOUTER %if, %rep, %ifdef et %include
 */
 
 
@@ -223,7 +222,7 @@ struct PreProcesser {
                     return { ErrorCode::DUPLICATE_MACRO, "duplicate macro \"" + name + "\"", i };
                 macros[name] = { args, body };
             }
-            if (instr == "%rep") {
+            if (instr == "%if") {
 
             }
 
