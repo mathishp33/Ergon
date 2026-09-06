@@ -33,10 +33,13 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="added %macro">
+    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="fixed linker problem">
+      <change beforePath="$PROJECT_DIR$/.idea/editor.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/editor.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Talos/include/asm/decoder.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/asm/decoder.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/asm/utils.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/asm/utils.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/asm/error.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/asm/error.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/environment_manager.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/environment_manager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_3/preproc.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_3/preproc.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -47,7 +50,7 @@
     <option name="formatViaClangd" value="false" />
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="424" />
+    <option name="cachedIndexableFilesCount" value="276" />
   </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
   <component name="Git.Settings">
@@ -90,48 +93,46 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;C/C++ File.test.cpp - Visual Studio (1).executor&quot;: &quot;Run&quot;,
-    &quot;C/C++ File.test.cpp - Visual Studio.executor&quot;: &quot;Run&quot;,
-    &quot;CMake Application.ergon_test_0.executor&quot;: &quot;Run&quot;,
-    &quot;CMake Application.ergon_test_1.executor&quot;: &quot;Run&quot;,
-    &quot;CMake Application.ergon_test_2.executor&quot;: &quot;Run&quot;,
-    &quot;CMake Application.ergon_test_3.executor&quot;: &quot;Run&quot;,
-    &quot;CMake Application.ergon_tests.executor&quot;: &quot;Run&quot;,
-    &quot;CMake Debug.Ergon.executor&quot;: &quot;Debug&quot;,
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.RadMigrateCodeStyle&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.west.config.association.type.startup.service&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
-    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
-    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/Utilisateur/CLionProjects/Ergon/tests&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;org.rust.first.attach.projects&quot;: &quot;true&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;CPPToolchains&quot;,
-    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "C/C++ File.test.cpp - Visual Studio (1).executor": "Run",
+    "C/C++ File.test.cpp - Visual Studio.executor": "Run",
+    "CMake Application.ergon_test_0.executor": "Run",
+    "CMake Application.ergon_test_1.executor": "Run",
+    "CMake Application.ergon_test_3.executor": "Debug",
+    "CMake Application.ergon_tests.executor": "Run",
+    "CMake Debug.Ergon.executor": "Debug",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.RadMigrateCodeStyle": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "RunOnceActivity.west.config.association.type.startup.service": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "git-widget-placeholder": "master",
+    "ignore.virus.scanning.warn.message": "true",
+    "junie.onboarding.icon.badge.shown": "true",
+    "last_opened_file_path": "C:/Users/Utilisateur/CLionProjects/Ergon/tests/test_1",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "org.rust.first.attach.projects": "true",
+    "settings.editor.selected.configurable": "CPPToolchains",
+    "to.speed.mode.migration.done": "true",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\Users\Utilisateur\CLionProjects\Ergon\tests" />
       <recent name="C:\Users\Utilisateur\CLionProjects\Ergon\tests\test_1" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
@@ -143,6 +144,11 @@
     </key>
   </component>
   <component name="RunManager" selected="CMake Application.ergon_test_3">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="Ergon" type="CMakeListConfigurationType" factoryName="CMakeListConfigurationFactory" temporary="true">
       <method v="2" />
     </configuration>
@@ -167,11 +173,11 @@
       </method>
     </configuration>
     <list>
-      <item itemvalue="CMake Debug.Ergon" />
       <item itemvalue="CMake Application.ergon_test_0" />
       <item itemvalue="CMake Application.ergon_test_1" />
       <item itemvalue="CMake Application.ergon_test_2" />
       <item itemvalue="CMake Application.ergon_test_3" />
+      <item itemvalue="CMake Debug.Ergon" />
     </list>
     <recent_temporary>
       <list>
@@ -229,45 +235,7 @@
       <workItem from="1772806901795" duration="3545000" />
       <workItem from="1772811839709" duration="5669000" />
       <workItem from="1772867263777" duration="9422000" />
-      <workItem from="1772903359031" duration="3345000" />
-      <workItem from="1772988895680" duration="2723000" />
-      <workItem from="1773000421174" duration="2820000" />
-      <workItem from="1773068333951" duration="7656000" />
-      <workItem from="1773164538190" duration="3772000" />
-      <workItem from="1773250258780" duration="6100000" />
-      <workItem from="1773325992069" duration="46000" />
-      <workItem from="1784568396678" duration="5789000" />
-      <workItem from="1784629833282" duration="4163000" />
-      <workItem from="1784814960239" duration="12764000" />
-      <workItem from="1784837008401" duration="2593000" />
-      <workItem from="1784841362511" duration="511000" />
-      <workItem from="1784890040663" duration="1466000" />
-      <workItem from="1784907117463" duration="11208000" />
-      <workItem from="1785003708504" duration="1197000" />
-      <workItem from="1785014525639" duration="3351000" />
-      <workItem from="1785020297750" duration="451000" />
-      <workItem from="1785022019083" duration="2440000" />
-      <workItem from="1785061918187" duration="3766000" />
-      <workItem from="1785092587214" duration="2356000" />
-      <workItem from="1785161187118" duration="1850000" />
-      <workItem from="1785334677966" duration="5604000" />
-      <workItem from="1785408698556" duration="14853000" />
-      <workItem from="1785444910576" duration="1362000" />
-      <workItem from="1785487640306" duration="2424000" />
-      <workItem from="1785492665043" duration="14918000" />
-      <workItem from="1785582614125" duration="7214000" />
-      <workItem from="1785676378324" duration="2778000" />
-      <workItem from="1785690426856" duration="5229000" />
-      <workItem from="1785702031749" duration="144000" />
-      <workItem from="1785767852144" duration="80000" />
-      <workItem from="1785768655045" duration="2535000" />
-      <workItem from="1785791092589" duration="1721000" />
-      <workItem from="1785853404094" duration="1864000" />
-      <workItem from="1785856707581" duration="903000" />
-      <workItem from="1785937267358" duration="4457000" />
-      <workItem from="1785964175404" duration="2716000" />
-      <workItem from="1786007882007" duration="3087000" />
-      <workItem from="1788014376162" duration="1000" />
+      <workItem from="1772903359031" duration="3119000" />
     </task>
     <task id="LOCAL-00001" summary="checkpoint commit">
       <option name="closed" value="true" />
@@ -373,47 +341,7 @@
       <option name="project" value="LOCAL" />
       <updated>1772485466684</updated>
     </task>
-    <task id="LOCAL-00014" summary="added fpu">
-      <option name="closed" value="true" />
-      <created>1772914642474</created>
-      <option name="number" value="00014" />
-      <option name="presentableId" value="LOCAL-00014" />
-      <option name="project" value="LOCAL" />
-      <updated>1772914642474</updated>
-    </task>
-    <task id="LOCAL-00015" summary="added parser">
-      <option name="closed" value="true" />
-      <created>1785503529432</created>
-      <option name="number" value="00015" />
-      <option name="presentableId" value="LOCAL-00015" />
-      <option name="project" value="LOCAL" />
-      <updated>1785503529432</updated>
-    </task>
-    <task id="LOCAL-00016" summary="added parser">
-      <option name="closed" value="true" />
-      <created>1785508733212</created>
-      <option name="number" value="00016" />
-      <option name="presentableId" value="LOCAL-00016" />
-      <option name="project" value="LOCAL" />
-      <updated>1785508733212</updated>
-    </task>
-    <task id="LOCAL-00017" summary="now supporting %equ, %assign and %define">
-      <option name="closed" value="true" />
-      <created>1785941687269</created>
-      <option name="number" value="00017" />
-      <option name="presentableId" value="LOCAL-00017" />
-      <option name="project" value="LOCAL" />
-      <updated>1785941687270</updated>
-    </task>
-    <task id="LOCAL-00018" summary="added %macro">
-      <option name="closed" value="true" />
-      <created>1786009048682</created>
-      <option name="number" value="00018" />
-      <option name="presentableId" value="LOCAL-00018" />
-      <option name="project" value="LOCAL" />
-      <updated>1786009048682</updated>
-    </task>
-    <option name="localTasksCounter" value="19" />
+    <option name="localTasksCounter" value="14" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -423,6 +351,7 @@
     <isAutomaticCheckingOnLaunch value="false" />
     <isAutomaticFoundErrors value="true" />
     <isAutomaticReloadCMake value="true" />
+    <isAutomaticBootstrapAfterUpdate value="false" />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
     <option name="TAB_STATES">
@@ -449,11 +378,26 @@
     <MESSAGE value="j'ai fait des trucs importants voila tout ..." />
     <MESSAGE value="added license + fixed code" />
     <MESSAGE value="fixed linker problem" />
-    <MESSAGE value="added fpu" />
-    <MESSAGE value="added parser" />
-    <MESSAGE value="now supporting %equ, %assign and %define" />
-    <MESSAGE value="added %macro" />
-    <option name="LAST_COMMIT_MESSAGE" value="added %macro" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixed linker problem" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/Talos/include/asm/decoder.h</url>
+          <line>17</line>
+          <properties>
+            <option name="hitCountValue" value="1" />
+          </properties>
+          <option name="timeStamp" value="12" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/Talos/include/asm/decoder.h</url>
+          <line>132</line>
+          <option name="timeStamp" value="34" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

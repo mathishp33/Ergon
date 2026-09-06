@@ -38,11 +38,13 @@ struct EnvironmentManager {
         std::string e_msg = "Error at line " + std::to_string(e.index_line) + " in file " + file_name + ": \n";
         e_msg += e.message + "\n";
         e_msg += "\n";
-        e_msg += decoder.lines[e.index_line];
-        e_msg += "\n";
-        for (size_t i = 0; i < decoder.lines[e.index_line].size(); i++)
-            e_msg += "^";
-        e_msg += "\n";
+        if (decoder.lines.size() > e.index_line) {
+            e_msg += decoder.lines[e.index_line];
+            e_msg += "\n";
+            for (size_t i = 0; i < decoder.lines[e.index_line].size(); i++)
+                e_msg += "^";
+            e_msg += "\n";
+        }
         return e_msg;
     }
 

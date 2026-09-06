@@ -16,6 +16,9 @@ int main() {
      %endmacro
      ldw r0, var
      INC(r0)
+     %rep 4*1
+      inc r0
+     %endrep
     .section .data
       ; %assign a 5
       ; %assign a a + 5

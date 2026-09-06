@@ -35,6 +35,8 @@ enum class ErrorCode : uint8_t {
     MISMATCHED_PAR, // mismatched parenthesis
     DUPLICATE_MACRO, // duplicate macro " ... "
     MISSING_ENDMACRO, //missing an %endmacro
+    MISSING_ENDREP, //missing an %endrep
+    PREPROC_RECURSION, //infinite recursion in the preprocessor
 };
 
 // there is padding, but I don't want to #pragma pack(1) bc it gives warning
