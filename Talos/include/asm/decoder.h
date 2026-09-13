@@ -582,7 +582,6 @@ struct AsmDecoder {
             return { };
         }
         if (instr == ".hword") {
-            align_section(2);
             for (auto& a : args) {
                 auto [e, v] = parse_expr(a, preproc.constants, preproc.variables);
                 if (e.code != ErrorCode::OK) return e;
@@ -595,7 +594,6 @@ struct AsmDecoder {
             return { };
         }
         if (instr == ".word") {
-            align_section(4);
             for (auto& a : args) {
                 auto [e, v] = parse_expr(a, preproc.constants, preproc.variables);
                 if (e.code != ErrorCode::OK) return e;

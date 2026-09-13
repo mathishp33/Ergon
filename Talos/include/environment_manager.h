@@ -57,7 +57,7 @@ struct EnvironmentManager {
         }
         for (size_t i = 0; i < rodata.size(); i++) {
             if (i >= mb.ram.size()) return ErrorCode::RAM_OVERFLOW;
-            mb.ram[i] = rodata[i];
+            mb.ram[data.size() + i] = rodata[i];
         }
         return ErrorCode::OK;
     }
