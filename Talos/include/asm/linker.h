@@ -104,8 +104,28 @@ inline std::pair<ErrorInfo, LinkedBinary> link(std::vector<ObjectFile>& objects)
         for (auto& rel : obj.relocations) {
             uint32_t sym_addr = 0;
             if (!globals.contains(rel.symbol)) {
-                Symbol S = obj.symbols[rel.symbol];
-                sym_addr = obj.text_base + S.value;
+                const Symbol& S = obj.symbols[rel.symbol];
+
+                switch (S.section) {
+                case Section::TEXT:
+                    sym_addr = obj.text_base + S.value;
+                    break;
+
+                case Section::DATA:
+                    sym_addr = obj.data_base + S.value;
+                    break;
+
+                case Section::RODATA:
+                    sym_addr = obj.rodata_base + S.value;
+                    break;
+
+                case Section::BSS:
+                    sym_addr = obj.bss_base + S.value;
+                    break;
+
+                default:
+                    break;
+                }
             }
             else {
                 const GlobalSymbol& GS = globals.at(rel.symbol);

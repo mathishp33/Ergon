@@ -627,15 +627,10 @@ struct AsmDecoder {
             if (string_utils::rep_counter(expr, '\"') != 2)
                 return { ErrorCode::INVALID_ARG_SIZE, "invalid argument size, expected 2", i };
             bool quote_encountered = false;
-            for (const auto& c : expr) {
-                if (c == '\"') {
-                    if (quote_encountered)
-                        break;
-                    quote_encountered = true;
-                }
-                else
-                    emit_u8(c);
+            for (size_t i = 1; i < expr.size() - 1; i++) {
+                emit_u8(expr[i]);
             }
+            emit_u8('\0');
 
         }
         if (instr == ".space") {
