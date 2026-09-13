@@ -7,6 +7,7 @@
     <option name="/Default/Environment/UserInterface/HierarchyView/ViewStyle/@EntryValue" value="SuperTypes" type="string" />
     <option name="/Default/Housekeeping/FeatureSuggestion/FeatureSuggestionManager/DisabledSuggesters/=SwitchToGoToActionSuggester/@EntryIndexedValue" value="true" type="bool" />
     <option name="/Default/Housekeeping/GlobalSettingsUpgraded/IsUpgraded/@EntryValue" value="true" type="bool" />
+    <option name="/Default/Housekeeping/OptionsDialog/SelectedPageId/@EntryValue" value="CppFormatterOtherPage" type="string" />
     <option name="/Default/RiderDebugger/RiderRestoreDecompile/RestoreDecompileSetting/@EntryValue" value="false" type="bool" />
   </component>
   <component name="CMakePresetLoader">{
@@ -24,6 +25,7 @@
       <config projectName="Ergon" targetName="ergon_test_4" />
       <config projectName="Ergon" targetName="ergon_test_1" />
       <config projectName="Ergon" targetName="ergon_test_2" />
+      <config projectName="Ergon" targetName="ergon_test_ide" />
       <config projectName="Ergon" targetName="ergon_test_0" />
     </generated>
   </component>
@@ -34,10 +36,13 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="added .zero, .asciz, basic system calls.">
+    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="implemented .asciz">
+      <change afterPath="$PROJECT_DIR$/.idea/codeStyles/codeStyleConfig.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/test_ide/CMakeLists.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/test_ide/ide.cpp" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/test_ide/program_0.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/asm/decoder.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/asm/decoder.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_4/sys_write.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_4/sys_write.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -60,12 +65,12 @@
     &quot;assignee&quot;: &quot;mathishp33&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/mathishp33/Ergon.git",
-    "accountId": "d265dc3e-7c09-43ad-ad06-a226187da898"
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/mathishp33/Ergon.git&quot;,
+    &quot;accountId&quot;: &quot;d265dc3e-7c09-43ad-ad06-a226187da898&quot;
   }
-}]]></component>
+}</component>
   <component name="MacroExpansionManager">
     <option name="directoryName" value="d1oNEqBJ" />
   </component>
@@ -100,6 +105,7 @@
     "CMake Application.ergon_test_3.executor": "Run",
     "CMake Application.ergon_test_4.executor": "Run",
     "CMake Application.ergon_test_5.executor": "Run",
+    "CMake Application.ergon_test_ide.executor": "Debug",
     "CMake Application.ergon_tests.executor": "Run",
     "CMake Debug.Ergon.executor": "Debug",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
@@ -145,14 +151,14 @@
       <recent name="C:\Users\Utilisateur\CLionProjects\Ergon\Talos\include\COMPUTER" />
     </key>
   </component>
-  <component name="RunManager" selected="CMake Application.ergon_test_4">
+  <component name="RunManager" selected="CMake Application.ergon_test_ide">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="Ergon" type="CMakeListConfigurationType" factoryName="CMakeListConfigurationFactory" temporary="true">
       <method v="2" />
-    </configuration>
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
     </configuration>
     <configuration name="ergon_test_0" type="CMakeRunConfiguration" factoryName="Application" PROGRAM_PARAMS="-O3 -march=native" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Ergon" TARGET_NAME="ergon_test_0" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="Ergon" RUN_TARGET_NAME="ergon_test_0">
       <method v="2">
@@ -179,12 +185,18 @@
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
+    <configuration name="ergon_test_ide" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Ergon" TARGET_NAME="ergon_test_ide" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="Ergon" RUN_TARGET_NAME="ergon_test_ide">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
     <list>
       <item itemvalue="CMake Application.ergon_test_0" />
       <item itemvalue="CMake Application.ergon_test_1" />
       <item itemvalue="CMake Application.ergon_test_2" />
       <item itemvalue="CMake Application.ergon_test_3" />
       <item itemvalue="CMake Application.ergon_test_4" />
+      <item itemvalue="CMake Application.ergon_test_ide" />
       <item itemvalue="CMake Debug.Ergon" />
     </list>
     <recent_temporary>
@@ -245,7 +257,8 @@
       <workItem from="1772867263777" duration="9422000" />
       <workItem from="1772903359031" duration="3119000" />
       <workItem from="1788804578719" duration="245000" />
-      <workItem from="1789286229379" duration="20462000" />
+      <workItem from="1789286229379" duration="20565000" />
+      <workItem from="1789316517656" duration="4369000" />
     </task>
     <task id="LOCAL-00001" summary="checkpoint commit">
       <option name="closed" value="true" />
@@ -367,7 +380,15 @@
       <option name="project" value="LOCAL" />
       <updated>1789312032300</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="implemented .asciz">
+      <option name="closed" value="true" />
+      <created>1789312559909</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1789312559909</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -406,7 +427,8 @@
     <MESSAGE value="fixed linker problem" />
     <MESSAGE value="added %rep instruction" />
     <MESSAGE value="added .zero, .asciz, basic system calls." />
-    <option name="LAST_COMMIT_MESSAGE" value="added .zero, .asciz, basic system calls." />
+    <MESSAGE value="implemented .asciz" />
+    <option name="LAST_COMMIT_MESSAGE" value="implemented .asciz" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

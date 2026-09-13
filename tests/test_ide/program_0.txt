@@ -1,0 +1,13 @@
+
+ ; a simple hello world program
+.section .text
+  movi r0, 1 ; syscall = 1 (write)
+  lea r1, r6, my_char_buff ; buffer
+  ldb r2, my_size ; buffer_size
+  syscall
+
+.section .data
+  my_char_buff:
+    .asciz "abcd"
+  my_size:
+    .word 4
