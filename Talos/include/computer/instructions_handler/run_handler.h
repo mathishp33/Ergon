@@ -1,10 +1,13 @@
 #ifndef ERGON_RUN_HANDLER_H
 #define ERGON_RUN_HANDLER_H
 
+#include <bit>
+#include <functional>
+
 #include "computer/core.h"
 
 
-inline void run(SimpleCore& c, const std::vector<DecodedInstr>& prog) {
+inline void run(SimpleCore& c, const std::vector<DecodedInstr>& prog, std::function<int()> handle_syscall) {
     #if !defined(__GNUC__) && !defined(__clang__)
         #error "Computed goto requires GCC or Clang therefore you cannot use AUTO execution mode"
     #endif
@@ -25,22 +28,25 @@ inline void run(SimpleCore& c, const std::vector<DecodedInstr>& prog) {
 
             &&OP_FADD, &&OP_FSUB, &&OP_FMUL, &&OP_FDIV, &&OP_FMA,
             &&OP_FSQRT, &&OP_FABS, &&OP_FNEG, &&OP_FCMP, &&OP_ITOF, &&OP_FTOI,
-            &&OP_FMOV, &&OP_MOVF, &&OP_FLDW_ABS, &&OP_FSDW_ABS, &&OP_FLDW_BASE, &&OP_FSDW_BASE,
+            &&OP_FMOV, &&OP_MOVF, &&OP_FLDW_ABS, &&OP_FSDW_ABS,
+            &&OP_FLDW_BASE, &&OP_FSDW_BASE, &&OP_FLDW_REG, &&OP_FSDW_REG,
 
             &&OP_MOV_IMM, &&OP_MOV_REG,
             &&OP_LDB_ABS, &&OP_LDH_ABS, &&OP_LDW_ABS,
             &&OP_STB_ABS, &&OP_STH_ABS, &&OP_STW_ABS,
             &&OP_LDB_BASE, &&OP_LDH_BASE, &&OP_LDW_BASE,
+            &&OP_LDB_REG, &&OP_LDH_REG, &&OP_LDW_REG,
             &&OP_STB_BASE, &&OP_STH_BASE, &&OP_STW_BASE,
+            &&OP_STB_REG, &&OP_STH_REG, &&OP_STW_REG,
 
             &&OP_PUSH, &&OP_POP,
 
-            &&OP_LEA, &&OP_SWAP, &&OP_CLR, &&OP_MEMCPY,
+            &&OP_LEA, &&OP_LEAB, &&OP_SWAP, &&OP_CLR, &&OP_MEMCPY,
 
             &&OP_JMP, &&OP_JZ, &&OP_JNZ, &&OP_JG, &&OP_JL,
 
             &&OP_CALL, &&OP_RET,
-            &&OP_HALT
+            &&OP_SYSCALL, &&OP_HALT
         };
 
     if (prog.empty()) return;
@@ -243,6 +249,12 @@ OP_FLDW_BASE:
 OP_FSDW_BASE:
     c.store32(c.regs[instr->rs1] + static_cast<int8_t>(instr->imm), c.fregs[instr->rd]);
     NEXT();
+OP_FLDW_REG:
+    c.fregs[instr->rd] = c.load32(c.regs[instr->rs1] + c.regs[instr->rs2]);
+    NEXT();
+OP_FSDW_REG:
+    c.store32(c.regs[instr->rs1] + c.regs[instr->rs2], c.fregs[instr->rd]);
+    NEXT();
 
 OP_MOV_IMM:
     c.regs[instr->rd] = instr->imm;
@@ -277,6 +289,15 @@ OP_LDH_BASE:
 OP_LDW_BASE:
     c.regs[instr->rd] = c.load32(c.regs[instr->rs1] + static_cast<int8_t>(instr->imm));
     NEXT();
+OP_LDB_REG:
+    c.regs[instr->rd] = static_cast<int8_t>(c.load8(c.regs[instr->rs1] + c.regs[instr->rs2]));
+    NEXT();
+OP_LDH_REG:
+    c.regs[instr->rd] = static_cast<int16_t>(c.load16(c.regs[instr->rs1] + c.regs[instr->rs2]));
+    NEXT();
+OP_LDW_REG:
+    c.regs[instr->rd] = c.load32(c.regs[instr->rs1] + c.regs[instr->rs2]);
+    NEXT();
 OP_STB_BASE:
     c.store8(c.regs[instr->rs1] + static_cast<int8_t>(instr->imm), c.regs[instr->rd] & 0xFF);
     NEXT();
@@ -285,6 +306,15 @@ OP_STH_BASE:
     NEXT();
 OP_STW_BASE:
     c.store32(c.regs[instr->rs1] + static_cast<int8_t>(instr->imm), c.regs[instr->rd]);
+    NEXT();
+OP_STB_REG:
+    c.store8(c.regs[instr->rs1] + c.regs[instr->rs2], c.regs[instr->rd] & 0xFF);
+    NEXT();
+OP_STH_REG:
+    c.store16(c.regs[instr->rs1] + c.regs[instr->rs2], c.regs[instr->rd] & 0xFFFF);
+    NEXT();
+OP_STW_REG:
+    c.store32(c.regs[instr->rs1] + c.regs[instr->rs2], c.regs[instr->rd]);
     NEXT();
 
 OP_PUSH:
@@ -298,6 +328,9 @@ OP_POP:
 OP_LEA:
     c.regs[instr->rd] = c.regs[instr->rs1] + static_cast<int8_t>(instr->imm);
     NEXT();
+OP_LEAB:
+    c.regs[instr->rd] = c.regs[instr->rs1];
+    STEP();
 OP_SWAP:
     std::swap(c.regs[instr->rd], c.regs[instr->rs1]);
     NEXT();
@@ -359,6 +392,8 @@ OP_RET:
     FETCH();
     DISPATCH();
 
+OP_SYSCALL:
+    if (handle_syscall() == -1) return;
 OP_HALT:
     return;
 }

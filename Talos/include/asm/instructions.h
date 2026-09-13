@@ -90,27 +90,36 @@ inline std::unordered_map<std::string, InstrDef> instr_table = {
     {"fstw", {FSTW_ABS, InstrType::I, { ArgType::REG, ArgType::VAR }, { 0, 2 } }},
     {"flbasew", {FLDW_BASE, InstrType::I, { ArgType::REG, ArgType::REG, ArgType::IMM }, { 0, 1, 2 } }},
     {"fsbasew", {FSTW_BASE, InstrType::I, { ArgType::REG, ArgType::REG, ArgType::IMM }, { 0, 1, 2 } }},
+    {"flregw", {FLDW_REG, InstrType::R, { ArgType::REG, ArgType::REG, ArgType::REG }, { 0, 1, 2 } }},
+    {"fsregw", {FSTW_REG, InstrType::R, { ArgType::REG, ArgType::REG, ArgType::REG }, { 0, 1, 2 } }},
 
     {"mov",   {MOV_REG, InstrType::R, { ArgType::REG, ArgType::REG }, { 0, 1 } }},
     {"movi",  {MOV_IMM, InstrType::I, { ArgType::REG, ArgType::IMM }, { 0, 2 } }},
     {"lbaseb", {LDB_BASE, InstrType::I, { ArgType::REG, ArgType::REG, ArgType::IMM }, { 0, 1, 2 } }},
     {"lbaseh", {LDH_BASE, InstrType::I, { ArgType::REG, ArgType::REG, ArgType::IMM }, { 0, 1, 2 } }},
     {"lbasew", {LDW_BASE, InstrType::I, { ArgType::REG, ArgType::REG, ArgType::IMM }, { 0, 1, 2 } }},
+    {"lregb", {LDB_REG, InstrType::R, { ArgType::REG, ArgType::REG, ArgType::REG }, { 0, 1, 2 } }},
+    {"lregh", {LDH_REG, InstrType::R, { ArgType::REG, ArgType::REG, ArgType::REG }, { 0, 1, 2 } }},
+    {"lregw", {LDW_REG, InstrType::R, { ArgType::REG, ArgType::REG, ArgType::REG }, { 0, 1, 2 } }},
     {"sbaseb", {STB_BASE, InstrType::I, { ArgType::REG, ArgType::REG, ArgType::IMM }, { 0, 1, 2 } }},
     {"sbaseh", {STH_BASE, InstrType::I, { ArgType::REG, ArgType::REG, ArgType::IMM }, { 0, 1, 2 } }},
     {"sbasew", {STW_BASE, InstrType::I, { ArgType::REG, ArgType::REG, ArgType::IMM }, { 0, 1, 2 } }},
+    {"sregb", {SDB_REG, InstrType::R, { ArgType::REG, ArgType::REG, ArgType::REG }, { 0, 1, 2 } }},
+    {"sregh", {SDH_REG, InstrType::R, { ArgType::REG, ArgType::REG, ArgType::REG }, { 0, 1, 2 } }},
+    {"sregw", {SDW_REG, InstrType::R, { ArgType::REG, ArgType::REG, ArgType::REG }, { 0, 1, 2 } }},
     {"ldb", {LDB_ABS, InstrType::I, { ArgType::REG, ArgType::VAR }, { 0, 2 } }},
     {"ldh", {LDH_ABS, InstrType::I, { ArgType::REG, ArgType::VAR }, { 0, 2 } }},
     {"ldw", {LDW_ABS, InstrType::I, { ArgType::REG, ArgType::VAR }, { 0, 2 } }},
     {"stb", {STB_ABS, InstrType::I, { ArgType::REG, ArgType::VAR }, { 0, 2 } }},
     {"sth", {STH_ABS, InstrType::I, { ArgType::REG, ArgType::VAR }, { 0, 2 } }},
     {"stw", {STW_ABS, InstrType::I, { ArgType::REG, ArgType::VAR }, { 0, 2 } }},
-    {"push",  {PUSH,    InstrType::J, { ArgType::REG }, { 1 } }}, //rs1
-    {"pop",   {POP,     InstrType::J, { ArgType::REG }, { 0 } }}, //rd
-    {"lea",   {LEA,     InstrType::I, { ArgType::REG, ArgType::REG, ArgType::IMM }, { 0, 1, 2 } }},
-    {"swap",  {SWAP,    InstrType::R, { ArgType::REG, ArgType::REG }, { 0, 1 } }},
-    {"clr",   {CLR,     InstrType::J, { ArgType::REG }, { 0 } }},
-    {"memcpy",{MEMCPY,  InstrType::I, { ArgType::REG, ArgType::REG, ArgType::IMM }, { 0, 1, 2 } }},
+    {"push",  {PUSH, InstrType::J, { ArgType::REG }, { 1 } }}, //rs1
+    {"pop",   {POP, InstrType::J, { ArgType::REG }, { 0 } }}, //rd
+    {"lea",   {LEA, InstrType::I, { ArgType::REG, ArgType::REG, ArgType::VAR }, { 0, 1, 2 } }},
+    {"leab",   {LEAB, InstrType::I, { ArgType::REG, ArgType::VAR }, { 0, 1 } }},
+    {"swap",  {SWAP, InstrType::R, { ArgType::REG, ArgType::REG }, { 0, 1 } }},
+    {"clr",   {CLR, InstrType::J, { ArgType::REG }, { 0 } }},
+    {"memcpy",{MEMCPY, InstrType::I, { ArgType::REG, ArgType::REG, ArgType::IMM }, { 0, 1, 2 } }},
 
     {"jmp",  {JMP,  InstrType::J, { ArgType::LABEL }, { 0 } }},
     {"jz",   {JZ,   InstrType::J, { ArgType::LABEL }, { 0 } }},
@@ -120,7 +129,16 @@ inline std::unordered_map<std::string, InstrDef> instr_table = {
     {"call", {CALL, InstrType::J, { ArgType::LABEL }, { 0 } }},
     {"ret",  {RET,  InstrType::J, { }, { } }},
 
+    {"syscall", {SYSCALL, InstrType::J, { }, { } }},
     {"halt",  {HALT,  InstrType::J, { }, { } }},
+};
+
+enum ABI : uint32_t {
+    EXIT = 0,
+    WRITE = 1,
+    READ = 2,
+    OPEN = 3,
+    CLOSE = 4,
 };
 
 

@@ -31,6 +31,8 @@ struct EnvironmentManager {
     size_t RAM_SIZE = 65535; // 2^16 - 1
     MotherBoard mb;
     AsmDecoder decoder;
+    int exit_code = 0;
+    std::atomic<bool> running = false;
 
     EnvironmentManager(size_t RAM_SIZE = 65535) : RAM_SIZE(RAM_SIZE), mb(MotherBoard(RAM_SIZE)) {}
 
@@ -102,14 +104,62 @@ struct EnvironmentManager {
     }
 
     void start() {
-        run(mb.cpu.core, mb.rom);
+        running = true;
+        run(mb.cpu.core, mb.rom, [this]() { handle_syscall(); return exit_code; });
+        running = false;
     }
 
     StepInfo step() {
+        if (mb.cpu.core.PC == 0) running = true;
         if (mb.cpu.core.PC >= mb.rom.size()) return { };
-        step_instr(mb.cpu.core, mb.rom[mb.cpu.core.PC]);
+        step_instr(mb.cpu.core, mb.rom[mb.cpu.core.PC], [this]() { handle_syscall(); return exit_code; });
 
         return { mb };
+    }
+
+    void handle_syscall() {
+        switch (mb.cpu.core.regs[0]) {
+        case ABI::EXIT:
+            sys_exit();
+            break;
+        case ABI::WRITE:
+            sys_write();
+            break;
+        case ABI::READ:
+            sys_read();
+            break;
+        case ABI::OPEN:
+            break;
+        case ABI::CLOSE:
+            break;
+        default:
+            break;
+        }
+    }
+
+    void sys_exit() {
+        running = false;
+        exit_code = 0;
+    }
+
+    void sys_write() {
+        uint32_t addr = mb.cpu.core.regs[1];
+        uint32_t size = mb.cpu.core.regs[2];
+
+        if (addr >= mb.rom.size()) exit_code = -1;
+        uint8_t* data = &mb.ram[addr];
+
+        std::cout.write(reinterpret_cast<const char*>(data), size);
+    }
+
+    void sys_read() {
+        uint32_t addr = mb.cpu.core.regs[1];
+        uint32_t size = mb.cpu.core.regs[2];
+
+        if (addr >= mb.rom.size()) exit_code = -1;
+        uint8_t* data = &mb.ram[addr];
+
+        std::cin.get(reinterpret_cast<char*>(data), size);
     }
 };
 

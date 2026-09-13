@@ -16,21 +16,16 @@
 VOIR TUTOS sur www.tutorialspoint.com/assembly_programming
 
 TODO:
-
 AJOUTER heap & stack: malloc & free instructions, (garbage collector (kind of) ?) (.heap & .stack sections)
 Super-instructions (merge addi+cmp+jl)
 Profile-guided optimization (PGO) (maybe)
-AJOUTER les fonctions de la libraire standart (std::...) C
-AJOUTER acès array avec: BYTE_TABLE[2] ou BYTE_TABLE + 2 ou BYTE_TABLE + 2 * 3 ...
-AJOUTER constantes (assign, define)
-AJOUTER un truc qui détecte les modifications de constantes (equ, assign, define)
-AJOUTER parser numérique pour les imm (ex: 0x3 + 0b11001 * (-133))
+AJOUTER les fonctions de C (printf, scanf, ...)
 AJOUTER truc qui détecte les ram overflow lors des store et load !!
 UPDATE le readme
 AJOUTER les struct, offset, .asciz
-
-AJOUTER meilleur accès arrays (voir "case VAR:" et "parse_var")
-AJOUTER %if, %rep, %ifdef et %include
+AJOUTER %if, %ifdef et %include
+AJOUTER Dispatcher pour les system calls
+rajouter open/close comme system calls (alloc, free, time, sleep, spawn(thread))
 */
 
 
@@ -282,6 +277,9 @@ struct PreProcesser {
             if (instr == "%if") {
 
             }
+            if (instr == "%ifdef") {
+
+            }
 
 
         }
@@ -406,7 +404,6 @@ struct AsmDecoder {
             case ArgType::VAR:
                 {
                     const std::string& name = args[i];
-                    //a changer pour mettre arrays ( var[3] ou var[3+5])
                     if (!obj_file.symbols.contains(name)) return { ErrorCode::UNKNOWN_SYMBOL, "unknown symbol \"" + name + "\"" };
                     if (obj_file.symbols[name].section == Section::RODATA)
                         if (var_is_constant(instr))
@@ -420,6 +417,7 @@ struct AsmDecoder {
                     });
 
                     imm = 0; // linker will patch abs addr
+
                     break;
                 }
             case ArgType::NONE:
@@ -609,6 +607,20 @@ struct AsmDecoder {
                     emit_u32(static_cast<uint32_t>(v));
                 }
             }
+            return { };
+        }
+        if (instr == ".zero") {
+            if (args.size() != 1)
+                return { ErrorCode::INVALID_ARG_SIZE, "invalid argument size, expected 1", i };
+            auto [e, v] = parse_expr(args[0], preproc.constants, preproc.variables);
+            if (e.code != ErrorCode::OK) return e;
+
+            if (cur_section == Section::BSS)
+                obj_file.bss_size += v; // réserve 1 octet
+            else
+                for (int _ = 0; _ < v; _++)
+                    emit_u8(0);
+
             return { };
         }
         if (instr == ".space") {

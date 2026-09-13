@@ -75,6 +75,8 @@ enum OPCODE : uint8_t {
     FSTW_ABS,
     FLDW_BASE,
     FSTW_BASE,
+    FLDW_REG,
+    FSTW_REG,
 
     //----------------- MEMORY OPERATIONS -----------------
     MOV_IMM , // mov rd, imm
@@ -88,12 +90,19 @@ enum OPCODE : uint8_t {
     LDB_BASE, // load byte rd, [rs1 + imm]
     LDH_BASE, // load half-word rd, [rs1 + imm]
     LDW_BASE, // load word rd, [rs1 + imm]
+    LDB_REG , // load byte rd, [rs1 + rs2]
+    LDH_REG , // load half-word rd, [rs1 + rs2]
+    LDW_REG , // load word rd, [rs1 + rs2]
     STB_BASE, // store byte rd, [rs1 + imm]
     STH_BASE, // store half-word rd, [rs1 + imm]
     STW_BASE, // store word rd, [rs1 + imm]
+    SDB_REG , // store byte rd, [rs1 + rs2]
+    SDH_REG , // store half-word rd, [rs1 + rs2]
+    SDW_REG , // store word rd, [rs1 + rs2]
     PUSH    , // push rs1
     POP     , // pop rd
     LEA     , // lea rd, rs1, imm
+    LEAB    , // lea rd, rs1
     SWAP    , // swap rd, rs1
     CLR     , // clr rd
     MEMCPY  , // memcpy rd, rs1, imm (length = imm)
@@ -107,6 +116,7 @@ enum OPCODE : uint8_t {
     CALL, // call label (24b)  (JMPR and saves the current PC)
     RET , // ret (load previous PC and JMPR there)
 
+    SYSCALL, //system call
     HALT // halt (stops program)
 };
 
@@ -140,7 +150,7 @@ struct SimpleCore {
         if (addr >= ram.size()) return 0;
         return ram[addr];
     }
-    // value -> ram
+    // addr -> ram
     void store32(uint32_t addr, uint32_t value) {
         if (addr + 3 >= ram.size()) return;
         ram[addr] = value & 0xFF;

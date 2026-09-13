@@ -1,6 +1,8 @@
 #ifndef ERGON_PARSER_H
 #define ERGON_PARSER_H
 
+#include <bit>
+
 #include "error.h"
 #include "utils.h"
 
@@ -509,27 +511,6 @@ inline std::pair<ErrorInfo, int32_t> parse_expr(const std::string& expr, const s
     if (parser.e_info.code != ErrorCode::OK) return { parser.e_info, 0 };
 
     return { { }, isFloat(val) ? std::bit_cast<int32_t>(asFloat(val)) : asInt(val) };
-}
-
-inline std::pair<ErrorInfo, std::pair<std::string, int32_t>> parse_var(const std::string& var, std::unordered_map<std::string, Value>& csts, const std::unordered_map<std::string, Value>& vars) {
-    std::string name;
-
-    //var[index]
-    auto lb = var.find('[');
-    if (lb != std::string::npos) {
-        auto rb = var.find(']');
-        name = var.substr(0, lb);
-
-        std::string inside = var.substr(lb + 1, rb - lb - 1);
-
-        auto [e, val] = parse_expr(inside, csts, vars);
-        if (e.code != ErrorCode::OK) return { e, { "", 0 } };
-
-        return { { }, { name, val } };
-    }
-
-    name = var;
-    return { { }, { name, 0 } };
 }
 
 
