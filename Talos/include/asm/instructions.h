@@ -141,5 +141,13 @@ enum ABI : uint32_t {
     CLOSE = 4,
 };
 
+enum OpenFlags : uint32_t {
+    OPEN_READ = 1,
+    OPEN_WRITE = 2,
+    OPEN_CREATE = 4,
+    OPEN_TRUNC = 8,
+    OPEN_APPEND = 16,
+};
+
 
 #endif

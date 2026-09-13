@@ -146,7 +146,11 @@ struct EnvironmentManager {
         uint32_t addr = mb.cpu.core.regs[1];
         uint32_t size = mb.cpu.core.regs[2];
 
-        if (addr >= mb.rom.size()) exit_code = -1;
+        if (addr >= mb.ram.size()) {
+            exit_code = -1;
+            mb.cpu.core.regs[0] = static_cast<uint32_t>(-1);
+            return;
+        }
         uint8_t* data = &mb.ram[addr];
 
         std::cout.write(reinterpret_cast<const char*>(data), size);
@@ -156,10 +160,19 @@ struct EnvironmentManager {
         uint32_t addr = mb.cpu.core.regs[1];
         uint32_t size = mb.cpu.core.regs[2];
 
-        if (addr >= mb.rom.size()) exit_code = -1;
-        uint8_t* data = &mb.ram[addr];
+        if (addr + size > mb.ram.size()) {
+            mb.cpu.core.regs[0] = static_cast<uint32_t>(-1);
+            exit_code = -1;
+            return;
+        }
+        char* data = reinterpret_cast<char*>(&mb.ram[addr]);
 
-        std::cin.get(reinterpret_cast<char*>(data), size);
+        std::streamsize n = 0;
+        std::cin.read(data, size);
+        n = std::cin.gcount();
+        if (std::cin.eof()) std::cin.clear();
+
+        mb.cpu.core.regs[0] = static_cast<uint32_t>(n);
     }
 };
 

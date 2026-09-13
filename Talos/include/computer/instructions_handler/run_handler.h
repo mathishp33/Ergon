@@ -326,11 +326,11 @@ OP_POP:
     c.SP += 4;
     NEXT();
 OP_LEA:
-    c.regs[instr->rd] = c.regs[instr->rs1] + static_cast<int8_t>(instr->imm);
+    c.regs[instr->rd] = c.regs[instr->rs1] + instr->imm;
     NEXT();
 OP_LEAB:
-    c.regs[instr->rd] = c.regs[instr->rs1];
-    STEP();
+    c.regs[instr->rd] = instr->imm;
+    NEXT();
 OP_SWAP:
     std::swap(c.regs[instr->rd], c.regs[instr->rs1]);
     NEXT();
@@ -353,33 +353,41 @@ OP_JMP:
     FETCH();
     DISPATCH();
 OP_JZ:
+    {
     if(c.regs[13] == 0) {
         c.PC += instr->imm;
         FETCH();
         DISPATCH();
     }
     NEXT();
+    }
 OP_JNZ:
+    {
     if(c.regs[13] != 0) {
         c.PC += instr->imm;
         FETCH();
         DISPATCH();
     }
     NEXT();
+    }
 OP_JL:
+    {
     if((int32_t)c.regs[13] < 0) {
         c.PC += instr->imm;
         FETCH();
         DISPATCH();
     }
     NEXT();
+    }
 OP_JG:
+    {
     if((int32_t)c.regs[13] > 0) {
         c.PC += instr->imm;
         FETCH();
         DISPATCH();
     }
     NEXT();
+    }
 OP_CALL:
     c.SP -= 4;
     c.store32(c.SP, c.PC + 1);
@@ -394,6 +402,7 @@ OP_RET:
 
 OP_SYSCALL:
     if (handle_syscall() == -1) return;
+    NEXT();
 OP_HALT:
     return;
 }

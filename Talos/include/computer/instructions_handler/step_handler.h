@@ -318,10 +318,10 @@ OP_POP:
     c.SP += 4;
     STEP();
 OP_LEA:
-    c.regs[instr->rd] = c.regs[instr->rs1] + static_cast<int8_t>(instr->imm);
+    c.regs[instr->rd] = c.regs[instr->rs1] + instr->imm;
     STEP();
 OP_LEAB:
-    c.regs[instr->rd] = c.regs[instr->rs1];
+    c.regs[instr->rd] = instr->imm;
     STEP();
 OP_SWAP:
     std::swap(c.regs[instr->rd], c.regs[instr->rs1]);
@@ -375,4 +375,6 @@ OP_HALT:
     return;
 }
 
+#undef DISPATCH
+#undef STEP
 #endif

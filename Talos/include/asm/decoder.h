@@ -685,7 +685,7 @@ struct AsmDecoder {
             e.index_line = i;
             if (e.code != ErrorCode::OK) return { obj_file, e };
         }
-        return {obj_file, { } };
+        return { obj_file, { } };
     }
 };
 
