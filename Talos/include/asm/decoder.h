@@ -19,13 +19,12 @@ TODO:
 AJOUTER heap & stack: malloc & free instructions, (garbage collector (kind of) ?) (.heap & .stack sections)
 Super-instructions (merge addi+cmp+jl)
 Profile-guided optimization (PGO) (maybe)
-AJOUTER les fonctions de C (printf, scanf, ...)
 AJOUTER truc qui détecte les ram overflow lors des store et load !!
 UPDATE le readme
 AJOUTER les struct, offset, .asciz
 AJOUTER %if, %ifdef et %include
 AJOUTER Dispatcher pour les system calls
-rajouter open/close comme system calls (alloc, free, time, sleep, spawn(thread))
+rajouter open/close comme system calls (read, alloc, free, time, sleep, spawn(thread))
 */
 
 
@@ -622,6 +621,22 @@ struct AsmDecoder {
                     emit_u8(0);
 
             return { };
+        }
+        if (instr == ".asciz") {
+            std::string expr = line.substr(instr.size() + 1);
+            if (string_utils::rep_counter(expr, '\"') != 2)
+                return { ErrorCode::INVALID_ARG_SIZE, "invalid argument size, expected 2", i };
+            bool quote_encountered = false;
+            for (const auto& c : expr) {
+                if (c == '\"') {
+                    if (quote_encountered)
+                        break;
+                    quote_encountered = true;
+                }
+                else
+                    emit_u8(c);
+            }
+
         }
         if (instr == ".space") {
             if (args.size() != 1)

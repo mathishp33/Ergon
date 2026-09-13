@@ -17,7 +17,7 @@ int main() {
 
     .section .data
       my_char_buff:
-        .byte 'a', 'b', 'c', 'd'
+        .asciz "abcd"
       my_size:
         .word 4
 

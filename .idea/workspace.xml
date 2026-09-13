@@ -24,7 +24,6 @@
       <config projectName="Ergon" targetName="ergon_test_4" />
       <config projectName="Ergon" targetName="ergon_test_1" />
       <config projectName="Ergon" targetName="ergon_test_2" />
-      <config projectName="Ergon" targetName="ergon_test_5" />
       <config projectName="Ergon" targetName="ergon_test_0" />
     </generated>
   </component>
@@ -35,21 +34,10 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="added %rep instruction">
-      <change afterPath="$PROJECT_DIR$/HELP.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/test_4/CMakeLists.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/test_4/sys_write.cpp" afterDir="false" />
+    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="added .zero, .asciz, basic system calls.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Talos/include/asm/decoder.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/asm/decoder.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/asm/instructions.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/asm/instructions.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/asm/parser.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/asm/parser.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/computer/core.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/computer/core.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/computer/instructions_handler/run_handler.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/computer/instructions_handler/run_handler.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/computer/instructions_handler/step_handler.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/computer/instructions_handler/step_handler.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/computer/mother_board.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/computer/mother_board.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/environment_manager.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/environment_manager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_4/sys_write.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_4/sys_write.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -257,7 +245,7 @@
       <workItem from="1772867263777" duration="9422000" />
       <workItem from="1772903359031" duration="3119000" />
       <workItem from="1788804578719" duration="245000" />
-      <workItem from="1789286229379" duration="19959000" />
+      <workItem from="1789286229379" duration="20462000" />
     </task>
     <task id="LOCAL-00001" summary="checkpoint commit">
       <option name="closed" value="true" />
@@ -371,7 +359,15 @@
       <option name="project" value="LOCAL" />
       <updated>1788728553749</updated>
     </task>
-    <option name="localTasksCounter" value="15" />
+    <task id="LOCAL-00015" summary="added .zero, .asciz, basic system calls.">
+      <option name="closed" value="true" />
+      <created>1789312032300</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1789312032300</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -409,7 +405,8 @@
     <MESSAGE value="added license + fixed code" />
     <MESSAGE value="fixed linker problem" />
     <MESSAGE value="added %rep instruction" />
-    <option name="LAST_COMMIT_MESSAGE" value="added %rep instruction" />
+    <MESSAGE value="added .zero, .asciz, basic system calls." />
+    <option name="LAST_COMMIT_MESSAGE" value="added .zero, .asciz, basic system calls." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
