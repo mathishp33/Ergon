@@ -1,10 +1,13 @@
 #ifndef ERGON_ENV_MANAGER_H
 #define ERGON_ENV_MANAGER_H
 
+#include <chrono>
+#include <thread>
+
 #include "computer/mother_board.h"
 #include "computer/instructions_handler/step_handler.h"
 #include "computer/instructions_handler/run_handler.h"
-#include "asm/decoder.h"
+#include "asm/assembler.h"
 #include "asm/linker.h"
 
 struct StepInfo {
@@ -33,6 +36,7 @@ struct EnvironmentManager {
     AsmDecoder decoder;
     int exit_code = 1;
     std::atomic<bool> running = false;
+    std::chrono::time_point<std::chrono::steady_clock> start_time;
 
     EnvironmentManager(size_t RAM_SIZE = 65535) : RAM_SIZE(RAM_SIZE), mb(MotherBoard(RAM_SIZE)) {}
 
@@ -106,6 +110,7 @@ struct EnvironmentManager {
     void start() {
         running = true;
         exit_code = 1;
+        start_time = std::chrono::steady_clock::now();
         run(mb.cpu->core, mb.rom, [this]() { handle_syscall(); return exit_code; });
         running = false;
     }
@@ -114,6 +119,7 @@ struct EnvironmentManager {
         if (mb.cpu->core.PC == 0) {
             running = true;
             exit_code = 1;
+            start_time = std::chrono::steady_clock::now();
         }
         if (mb.cpu->core.PC >= mb.rom.size()) return { };
         step_instr(mb.cpu->core, mb.rom[mb.cpu->core.PC], [this]() { handle_syscall(); return exit_code; });
@@ -132,9 +138,15 @@ struct EnvironmentManager {
         case ABI::READ:
             sys_read();
             break;
-        case ABI::OPEN:
+        case ABI::CLOCK:
+            sys_clock();
             break;
-        case ABI::CLOSE:
+        case ABI::TIME:
+            sys_time();
+            break;
+        case ABI::DISK_READ:
+            break;
+        case ABI::DISK_WRITE:
             break;
         default:
             break;
@@ -177,6 +189,20 @@ struct EnvironmentManager {
         if (std::cin.eof()) std::cin.clear();
 
         mb.cpu->core.regs[0] = static_cast<uint32_t>(n);
+    }
+
+    void sys_clock() {
+        const auto now = std::chrono::system_clock::now();
+        const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start_time).count();
+
+        mb.cpu->core.regs[0] = static_cast<uint32_t>(elapsed);
+    }
+
+    void sys_time() {
+        const auto now = std::chrono::system_clock::now();
+        uint64_t timestamp = std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()).count();
+
+        mb.cpu->core.regs[0] = static_cast<uint32_t>(timestamp);
     }
 };
 

@@ -137,16 +137,10 @@ enum ABI : uint32_t {
     EXIT = 0,
     WRITE = 1,
     READ = 2,
-    OPEN = 3,
-    CLOSE = 4,
-};
-
-enum OpenFlags : uint32_t {
-    OPEN_READ = 1,
-    OPEN_WRITE = 2,
-    OPEN_CREATE = 4,
-    OPEN_TRUNC = 8,
-    OPEN_APPEND = 16,
+    CLOCK = 3,
+    TIME = 4,
+    DISK_READ = 5,
+    DISK_WRITE = 6,
 };
 
 

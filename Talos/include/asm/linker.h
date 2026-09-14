@@ -3,7 +3,7 @@
 
 #include <algorithm>
 
-#include "decoder.h"
+#include "assembler.h"
 #include "error.h"
 
 #include <string>

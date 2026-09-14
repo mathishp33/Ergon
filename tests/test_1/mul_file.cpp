@@ -6,38 +6,58 @@
 #include <chrono>
 
 int main() {
-    std::string file1 =
-        ".section .text \n"
-        " .extern func2 \n"
-        " .global main \n"
-        " main: \n"
-        "  movi r0, 10 \n"
-        "  call func2 \n"
-        "  stb r0, var1 \n"
-        "  halt \n"
-        " .entry main \n"
-        ".section .data \n"
-        " var1: \n"
-        "  .word 0x1234 \n";
+    std::string main = R"(
+.section .text
+  .extern convert_digit
+  .extern scan
+  .extern print
+  .global main
+  main:
+    leab r1, buffer
+    ldw r2, buffer_size
+    call scan
+    ldb r5, buffer_size
+    call convert_digit
+    call print
 
-    std::string file2 =
-        ".section .text \n"
-        " .global func2 \n"
-        " func2: \n"
-        "  movi r1, 42 \n"
-        "  ret \n"
-        ".section .bss \n"
-        " buffer: \n"
-        "  .space 16 \n";
+    movi r0, 0
+    syscall
+    halt
 
-    auto env_m = EnvironmentManager(0xFFFFFFFF);
+  .entry main
+
+.section .rodata
+  buffer:
+    .byte 1
+.section .data
+  buffer_size:
+    .word 1
+)";
+
+    std::string module = R"(
+.section .text
+  .global convert_digit
+  convert_digit:
+    subi r5, r5, 48
+    ret
+  .global scan
+  scan:
+    movi r0, 2
+    syscall
+    ret
+  .global print
+  print:
+    movi r0, 1
+    syscall
+    ret
+)";
+
+    auto env_m = EnvironmentManager(0XFFFF);
 
     std::cout << "\n---------- BUILD RESULT ----------\n";
-    std::vector<std::pair<std::string, std::string>> files = { { "file1", file1 }, { "file2", file2 } };
-    std::cout << "ERROR: " << env_m.build(files) << std::endl;
+    std::vector<std::pair<std::string, std::string>> files = { { "main", main }, { "module", module } };
+    std::cout << env_m.build(files) << std::endl;
 
-
-    //running the program
     auto start = std::chrono::high_resolution_clock::now();
     env_m.start();
     auto stop = std::chrono::high_resolution_clock::now();
@@ -45,6 +65,7 @@ int main() {
 
     std::cout << "\n---------- RUN RESULT ----------\n";
     std::cout << "RUN DURATION: " << duration.count() << " micro_sec" << std::endl;
+    std::cout << "EXIT CODE: " << env_m.exit_code << std::endl;
 
     return 0;
 }

@@ -43,7 +43,8 @@ Let's begin with the basics:
 There are 3 sections:
  - ``.text`` used to declare instructions
  - ``.data`` used to declare initialized data
- - ``.rodata`` used to declare uninitialized data
+ - ``.rodata`` used to declare constant data
+- ``.bss`` used to declare uninitialized data
 
 ## Instructions
 
