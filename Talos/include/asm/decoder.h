@@ -17,14 +17,12 @@ VOIR TUTOS sur www.tutorialspoint.com/assembly_programming
 
 TODO:
 AJOUTER heap & stack: malloc & free instructions, (garbage collector (kind of) ?) (.heap & .stack sections)
-Super-instructions (merge addi+cmp+jl)
-Profile-guided optimization (PGO) (maybe)
 AJOUTER truc qui détecte les ram overflow lors des store et load !!
 UPDATE le readme
 AJOUTER les struct, offset, .asciz
 AJOUTER %if, %ifdef et %include
 AJOUTER Dispatcher pour les system calls
-rajouter open/close comme system calls (read, alloc, free, time, sleep, spawn(thread))
+rajouter open/close comme system calls (alloc, free, time, sleep, spawn(thread))
 */
 
 
@@ -393,7 +391,7 @@ struct AsmDecoder {
                     obj_file.relocations.push_back({Section::TEXT, static_cast<uint32_t>(cur_pc), RelocType::PC_REL_32, label });
 
                     if (S.bind == SymbolBinding::LOCAL && S.section == Section::TEXT) {
-                        int32_t offset = static_cast<int32_t>(S.value) - static_cast<int32_t>(cur_pc + 1);
+                        int32_t offset = static_cast<int32_t>(S.value) - static_cast<int32_t>(cur_pc);
                         imm = offset;
                     } else
                         imm = 0;

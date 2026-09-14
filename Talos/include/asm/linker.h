@@ -146,7 +146,7 @@ inline std::pair<ErrorInfo, LinkedBinary> link(std::vector<ObjectFile>& objects)
 
             if (rel.type == RelocType::PC_REL_32) {
                 auto pc = static_cast<int32_t>(obj.text_base + rel.offset);
-                I.imm = static_cast<int32_t>(sym_addr) - (pc + 1);
+                I.imm = static_cast<int32_t>(sym_addr) - (pc);
             }
             if (rel.type == RelocType::ABS_32)
                 I.imm = static_cast<int32_t>(sym_addr);

@@ -9,14 +9,15 @@
 
 
 struct MotherBoard {
-    SimpleCPU cpu;
+    std::shared_ptr<SimpleCPU> cpu;
     std::vector<uint8_t> ram{ };
     std::vector<DecodedInstr> rom{ };
 
-    MotherBoard(size_t RAM_SIZE) : cpu(ram) {
+    MotherBoard(size_t RAM_SIZE) {
         if (RAM_SIZE >= 0xFFFFFF - 1) RAM_SIZE = 0xFFFFFF - 1;
         ram.resize(RAM_SIZE);
         std::ranges::fill(ram, 0);
+        cpu = std::make_shared<SimpleCPU>(ram);
     }
 
     void reset() {
@@ -24,10 +25,8 @@ struct MotherBoard {
         std::ranges::fill(rom, DecodedInstr());
     }
 
-    void load_prog(const std::vector<DecodedInstr>& program, size_t max_size = 0xFFFFFF - 1) {
-        if (max_size >= 0xFFFFFF - 1) max_size = 0xFFFFFF - 1; //TODO: changer ça c'est pas ouf niveau prod
+    void load_prog(const std::vector<DecodedInstr>& program) {
         rom = program;
-        if (rom.size() > max_size) rom.resize(max_size);
     }
 };
 

@@ -371,6 +371,7 @@ OP_RET:
 
 OP_SYSCALL:
     if (handle_syscall() == -1) return;
+    STEP();
 OP_HALT:
     return;
 }

@@ -17,12 +17,12 @@ struct StepInfo {
 
     StepInfo() = default;
     StepInfo(const MotherBoard& mb) {
-        regs = mb.cpu.core.regs;
-        fregs = mb.cpu.core.fregs;
-        PC = mb.cpu.core.PC;
-        SP = mb.cpu.core.SP;
+        regs = mb.cpu->core.regs;
+        fregs = mb.cpu->core.fregs;
+        PC = mb.cpu->core.PC;
+        SP = mb.cpu->core.SP;
 
-        instr = mb.rom[mb.cpu.core.PC];
+        instr = mb.rom[mb.cpu->core.PC];
     }
 };
 
@@ -31,7 +31,7 @@ struct EnvironmentManager {
     size_t RAM_SIZE = 65535; // 2^16 - 1
     MotherBoard mb;
     AsmDecoder decoder;
-    int exit_code = 0;
+    int exit_code = 1;
     std::atomic<bool> running = false;
 
     EnvironmentManager(size_t RAM_SIZE = 65535) : RAM_SIZE(RAM_SIZE), mb(MotherBoard(RAM_SIZE)) {}
@@ -81,7 +81,7 @@ struct EnvironmentManager {
         mb.reset();
         if (load_ram(linked_bin.data, linked_bin.rodata) != ErrorCode::OK) return handle_error("linked binary", ErrorInfo(ErrorCode::RAM_OVERFLOW, 0));
 
-        mb.cpu.core.PC = linked_bin.entry_pc;
+        mb.cpu->core.PC = linked_bin.entry_pc;
         mb.load_prog(linked_bin.text);
         return "";
     }
@@ -96,29 +96,33 @@ struct EnvironmentManager {
         auto [e, reg_index] = parse_reg(reg_name);
         if (e.code != ErrorCode::OK) return 0;
 
-        if (reg_index < mb.cpu.core.regs.size()) {
-            if (reg_name[0] == 'f') return mb.cpu.core.fregs[reg_index];
-            return mb.cpu.core.regs[reg_index];
+        if (reg_index < mb.cpu->core.regs.size()) {
+            if (reg_name[0] == 'f') return mb.cpu->core.fregs[reg_index];
+            return mb.cpu->core.regs[reg_index];
         }
         return 0;
     }
 
     void start() {
         running = true;
-        run(mb.cpu.core, mb.rom, [this]() { handle_syscall(); return exit_code; });
+        exit_code = 1;
+        run(mb.cpu->core, mb.rom, [this]() { handle_syscall(); return exit_code; });
         running = false;
     }
 
     StepInfo step() {
-        if (mb.cpu.core.PC == 0) running = true;
-        if (mb.cpu.core.PC >= mb.rom.size()) return { };
-        step_instr(mb.cpu.core, mb.rom[mb.cpu.core.PC], [this]() { handle_syscall(); return exit_code; });
+        if (mb.cpu->core.PC == 0) {
+            running = true;
+            exit_code = 1;
+        }
+        if (mb.cpu->core.PC >= mb.rom.size()) return { };
+        step_instr(mb.cpu->core, mb.rom[mb.cpu->core.PC], [this]() { handle_syscall(); return exit_code; });
 
         return { mb };
     }
 
     void handle_syscall() {
-        switch (mb.cpu.core.regs[0]) {
+        switch (mb.cpu->core.regs[0]) {
         case ABI::EXIT:
             sys_exit();
             break;
@@ -143,12 +147,12 @@ struct EnvironmentManager {
     }
 
     void sys_write() {
-        uint32_t addr = mb.cpu.core.regs[1];
-        uint32_t size = mb.cpu.core.regs[2];
+        uint32_t addr = mb.cpu->core.regs[1];
+        uint32_t size = mb.cpu->core.regs[2];
 
-        if (addr >= mb.ram.size()) {
+        if (addr > mb.ram.size() || size > mb.ram.size() - addr) {
             exit_code = -1;
-            mb.cpu.core.regs[0] = static_cast<uint32_t>(-1);
+            mb.cpu->core.regs[0] = static_cast<uint32_t>(-1);
             return;
         }
         uint8_t* data = &mb.ram[addr];
@@ -157,11 +161,11 @@ struct EnvironmentManager {
     }
 
     void sys_read() {
-        uint32_t addr = mb.cpu.core.regs[1];
-        uint32_t size = mb.cpu.core.regs[2];
+        uint32_t addr = mb.cpu->core.regs[1];
+        uint32_t size = mb.cpu->core.regs[2];
 
-        if (addr + size > mb.ram.size()) {
-            mb.cpu.core.regs[0] = static_cast<uint32_t>(-1);
+        if (addr > mb.ram.size() || size > mb.ram.size() - addr) {
+            mb.cpu->core.regs[0] = static_cast<uint32_t>(-1);
             exit_code = -1;
             return;
         }
@@ -172,7 +176,7 @@ struct EnvironmentManager {
         n = std::cin.gcount();
         if (std::cin.eof()) std::cin.clear();
 
-        mb.cpu.core.regs[0] = static_cast<uint32_t>(n);
+        mb.cpu->core.regs[0] = static_cast<uint32_t>(n);
     }
 };
 

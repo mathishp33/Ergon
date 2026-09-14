@@ -401,7 +401,7 @@ OP_RET:
     DISPATCH();
 
 OP_SYSCALL:
-    if (handle_syscall() == -1) return;
+    if (handle_syscall() != 1) return;
     NEXT();
 OP_HALT:
     return;
