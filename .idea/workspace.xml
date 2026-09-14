@@ -37,16 +37,9 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="OwO">
+    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="j'ai ajouté des trucs de time et j'ai réglé des trucs. Puis j'ai fait des jolis dessins aussi !!!!">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/HELP.md" beforeDir="false" afterPath="$PROJECT_DIR$/HELP.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/asm/decoder.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/asm/assembler.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/asm/instructions.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/asm/instructions.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/asm/linker.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/asm/linker.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/asm/parser.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/asm/parser.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Talos/include/environment_manager.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/environment_manager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_1/mul_file.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_1/mul_file.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_ide/ide.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_ide/ide.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -271,7 +264,7 @@
       <workItem from="1789326513766" duration="3588000" />
       <workItem from="1789394550837" duration="7098000" />
       <workItem from="1789408280976" duration="1062000" />
-      <workItem from="1789409458597" duration="4242000" />
+      <workItem from="1789409458597" duration="4456000" />
     </task>
     <task id="LOCAL-00001" summary="checkpoint commit">
       <option name="closed" value="true" />
@@ -441,7 +434,15 @@
       <option name="project" value="LOCAL" />
       <updated>1789397939274</updated>
     </task>
-    <option name="localTasksCounter" value="22" />
+    <task id="LOCAL-00022" summary="j'ai ajouté des trucs de time et j'ai réglé des trucs. Puis j'ai fait des jolis dessins aussi !!!!">
+      <option name="closed" value="true" />
+      <created>1789413763420</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1789413763420</updated>
+    </task>
+    <option name="localTasksCounter" value="23" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -486,7 +487,8 @@
     <MESSAGE value="fixed align" />
     <MESSAGE value="&quot;je prie, je prie et je prie ...&quot; c'est ce que je disais quand à précisément 21:53 j'avais oublié de placer un NEXT(); dans mon dispatcher pour ne pas finir en enfer avec les programmeurs de merde. Je prie à la communauté d'informatique de France et de la Terre de bien vouloir me pardonner. J'ai bien compris que ma faute étais irréparable... J'ai demandé à claude de résoudre un bug sur ce projet ... Hélàs il n'était que plus confus que moi ... Il m'a avoué n'avoir rien compris et rien trouvé. Je me suis alors retrouvé face à moi même, regardant cet écran blanc (oui j'ai mis le thème clair sur CLion) pendant une bonne heure avant de me décider que croire en une religion monothéiste était peut-être la solution à tous mes problèmes. Finalement je pense que la morale de l'histoire est qu'il vaut mieux regarer son code deux fois qu'une et aussi que je devrais dormir. Non je ne deviens pas fou. Non je ne deviens pas fou. Non je ne deviens pas fou. Non je ne deviens pas fou. Non je ne deviens pas fou. Non je ne deviens pas fou. Hi Hi HI Hi HIHIhIH Ih IHiHihIH" />
     <MESSAGE value="OwO" />
-    <option name="LAST_COMMIT_MESSAGE" value="OwO" />
+    <MESSAGE value="j'ai ajouté des trucs de time et j'ai réglé des trucs. Puis j'ai fait des jolis dessins aussi !!!!" />
+    <option name="LAST_COMMIT_MESSAGE" value="j'ai ajouté des trucs de time et j'ai réglé des trucs. Puis j'ai fait des jolis dessins aussi !!!!" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

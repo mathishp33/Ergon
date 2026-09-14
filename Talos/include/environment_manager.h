@@ -36,7 +36,7 @@ struct EnvironmentManager {
     AsmDecoder decoder;
     int exit_code = 1;
     std::atomic<bool> running = false;
-    std::chrono::time_point<std::chrono::steady_clock> start_time;
+    std::chrono::time_point<std::chrono::system_clock> start_time;
 
     EnvironmentManager(size_t RAM_SIZE = 65535) : RAM_SIZE(RAM_SIZE), mb(MotherBoard(RAM_SIZE)) {}
 
@@ -110,7 +110,7 @@ struct EnvironmentManager {
     void start() {
         running = true;
         exit_code = 1;
-        start_time = std::chrono::steady_clock::now();
+        start_time = std::chrono::system_clock::now();
         run(mb.cpu->core, mb.rom, [this]() { handle_syscall(); return exit_code; });
         running = false;
     }
@@ -119,7 +119,7 @@ struct EnvironmentManager {
         if (mb.cpu->core.PC == 0) {
             running = true;
             exit_code = 1;
-            start_time = std::chrono::steady_clock::now();
+            start_time = std::chrono::system_clock::now();
         }
         if (mb.cpu->core.PC >= mb.rom.size()) return { };
         step_instr(mb.cpu->core, mb.rom[mb.cpu->core.PC], [this]() { handle_syscall(); return exit_code; });
