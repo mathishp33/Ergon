@@ -170,7 +170,7 @@ struct ProgramExecutor {
             if (e.code != ErrorCode::OK) std::cout << env_m->handle_error("linked binary", e) << "\n";
 
             env_m->mb.reset();
-            if (env_m->load_ram(linked_bin.data, linked_bin.rodata) != ErrorCode::OK)
+            if (env_m->load_ram(linked_bin.data, linked_bin.rodata, linked_bin.bss_size) != ErrorCode::OK)
                 std::cout << env_m->handle_error("linked binary", ErrorInfo(ErrorCode::RAM_OVERFLOW, 0)) << "\n";
 
             std::cout << "Entry PC is: " << (int)linked_bin.entry_pc << "\n";

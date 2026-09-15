@@ -35,16 +35,23 @@ struct GlobalSymbol {
 inline std::pair<ErrorInfo, LinkedBinary> link(std::vector<ObjectFile>& objects) {
     LinkedBinary out;
 
+    uint32_t total_data_size = 0;
+    uint32_t total_rodata_size = 0;
+    for (const auto& obj : objects) {
+        total_data_size += static_cast<uint32_t>(obj.data.size());
+        total_rodata_size += static_cast<uint32_t>(obj.rodata.size());
+    }
+
     uint32_t text_cursor = 0;
     uint32_t data_cursor = 0;
-    uint32_t rodata_cursor = 0;
-    uint32_t bss_cursor  = 0;
+    uint32_t rodata_cursor = total_data_size;
+    uint32_t bss_cursor  = total_data_size + total_rodata_size;
 
     bool entry_found = false;
 
     std::unordered_map<std::string, GlobalSymbol> globals;
 
-    // zssign bases + collect globals
+    // assign bases + collect globals
     for (size_t i = 0; i < objects.size(); i++) {
         auto& obj = objects[i];
 
@@ -133,11 +140,11 @@ inline std::pair<ErrorInfo, LinkedBinary> link(std::vector<ObjectFile>& objects)
                 case Section::TEXT:
                     sym_addr = GS.value; break;
                 case Section::DATA:
-                    sym_addr = GS.value; break; //pas sur si c'est bon (voir ancien commit)
+                    sym_addr = GS.value; break;
                 case Section::RODATA:
-                    sym_addr = GS.value; break; //pas sur si c'est bon (voir ancien commit)
+                    sym_addr = GS.value; break; // RAM offset = total data size
                 case Section::BSS:
-                    sym_addr = GS.value; break; //pas sur si c'est bon (voir ancien commit)
+                    sym_addr = GS.value; break; // RAM offset = total data + rodata size
                 default: break;
                 }
             }

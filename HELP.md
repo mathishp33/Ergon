@@ -19,24 +19,24 @@ Let's begin with the basics:
 
 ## Registers
 
-| regs  | f-regs |
-|-------|--------|
-| r0    | f0     |
-| r1	   | f1     |
-| r2	   | f2     |
-| r3	   | f3     |
-| r4	   | f4     |
-| r5	   | f5     |
-| r6	   | f6     |
-| r7	   | f7     |
-| r8	   | f8     |
-| r9	   | f9     |
-| r10	  | f10    |
-| r11	  | f11    |
-| tmp	  | f12    |
-| cmp	  | f13    |
-| sp	   | f14    |
-| zero	 | f15    |
+| regs | purpose              | f-regs |
+|------|----------------------|--------|
+| r0   | syscall              | f0     |
+| r1	  | arg 0                | f1     |
+| r2	  | arg 1                | f2     |
+| r3	  | arg 2                | f3     |
+| r4	  | return value         | f4     |
+| r5	  | general purpose/temp | f5     |
+| r6	  | general purpose/temp | f6     |
+| r7	  | general purpose/temp | f7     |
+| r8	  | general purpose/temp | f8     |
+| r9	  | general purpose/temp | f9     |
+| r10	 | general purpose/temp | f10    |
+| r11	 | general purpose/temp | f11    |
+| tmp	 | temp                 | f12    |
+| cmp	 | cmp                  | f13    |
+| sp	  | SP                   | f14    |
+| pc   | PC                   | f15    |
 
 ## Sections
 
@@ -127,8 +127,8 @@ Here is a complete list of all the instruction:
 | jnz     | Type-J | LABEL         | jnz (jump if not flag Z) label |
 | jg      | Type-J | LABEL         | jg (...) label                 |
 | jl      | Type-J | LABEL         | jl (...) label                 |
-| call    | Type-J | LABEL         |                                |
-| ret     | Type-J |               |                                |
+| call    | Type-J | LABEL         | call label                     |
+| ret     | Type-J |               | return from label              |
 | syscall | Type-J |               | calls a system call            |
 | halt    | Type-J |               | halts the program              |
 

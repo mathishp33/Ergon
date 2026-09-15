@@ -16,7 +16,6 @@
 VOIR TUTOS sur www.tutorialspoint.com/assembly_programming
 
 TODO:
-AJOUTER truc qui détecte les ram overflow lors des store et load !!
 CHANGER le sys_time dans environment_manager en 2038 !!!
 UPDATE le readme
 AJOUTER %if, %ifdef et %include
@@ -470,7 +469,6 @@ struct PreProcesser {
     // a rajouter
     // %if
     // %ifdef
-    // %rep
 
 };
 

@@ -54,7 +54,7 @@ struct EnvironmentManager {
         return e_msg;
     }
 
-    ErrorCode load_ram( const std::vector<uint8_t>& data, const std::vector<uint8_t>& rodata) {
+    ErrorCode load_ram( const std::vector<uint8_t>& data, const std::vector<uint8_t>& rodata, uint32_t bss_size) {
         for (size_t i = 0; i < data.size(); i++) {
             if (i >= mb.ram.size()) return ErrorCode::RAM_OVERFLOW;
             mb.ram[i] = data[i];
@@ -62,6 +62,11 @@ struct EnvironmentManager {
         for (size_t i = 0; i < rodata.size(); i++) {
             if (i >= mb.ram.size()) return ErrorCode::RAM_OVERFLOW;
             mb.ram[data.size() + i] = rodata[i];
+        }
+        size_t bss_start = data.size() + rodata.size();
+        for (size_t i = 0; i < bss_size; i++) {
+            if (bss_start + i >= mb.ram.size()) return ErrorCode::RAM_OVERFLOW;
+            mb.ram[bss_start + i] = 0;
         }
         return ErrorCode::OK;
     }
@@ -83,7 +88,7 @@ struct EnvironmentManager {
         if (e.code != ErrorCode::OK) return handle_error("linked binary", e);
 
         mb.reset();
-        if (load_ram(linked_bin.data, linked_bin.rodata) != ErrorCode::OK) return handle_error("linked binary", ErrorInfo(ErrorCode::RAM_OVERFLOW, 0));
+        if (load_ram(linked_bin.data, linked_bin.rodata, linked_bin.bss_size) != ErrorCode::OK) return handle_error("linked binary", ErrorInfo(ErrorCode::RAM_OVERFLOW, 0));
 
         mb.cpu->core.PC = linked_bin.entry_pc;
         mb.load_prog(linked_bin.text);
