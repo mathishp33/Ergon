@@ -9,8 +9,6 @@
 enum class Section {
     TEXT, // instructions
     DATA, // initialized data
-    //HEAP, //
-    //STACK, //
     RODATA, // constants
     BSS, // un-initialized data
     NONE

@@ -124,13 +124,16 @@ enum OPCODE : uint8_t {
 struct SimpleCore {
     std::array<uint32_t, 16> regs{};
     std::array<uint32_t, 16> fregs{};
-    uint32_t& SP = regs[15]; // Stack Pointer
-    uint32_t PC = 0; // Program Counter
+    uint32_t& FP = regs[13]; // Frame Pointer
+    uint32_t& SP = regs[14]; // Stack Pointer
+    uint32_t& PC = regs[15]; // Program Counter
+
+    uint32_t stack_limit = 0;
 
     std::vector<uint8_t>& ram;
 
     SimpleCore(std::vector<uint8_t>& ram) : ram(ram) {
-        SP = ram.size() - 1;
+        SP = ram.size();
     }
 
     // <- memory[addr]
@@ -171,7 +174,7 @@ struct SimpleCore {
     void reset() {
         std::ranges::fill(regs, 0);
         std::ranges::fill(fregs, 0);
-        SP = ram.size() - 1;
+        SP = ram.size();
         PC = 0;
     }
 };

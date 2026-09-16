@@ -139,22 +139,22 @@ OP_RORI:
     c.regs[instr->rd] = (c.regs[instr->rs1] >> ((uint32_t)instr->rs2 & 31)) | (c.regs[instr->rs1] << (32 - ((uint32_t)instr->rs2 & 31)));
     STEP();
 OP_CMP:
-    c.regs[13] = ((int32_t)c.regs[instr->rs1] < (int32_t)c.regs[instr->rs2]) ? -1 : (((int32_t)c.regs[instr->rs1] > (int32_t)c.regs[instr->rs2]) ? 1 : 0);
+    c.regs[12] = ((int32_t)c.regs[instr->rs1] < (int32_t)c.regs[instr->rs2]) ? -1 : (((int32_t)c.regs[instr->rs1] > (int32_t)c.regs[instr->rs2]) ? 1 : 0);
 STEP();
 OP_CMPU:
-    c.regs[13] = (c.regs[instr->rs1] < c.regs[instr->rs2]) ? -1 : ((c.regs[instr->rs1] > c.regs[instr->rs2]) ? 1 : 0);
+    c.regs[12] = (c.regs[instr->rs1] < c.regs[instr->rs2]) ? -1 : ((c.regs[instr->rs1] > c.regs[instr->rs2]) ? 1 : 0);
 STEP();
 OP_CMPI:
-    c.regs[13] = ((int32_t)c.regs[instr->rs1] < (int32_t)instr->rs2) ? -1 : (((int32_t)c.regs[instr->rs1] > (int32_t)instr->rs2) ? 1 : 0);
+    c.regs[12] = ((int32_t)c.regs[instr->rs1] < (int32_t)instr->rs2) ? -1 : (((int32_t)c.regs[instr->rs1] > (int32_t)instr->rs2) ? 1 : 0);
 STEP();
 OP_CMPUI:
-    c.regs[13] = (c.regs[instr->rs1] < (uint32_t)instr->rs2) ? -1 : ((c.regs[instr->rs1] < (uint32_t)instr->rs2) ? 1 : 0);
+    c.regs[12] = (c.regs[instr->rs1] < (uint32_t)instr->rs2) ? -1 : ((c.regs[instr->rs1] < (uint32_t)instr->rs2) ? 1 : 0);
 STEP();
 OP_TEST:
-    c.regs[13] = ((c.regs[instr->rs1] & c.regs[instr->rs2]) != 0) ? 1 : 0;
+    c.regs[12] = ((c.regs[instr->rs1] & c.regs[instr->rs2]) != 0) ? 1 : 0;
     STEP();
 OP_TESTI:
-    c.regs[13] = ((c.regs[instr->rs1] & (uint32_t)instr->rs2) != 0) ? 1 : 0;
+    c.regs[12] = ((c.regs[instr->rs1] & (uint32_t)instr->rs2) != 0) ? 1 : 0;
     STEP();
 
 OP_INC:
@@ -215,7 +215,7 @@ OP_FNEG:
     c.fregs[instr->rd] = std::bit_cast<uint32_t>(-std::bit_cast<float>(c.fregs[instr->rs1]));
     STEP();
 OP_FCMP:
-    c.regs[13] = std::bit_cast<uint32_t>(std::bit_cast<float>(c.fregs[instr->rs1]) < std::bit_cast<float>(c.fregs[instr->rs2]) ? -1 : std::bit_cast<float>(c.fregs[instr->rs1]) > std::bit_cast<float>(c.fregs[instr->rs2]) ? 1 : 0);
+    c.regs[12] = std::bit_cast<uint32_t>(std::bit_cast<float>(c.fregs[instr->rs1]) < std::bit_cast<float>(c.fregs[instr->rs2]) ? -1 : std::bit_cast<float>(c.fregs[instr->rs1]) > std::bit_cast<float>(c.fregs[instr->rs2]) ? 1 : 0);
     STEP();
 OP_ITOF:
     c.fregs[instr->rd] = std::bit_cast<uint32_t>(std::bit_cast<float>(c.regs[instr->rs1]));
@@ -344,19 +344,19 @@ OP_JMP:
     c.PC += instr->imm;
     DISPATCH();
 OP_JZ:
-    if(c.regs[13] == 0)
+    if(c.regs[12] == 0)
         c.PC += instr->imm; DISPATCH();
     STEP();
 OP_JNZ:
-    if(c.regs[13] != 0)
+    if(c.regs[12] != 0)
         c.PC += instr->imm; DISPATCH();
     STEP();
 OP_JL:
-    if((int32_t)c.regs[13] < 0)
+    if((int32_t)c.regs[12] < 0)
         c.PC += instr->imm; DISPATCH();
     STEP();
 OP_JG:
-    if((int32_t)c.regs[13] > 0)
+    if((int32_t)c.regs[12] > 0)
         c.PC += instr->imm; DISPATCH();
     STEP();
 OP_CALL:

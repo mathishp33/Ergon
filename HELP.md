@@ -19,24 +19,24 @@ Let's begin with the basics:
 
 ## Registers
 
-| regs | purpose              | f-regs |
-|------|----------------------|--------|
-| r0   | syscall              | f0     |
-| r1	  | arg 0                | f1     |
-| r2	  | arg 1                | f2     |
-| r3	  | arg 2                | f3     |
-| r4	  | return value         | f4     |
-| r5	  | general purpose/temp | f5     |
-| r6	  | general purpose/temp | f6     |
-| r7	  | general purpose/temp | f7     |
-| r8	  | general purpose/temp | f8     |
-| r9	  | general purpose/temp | f9     |
-| r10	 | general purpose/temp | f10    |
-| r11	 | general purpose/temp | f11    |
-| tmp	 | temp                 | f12    |
-| cmp	 | cmp                  | f13    |
-| sp	  | SP                   | f14    |
-| pc   | PC                   | f15    |
+| regs | purpose         | f-regs |
+|------|-----------------|--------|
+| r0   | syscall         | f0     |
+| r1	  | arg 0           | f1     |
+| r2	  | arg 1           | f2     |
+| r3	  | arg 2           | f3     |
+| r4	  | return value    | f4     |
+| r5	  | general purpose | f5     |
+| r6	  | general purpose | f6     |
+| r7	  | general purpose | f7     |
+| r8	  | general purpose | f8     |
+| r9	  | general purpose | f9     |
+| r10	 | general purpose | f10    |
+| tmp	 | temporary       | f11    |
+| cmp	 | comparaison     | f12    |
+| fp	  | frame pointer   | f13    |
+| sp	  | stack pointer   | f14    |
+| pc   | program counter | f15    |
 
 ## Sections
 

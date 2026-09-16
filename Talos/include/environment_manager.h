@@ -33,12 +33,13 @@ struct StepInfo {
 struct EnvironmentManager {
     size_t RAM_SIZE = 65535; // 2^16 - 1
     MotherBoard mb;
-    AsmDecoder decoder;
+    Assembler decoder;
     int exit_code = 1;
     std::atomic<bool> running = false;
     std::chrono::time_point<std::chrono::system_clock> start_time;
 
-    EnvironmentManager(size_t RAM_SIZE = 65535) : RAM_SIZE(RAM_SIZE), mb(MotherBoard(RAM_SIZE)) {}
+    EnvironmentManager(size_t ram_size = 65535) :
+     RAM_SIZE(ram_size), mb(MotherBoard(ram_size)) {}
 
     std::string handle_error(const std::string& file_name, const ErrorInfo& e) {
         std::string e_msg = "Error at line " + std::to_string(e.index_line) + " in file " + file_name + ": \n";
@@ -55,6 +56,9 @@ struct EnvironmentManager {
     }
 
     ErrorCode load_ram( const std::vector<uint8_t>& data, const std::vector<uint8_t>& rodata, uint32_t bss_size) {
+        if (data.size() + rodata.size() + bss_size > mb.cpu->core.stack_limit)
+            return ErrorCode::RAM_OVERFLOW;
+
         for (size_t i = 0; i < data.size(); i++) {
             if (i >= mb.ram.size()) return ErrorCode::RAM_OVERFLOW;
             mb.ram[i] = data[i];
@@ -88,6 +92,7 @@ struct EnvironmentManager {
         if (e.code != ErrorCode::OK) return handle_error("linked binary", e);
 
         mb.reset();
+        mb.set_stack_size(linked_bin.stack_size);
         if (load_ram(linked_bin.data, linked_bin.rodata, linked_bin.bss_size) != ErrorCode::OK) return handle_error("linked binary", ErrorInfo(ErrorCode::RAM_OVERFLOW, 0));
 
         mb.cpu->core.PC = linked_bin.entry_pc;

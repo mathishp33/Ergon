@@ -7,7 +7,16 @@
 #include "computer/core.h"
 
 
-inline void run(SimpleCore& c, const std::vector<DecodedInstr>& prog, std::function<int()> handle_syscall) {
+enum class RunResult {
+    HALTED,
+    STACK_OVERFLOW,
+    STACK_UNDERFLOW,
+    SYSCALL_STOP,
+    ERROR,
+    PC_OVERFLOW,
+};
+
+inline RunResult run(SimpleCore& c, const std::vector<DecodedInstr>& prog, std::function<int()> handle_syscall) {
     #if !defined(__GNUC__) && !defined(__clang__)
         #error "Computed goto requires GCC or Clang therefore you cannot use AUTO execution mode"
     #endif
@@ -49,13 +58,13 @@ inline void run(SimpleCore& c, const std::vector<DecodedInstr>& prog, std::funct
             &&OP_SYSCALL, &&OP_HALT
         };
 
-    if (prog.empty()) return;
+    if (prog.empty()) return RunResult::ERROR;
     //magie noire >w<
     #define FETCH() instr = &prog[c.PC];
     #define DISPATCH() goto *dispatch_table[instr->opcode]
     #define NEXT() \
     c.PC++; \
-    if (c.PC >= prog.size()) return; \
+    if (c.PC >= prog.size()) return RunResult::PC_OVERFLOW; \
     FETCH(); DISPATCH();
 
     const DecodedInstr* instr;
@@ -81,20 +90,20 @@ OP_MOD:
         c.regs[instr->rd] = (uint32_t)((int32_t)c.regs[instr->rs1] % (int32_t)c.regs[instr->rs2]);
     NEXT();
 OP_ADDI:
-    c.regs[instr->rd] = (uint32_t)((uint64_t)c.regs[instr->rs1] + (uint64_t)instr->rs2);
+    c.regs[instr->rd] = (uint32_t)((uint64_t)c.regs[instr->rs1] + (uint64_t)instr->imm);
     NEXT();
 OP_SUBI:
-    c.regs[instr->rd] = (uint32_t)((uint64_t)c.regs[instr->rs1] - (uint64_t)(int32_t)instr->rs2);
+    c.regs[instr->rd] = (uint32_t)((uint64_t)c.regs[instr->rs1] - (uint64_t)instr->imm);
     NEXT();
 OP_MULI:
-    c.regs[instr->rd] = (uint32_t)((int64_t)(int32_t)c.regs[instr->rs1] * (int64_t)(int32_t)instr->rs2);
+    c.regs[instr->rd] = (uint32_t)((int64_t)(int32_t)c.regs[instr->rs1] * (int64_t)instr->imm);
     NEXT();
 OP_DIVI:
-    if ((int32_t)instr->rs2 != 0 && !((int32_t)c.regs[instr->rs1] == INT32_MIN && (int32_t)instr->rs2 == -1))
-        c.regs[instr->rd] = (uint32_t)((int32_t)c.regs[instr->rs1] / (int32_t)instr->rs2);
+    if (instr->imm != 0 && !((int32_t)c.regs[instr->rs1] == INT32_MIN && instr->imm == -1))
+        c.regs[instr->rd] = (uint32_t)((int32_t)c.regs[instr->rs1] / instr->imm);
     NEXT();
 OP_MODI:
-    if ((int32_t)instr->rs2 != 0) c.regs[instr->rd] = (uint32_t)((int32_t)c.regs[instr->rs1] % (int32_t)instr->rs2);
+    if (instr->imm != 0) c.regs[instr->rd] = (uint32_t)((int32_t)c.regs[instr->rs1] % instr->imm);
     NEXT();
 
 OP_AND:
@@ -107,13 +116,13 @@ OP_XOR:
     c.regs[instr->rd] = c.regs[instr->rs1] ^ c.regs[instr->rs2];
     NEXT();
 OP_ANDI:
-    c.regs[instr->rd] = c.regs[instr->rs1] & (uint32_t)(int32_t)instr->rs2;
+    c.regs[instr->rd] = c.regs[instr->rs1] & (uint32_t)instr->imm;
     NEXT();
 OP_ORI:
-    c.regs[instr->rd] = c.regs[instr->rs1] | (uint32_t)(int32_t)instr->rs2;
+    c.regs[instr->rd] = c.regs[instr->rs1] | (uint32_t)instr->imm;
     NEXT();
 OP_XORI:
-    c.regs[instr->rd] = c.regs[instr->rs1] ^ (uint32_t)(int32_t)instr->rs2;
+    c.regs[instr->rd] = c.regs[instr->rs1] ^ (uint32_t)instr->imm;
     NEXT();
 
 OP_SHL:
@@ -132,37 +141,37 @@ OP_ROR:
     c.regs[instr->rd] = (c.regs[instr->rs1] >> (c.regs[instr->rs2] & 31)) | (c.regs[instr->rs1] << (32 - (c.regs[instr->rs2] & 31)));
     NEXT();
 OP_SHLI:
-    c.regs[instr->rd] = c.regs[instr->rs1] << ((uint32_t)instr->rs2 & 31);
+    c.regs[instr->rd] = c.regs[instr->rs1] << ((uint32_t)instr->imm & 31);
     NEXT();
 OP_SHRI:
-    c.regs[instr->rd] = c.regs[instr->rs1] >> ((uint32_t)instr->rs2 & 31);
+    c.regs[instr->rd] = c.regs[instr->rs1] >> ((uint32_t)instr->imm & 31);
     NEXT();
 OP_SARI:
-    c.regs[instr->rd] = (uint32_t)((int32_t)c.regs[instr->rs1] >> ((uint32_t)instr->rs2 & 31));
+    c.regs[instr->rd] = (uint32_t)((int32_t)c.regs[instr->rs1] >> ((uint32_t)instr->imm & 31));
     NEXT();
 OP_ROLI:
-    c.regs[instr->rd] = (c.regs[instr->rs1] << ((uint32_t)instr->rs2 & 31)) | (c.regs[instr->rs1] >> (32 - ((uint32_t)instr->rs2 & 31)));
+    c.regs[instr->rd] = (c.regs[instr->rs1] << ((uint32_t)instr->imm & 31)) | (c.regs[instr->rs1] >> (32 - ((uint32_t)instr->imm & 31)));
     NEXT();
 OP_RORI:
-    c.regs[instr->rd] = (c.regs[instr->rs1] >> ((uint32_t)instr->rs2 & 31)) | (c.regs[instr->rs1] << (32 - ((uint32_t)instr->rs2 & 31)));
+    c.regs[instr->rd] = (c.regs[instr->rs1] >> ((uint32_t)instr->imm & 31)) | (c.regs[instr->rs1] << (32 - ((uint32_t)instr->imm & 31)));
     NEXT();
 OP_CMP:
-    c.regs[13] = ((int32_t)c.regs[instr->rs1] < (int32_t)c.regs[instr->rs2]) ? -1 : (((int32_t)c.regs[instr->rs1] > (int32_t)c.regs[instr->rs2]) ? 1 : 0);
+    c.regs[12] = ((int32_t)c.regs[instr->rs1] < (int32_t)c.regs[instr->rs2]) ? -1 : (((int32_t)c.regs[instr->rs1] > (int32_t)c.regs[instr->rs2]) ? 1 : 0);
     NEXT();
 OP_CMPU:
-    c.regs[13] = (c.regs[instr->rs1] < c.regs[instr->rs2]) ? -1 : ((c.regs[instr->rs1] > c.regs[instr->rs2]) ? 1 : 0);
+    c.regs[12] = (c.regs[instr->rs1] < c.regs[instr->rs2]) ? -1 : ((c.regs[instr->rs1] > c.regs[instr->rs2]) ? 1 : 0);
     NEXT();
 OP_CMPI:
-    c.regs[13] = ((int32_t)c.regs[instr->rs1] < (int32_t)instr->rs2) ? -1 : (((int32_t)c.regs[instr->rs1] > (int32_t)instr->rs2) ? 1 : 0);
+    c.regs[12] = ((int32_t)c.regs[instr->rs1] < instr->imm) ? -1 : (((int32_t)c.regs[instr->rs1] > instr->imm) ? 1 : 0);
     NEXT();
 OP_CMPUI:
-    c.regs[13] = (c.regs[instr->rs1] < (uint32_t)instr->rs2) ? -1 : ((c.regs[instr->rs1] < (uint32_t)instr->rs2) ? 1 : 0);
+    c.regs[12] = (c.regs[instr->rs1] < (uint32_t)instr->imm) ? -1 : ((c.regs[instr->rs1] > (uint32_t)instr->rs2) ? 1 : 0);
     NEXT();
 OP_TEST:
-    c.regs[13] = ((c.regs[instr->rs1] & c.regs[instr->rs2]) != 0) ? 1 : 0;
+    c.regs[12] = ((c.regs[instr->rs1] & c.regs[instr->rs2]) != 0) ? 1 : 0;
     NEXT();
 OP_TESTI:
-    c.regs[13] = ((c.regs[instr->rs1] & (uint32_t)instr->rs2) != 0) ? 1 : 0;
+    c.regs[12] = ((c.regs[instr->rs1] & (uint32_t)instr->imm) != 0) ? 1 : 0;
     NEXT();
 
 OP_INC:
@@ -190,12 +199,12 @@ OP_MAX:
     else c.regs[instr->rd] = c.regs[instr->rs2];
     NEXT();
 OP_MINI:
-    if (c.regs[instr->rs1] < instr->rs2) c.regs[instr->rd] = instr->rs1;
-    else c.regs[instr->rd] = instr->rs2;
+    if (c.regs[instr->rs1] < instr->imm) c.regs[instr->rd] = instr->rs1;
+    else c.regs[instr->rd] = instr->imm;
     NEXT();
 OP_MAXI:
-    if (c.regs[instr->rs1] > instr->rs2) c.regs[instr->rd] = instr->rs1;
-    else c.regs[instr->rd] = instr->rs2;
+    if (c.regs[instr->rs1] > instr->imm) c.regs[instr->rd] = instr->rs1;
+    else c.regs[instr->rd] = instr->imm;
     NEXT();
 
 OP_FADD:
@@ -223,7 +232,7 @@ OP_FNEG:
     c.fregs[instr->rd] = std::bit_cast<uint32_t>(-std::bit_cast<float>(c.fregs[instr->rs1]));
     NEXT();
 OP_FCMP:
-    c.regs[13] = std::bit_cast<uint32_t>(std::bit_cast<float>(c.fregs[instr->rs1]) < std::bit_cast<float>(c.fregs[instr->rs2]) ? -1 : std::bit_cast<float>(c.fregs[instr->rs1]) > std::bit_cast<float>(c.fregs[instr->rs2]) ? 1 : 0);
+    c.regs[12] = std::bit_cast<uint32_t>(std::bit_cast<float>(c.fregs[instr->rs1]) < std::bit_cast<float>(c.fregs[instr->rs2]) ? -1 : std::bit_cast<float>(c.fregs[instr->rs1]) > std::bit_cast<float>(c.fregs[instr->rs2]) ? 1 : 0);
     NEXT();
 OP_ITOF:
     c.fregs[instr->rd] = std::bit_cast<uint32_t>(std::bit_cast<float>(c.regs[instr->rs1]));
@@ -244,10 +253,10 @@ OP_FSDW_ABS:
     c.store32(instr->imm, c.fregs[instr->rd]);
     NEXT();
 OP_FLDW_BASE:
-    c.fregs[instr->rd] = c.load32(c.regs[instr->rs1] + static_cast<int8_t>(instr->imm));
+    c.fregs[instr->rd] = c.load32(c.regs[instr->rs1] + static_cast<int8_t>(instr->rs2));
     NEXT();
 OP_FSDW_BASE:
-    c.store32(c.regs[instr->rs1] + static_cast<int8_t>(instr->imm), c.fregs[instr->rd]);
+    c.store32(c.regs[instr->rs1] + static_cast<int8_t>(instr->rs2), c.fregs[instr->rd]);
     NEXT();
 OP_FLDW_REG:
     c.fregs[instr->rd] = c.load32(c.regs[instr->rs1] + c.regs[instr->rs2]);
@@ -281,13 +290,13 @@ OP_STW_ABS:
     c.store32(instr->imm, c.regs[instr->rd]);
     NEXT();
 OP_LDB_BASE:
-    c.regs[instr->rd] = static_cast<int8_t>(c.load8(c.regs[instr->rs1] + static_cast<int8_t>(instr->imm)));
+    c.regs[instr->rd] = static_cast<int8_t>(c.load8(c.regs[instr->rs1] + static_cast<int8_t>(instr->rs2)));
     NEXT();
 OP_LDH_BASE:
-    c.regs[instr->rd] = static_cast<int16_t>(c.load16(c.regs[instr->rs1] + static_cast<int8_t>(instr->imm)));
+    c.regs[instr->rd] = static_cast<int16_t>(c.load16(c.regs[instr->rs1] + static_cast<int8_t>(instr->rs2)));
     NEXT();
 OP_LDW_BASE:
-    c.regs[instr->rd] = c.load32(c.regs[instr->rs1] + static_cast<int8_t>(instr->imm));
+    c.regs[instr->rd] = c.load32(c.regs[instr->rs1] + static_cast<int8_t>(instr->rs2));
     NEXT();
 OP_LDB_REG:
     c.regs[instr->rd] = static_cast<int8_t>(c.load8(c.regs[instr->rs1] + c.regs[instr->rs2]));
@@ -299,13 +308,13 @@ OP_LDW_REG:
     c.regs[instr->rd] = c.load32(c.regs[instr->rs1] + c.regs[instr->rs2]);
     NEXT();
 OP_STB_BASE:
-    c.store8(c.regs[instr->rs1] + static_cast<int8_t>(instr->imm), c.regs[instr->rd] & 0xFF);
+    c.store8(c.regs[instr->rs1] + static_cast<int8_t>(instr->rs2), c.regs[instr->rd] & 0xFF);
     NEXT();
 OP_STH_BASE:
-    c.store16(c.regs[instr->rs1] + static_cast<int8_t>(instr->imm), c.regs[instr->rd] & 0xFFFF);
+    c.store16(c.regs[instr->rs1] + static_cast<int8_t>(instr->rs2), c.regs[instr->rd] & 0xFFFF);
     NEXT();
 OP_STW_BASE:
-    c.store32(c.regs[instr->rs1] + static_cast<int8_t>(instr->imm), c.regs[instr->rd]);
+    c.store32(c.regs[instr->rs1] + static_cast<int8_t>(instr->rs2), c.regs[instr->rd]);
     NEXT();
 OP_STB_REG:
     c.store8(c.regs[instr->rs1] + c.regs[instr->rs2], c.regs[instr->rd] & 0xFF);
@@ -318,10 +327,12 @@ OP_STW_REG:
     NEXT();
 
 OP_PUSH:
+    if (c.SP < 4 || c.SP - 4 < c.stack_limit) { return RunResult::STACK_OVERFLOW; } // trap stack overflow
     c.SP -= 4;
     c.store32(c.SP, c.regs[instr->rs1]);
     NEXT();
 OP_POP:
+    if (c.SP + 4 > c.ram.size()) { return RunResult::STACK_UNDERFLOW; } // stack underflow
     c.regs[instr->rd] = c.load32(c.SP);
     c.SP += 4;
     NEXT();
@@ -337,24 +348,22 @@ OP_SWAP:
 OP_CLR:
     c.regs[instr->rd] = 0;
     NEXT();
-OP_MEMCPY:
-    {
-        int32_t len = static_cast<int8_t>(instr->imm);
-        if (len >= 0) {
-            for (uint32_t index = 0; index < instr->rs2; ++index)
-                if (c.regs[instr->rd] + index < c.ram.size() && c.regs[instr->rs1] + index < c.ram.size())
-                    c.ram[c.regs[instr->rd] + index] = c.ram[c.regs[instr->rs1] + index];
-        }
+OP_MEMCPY: {
+    int32_t len = instr->imm;
+    if (len > 0) {
+        for (uint32_t idx = 0; idx < (uint32_t)len; ++idx)
+            if (c.regs[instr->rd] + idx < c.ram.size() && c.regs[instr->rs1] + idx < c.ram.size())
+                c.ram[c.regs[instr->rd] + idx] = c.ram[c.regs[instr->rs1] + idx];
+    }
     }
     NEXT();
-
 OP_JMP:
     c.PC += instr->imm;
     FETCH();
     DISPATCH();
 OP_JZ:
     {
-    if(c.regs[13] == 0) {
+    if(c.regs[12] == 0) {
         c.PC += instr->imm;
         FETCH();
         DISPATCH();
@@ -363,7 +372,7 @@ OP_JZ:
     }
 OP_JNZ:
     {
-    if(c.regs[13] != 0) {
+    if(c.regs[12] != 0) {
         c.PC += instr->imm;
         FETCH();
         DISPATCH();
@@ -372,7 +381,7 @@ OP_JNZ:
     }
 OP_JL:
     {
-    if((int32_t)c.regs[13] < 0) {
+    if((int32_t)c.regs[12] < 0) {
         c.PC += instr->imm;
         FETCH();
         DISPATCH();
@@ -381,7 +390,7 @@ OP_JL:
     }
 OP_JG:
     {
-    if((int32_t)c.regs[13] > 0) {
+    if((int32_t)c.regs[12] > 0) {
         c.PC += instr->imm;
         FETCH();
         DISPATCH();
@@ -389,22 +398,24 @@ OP_JG:
     NEXT();
     }
 OP_CALL:
+    if (c.SP < 4 || c.SP - 4 < c.stack_limit) { return RunResult::STACK_OVERFLOW; } // trap stack overflow
     c.SP -= 4;
     c.store32(c.SP, c.PC + 1);
     c.PC += instr->imm;
     FETCH();
     DISPATCH();
 OP_RET:
+    if (c.SP + 4 > c.ram.size()) { return RunResult::STACK_UNDERFLOW; } // stack underflow
     c.PC = c.load32(c.SP);
     c.SP += 4;
     FETCH();
     DISPATCH();
 
 OP_SYSCALL:
-    if (handle_syscall() != 1) return;
+    if (handle_syscall() != 1) return RunResult::SYSCALL_STOP;
     NEXT();
 OP_HALT:
-    return;
+    return RunResult::HALTED;
 }
 
 #endif

@@ -219,8 +219,22 @@ struct ObjectFile {
     std::vector<Relocation> relocations;
 
     std::string entry_symbol;
+
+    bool has_stack_size = false;
+    uint32_t stack_size = 0;
 };
 
+
+struct RecursionHandler {
+    size_t rep_depth = 0;
+    size_t macro_expansion = 0;
+
+    bool handle() {
+        rep_depth++;
+        macro_expansion++;
+        return rep_depth > 100 || macro_expansion > 100;
+    }
+};
 
 struct PreProcesser {
     std::unordered_map<std::string, Value> constants; // %equ
@@ -232,6 +246,13 @@ struct PreProcesser {
         size_t start = idx;
         for (; idx < s.size() && condition(s[idx], idx); idx++) {}
         return s.substr(start, idx - start);
+    }
+
+    static std::string leading_identifier(const std::string& s) {
+        size_t idx = 0;
+        return delimit_string(s, idx, [](char c, size_t) {
+            return std::isalnum((unsigned char)c) || c == '_';
+        });
     }
 
     static std::pair<ErrorInfo, std::string> find_block_end(const std::vector<std::string>& lines, size_t& idx, const std::string& begin_dir,
@@ -255,9 +276,9 @@ struct PreProcesser {
         return { { }, out };
     }
 
-    ErrorInfo preprocess(std::string& file, size_t depth_ = 0) {
+    ErrorInfo preprocess(std::string& file, RecursionHandler RH = RecursionHandler()) {
         std::vector<std::string> lines = string_utils::slice_str(file, '\n');
-        if (depth_ > 100)
+        if (RH.handle())
             return { ErrorCode::PREPROC_RECURSION, "infinite recursion in the preprocessor", 0 };
         for (size_t i = 0; i < lines.size(); i++) {
             std::string line = string_utils::normalize(lines[i]);
@@ -272,7 +293,7 @@ struct PreProcesser {
                     lines[i] = line_copy;
                 }
                 else {
-                    if (line.starts_with(name)) {
+                    if (leading_identifier(line) == name) {
                         std::string line_copy = line;
                         if (string_utils::rep_counter(line, ')') != 1)
                             return { ErrorCode::MISMATCHED_PAR, "mismatched parenthesis", i };
@@ -298,8 +319,9 @@ struct PreProcesser {
                     }
                 }
             }
+            line = string_utils::normalize(lines[i]);
             for (const auto& [name, macro] : macros) {
-                if (line.starts_with(name)) {
+                if (leading_identifier(line) == name) {
                     if (string_utils::rep_counter(line, ')') != 1)
                         return { ErrorCode::MISMATCHED_PAR, "mismatched parenthesis", i };
                     if (string_utils::rep_counter(line, '(') != 1)
@@ -321,7 +343,9 @@ struct PreProcesser {
                         }
                         lines[i].clear();
                         lines.insert(lines.begin() + i, body.begin(), body.end());
-                        i += body.size();
+                        //i += body.size();
+                        i--;
+                        line = string_utils::normalize(lines[i]);
                     }
                     else {
                         return { ErrorCode::MISMATCHED_PAR, "mismatched parenthesis", i };
@@ -412,7 +436,7 @@ struct PreProcesser {
                     }
                     for (size_t k = i; k < j + 1; k++)
                         lines[k].clear();
-                    i = j + 1;
+                    i = j;
                 }
                 else {
                     return { ErrorCode::MISMATCHED_PAR, "mismatched parenthesis", i };
@@ -435,7 +459,7 @@ struct PreProcesser {
                 std::vector<std::string> to_add;
                 for (int k = 0; k < value; k++) {
                     std::string body_copy = body;
-                    ErrorInfo e_i = preprocess(body_copy, depth_ + 1);
+                    ErrorInfo e_i = preprocess(body_copy, RH);
                     if (e_i.code != ErrorCode::OK) {
                         e_i.index_line += i;
                         return e_i;
@@ -448,6 +472,7 @@ struct PreProcesser {
                 i = j + 1;
                 lines.insert(lines.begin() + i, to_add.begin(), to_add.end());
                 i += to_add.size();
+                i--;
             }
             if (instr == "%if") {
 
@@ -474,7 +499,7 @@ struct PreProcesser {
 
 
 
-struct AsmDecoder {
+struct Assembler {
     PreProcesser preproc;
     ObjectFile obj_file;
     std::unordered_map<std::string, Var> vars;
@@ -518,7 +543,7 @@ struct AsmDecoder {
 
 
         if (cur_section != Section::TEXT) return { };
-        if (instr == ".global" || instr == ".extern" || instr == ".entry") return { };
+        if (instr == ".global" || instr == ".extern" || instr == ".entry" || instr == ".stack_size") return { };
 
         InstrDef def = it->second;
 
@@ -552,9 +577,13 @@ struct AsmDecoder {
                     auto [e, imm_val] = parse_expr(args[i], preproc.constants, preproc.variables);
                     if (e.code != ErrorCode::OK) return e;
 
-                    if (it->first == "movi") imm = imm_val;
-                    else r[def.args_pos[i]] = imm_val;
-
+                    if (disp8_ops.contains(def.opcode)) {
+                        if (imm_val < -128 || imm_val > 127)
+                            return { ErrorCode::INVALID_IMM, "wrong imm interval \"" + it->first + "\"" };
+                        r[def.args_pos[i]] = static_cast<uint8_t>(imm_val);
+                    } else {
+                        imm = imm_val;
+                    }
                     break;
                 }
             case ArgType::LABEL:
@@ -743,6 +772,19 @@ struct AsmDecoder {
             if (args.size() != 1)
                 return { ErrorCode::INVALID_ARG_SIZE, "invalid argument size, expected 1", i };
             obj_file.entry_symbol = args[0];
+        }
+        if (instr == ".stack_size") {
+            if (args.size() != 1)
+                return { ErrorCode::INVALID_ARG_SIZE, "expected 1 argument", i };
+            if (obj_file.has_stack_size)
+                return { ErrorCode::DUPLICATE_STACK_SIZE, ".stack_size defined multiple times in this file", i };
+
+            auto [e, v] = parse_expr(args[0], preproc.constants, preproc.variables);
+            if (e.code != ErrorCode::OK) return e;
+
+            obj_file.stack_size = static_cast<uint32_t>(v);
+            obj_file.has_stack_size = true;
+            return { };
         }
         if (instr == ".byte") {
             for (auto& a : args) {

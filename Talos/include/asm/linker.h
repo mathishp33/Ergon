@@ -16,6 +16,7 @@ struct LinkedBinary {
     uint32_t bss_size = 0;
 
     uint32_t entry_pc = 0;
+    uint32_t stack_size = 0;
 };
 
 struct GlobalSymbol {
@@ -102,10 +103,17 @@ inline std::pair<ErrorInfo, LinkedBinary> link(std::vector<ObjectFile>& objects)
     // apply relocations
     for (auto& obj : objects) {
         if (!obj.entry_symbol.empty()) {
-            if (!globals.contains(obj.entry_symbol)) return { { ErrorCode::UNKNOWN_ENTRY_SYBOL, "unknown entry symbol \"" + obj.entry_symbol + "\"" }, out };
+            if (!globals.contains(obj.entry_symbol))
+                return { { ErrorCode::UNKNOWN_ENTRY_SYBOL, "unknown entry symbol \"" + obj.entry_symbol + "\"" }, out };
 
             out.entry_pc = globals[obj.entry_symbol].value;
             entry_found = true;
+
+            if (obj.has_stack_size)
+                out.stack_size = obj.stack_size;
+        }
+        else if (obj.has_stack_size) {
+            return { { ErrorCode::STACK_SIZE_NOT_IN_ENTRY_FILE, "\".stack_size\" must be declared in the file containing \".entry\"" }, out };
         }
 
         for (auto& rel : obj.relocations) {

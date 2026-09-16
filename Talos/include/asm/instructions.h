@@ -4,6 +4,7 @@
 #include "computer/core.h"
 
 #include <unordered_map>
+#include <unordered_set>
 
 
 enum class InstrType { R, I, J };
@@ -25,6 +26,12 @@ struct InstrDef {
     InstrDef(OPCODE opcode, InstrType type, const std::vector<ArgType>& args, const std::vector<size_t>& args_pos) : opcode(opcode), type(type), args(args), args_pos(args_pos) {
         if (args.size() != args_pos.size()) throw std::exception();
     }
+};
+
+inline const std::unordered_set<OPCODE> disp8_ops = {
+    LDB_BASE, LDH_BASE, LDW_BASE,
+    STB_BASE, STH_BASE, STW_BASE,
+    FLDW_BASE, FSTW_BASE
 };
 
 // { <instruction_name>, { <opcode>, <instruction_type>, { <argument_type>, ... } } }

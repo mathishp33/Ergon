@@ -13,16 +13,26 @@ struct MotherBoard {
     std::vector<uint8_t> ram{ };
     std::vector<DecodedInstr> rom{ };
 
-    MotherBoard(size_t RAM_SIZE) {
-        if (RAM_SIZE >= 0xFFFFFF - 1) RAM_SIZE = 0xFFFFFF - 1;
-        ram.resize(RAM_SIZE);
+    MotherBoard(size_t ram_size) {
+        if (ram_size >= 0xFFFFFF - 1) ram_size = 0xFFFFFF - 1;
+        ram.resize(ram_size);
         std::ranges::fill(ram, 0);
+
         cpu = std::make_shared<SimpleCPU>(ram);
+        set_stack_size(0);
+    }
+
+    void set_stack_size(uint32_t requested) {
+        uint32_t stack_size = (requested == 0) ? 4096 : requested;
+        uint32_t max_stack = static_cast<uint32_t>(ram.size()) / 4;
+        stack_size = std::clamp((int)stack_size, 256, std::max(256, (int)max_stack));
+        cpu->core.stack_limit = static_cast<uint32_t>(ram.size()) - stack_size;
     }
 
     void reset() {
         std::ranges::fill(ram, 0);
         std::ranges::fill(rom, DecodedInstr());
+        cpu->core.reset();
     }
 
     void load_prog(const std::vector<DecodedInstr>& program) {

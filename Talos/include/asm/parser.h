@@ -23,9 +23,9 @@ inline std::unordered_map<std::string, uint8_t> reg_table = {
     { "r8", 8 },
     { "r9", 9 },
     { "r10", 10 },
-    { "r11", 11 },
-    { "tmp", 12 },
-    { "cmp", 13 },
+    { "tmp", 11 },
+    { "cmp", 12 },
+    { "fp", 13 },
     { "sp", 14 },
     { "pc", 15 },
 

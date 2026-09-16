@@ -37,6 +37,8 @@ enum class ErrorCode : uint8_t {
     MISSING_ENDMACRO, //missing an %endmacro
     MISSING_ENDREP, //missing an %endrep
     PREPROC_RECURSION, //infinite recursion in the preprocessor
+    DUPLICATE_STACK_SIZE, //duplicate stack size
+    STACK_SIZE_NOT_IN_ENTRY_FILE,
 };
 
 // there is padding, but I don't want to #pragma pack(1) bc it gives warning

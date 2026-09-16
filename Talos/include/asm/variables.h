@@ -34,26 +34,26 @@ enum class ReserveDirective : unsigned int {
     //REST = 10, // Reserve Ten Bytes (custom) REQUIRE 64-bit
 };
 
-inline size_t parse_DD(const std::string& str) {
-    if (str == "DB" || str == "db") return static_cast<size_t>(DefineDirective::DB); //8b
-    if (str == "DW" || str == "dw") return static_cast<size_t>(DefineDirective::DW); //16b
-    if (str == "DD" || str == "dd") return static_cast<size_t>(DefineDirective::DD); //32b
-    if (str == "DQ" || str == "dq") return static_cast<size_t>(DefineDirective::DQ);
-    return 0;
-}
-
-inline size_t parse_RD(const std::string& str) {
-    if (str == "RESB" || str == "resb") return static_cast<size_t>(ReserveDirective::RESB);
-    if (str == "RESW" || str == "resw") return static_cast<size_t>(ReserveDirective::RESW);
-    if (str == "RESD" || str == "resd") return static_cast<size_t>(ReserveDirective::RESD);
-    if (str == "RESQ" || str == "resq") return static_cast<size_t>(ReserveDirective::RESQ);
-    return 0;
-}
-
-inline std::pair<size_t, bool> parse_D(const std::string& str) {
-    size_t dd = parse_DD(str);
-    size_t rd = parse_RD(str);
-    return { dd | rd, dd > rd ? 1 : 0 };
-}
+// inline size_t parse_DD(const std::string& str) {
+//     if (str == "DB" || str == "db") return static_cast<size_t>(DefineDirective::DB); //8b
+//     if (str == "DW" || str == "dw") return static_cast<size_t>(DefineDirective::DW); //16b
+//     if (str == "DD" || str == "dd") return static_cast<size_t>(DefineDirective::DD); //32b
+//     if (str == "DQ" || str == "dq") return static_cast<size_t>(DefineDirective::DQ);
+//     return 0;
+// }
+//
+// inline size_t parse_RD(const std::string& str) {
+//     if (str == "RESB" || str == "resb") return static_cast<size_t>(ReserveDirective::RESB);
+//     if (str == "RESW" || str == "resw") return static_cast<size_t>(ReserveDirective::RESW);
+//     if (str == "RESD" || str == "resd") return static_cast<size_t>(ReserveDirective::RESD);
+//     if (str == "RESQ" || str == "resq") return static_cast<size_t>(ReserveDirective::RESQ);
+//     return 0;
+// }
+//
+// inline std::pair<size_t, bool> parse_D(const std::string& str) {
+//     size_t dd = parse_DD(str);
+//     size_t rd = parse_RD(str);
+//     return { dd | rd, dd > rd ? 1 : 0 };
+// }
 
 #endif
