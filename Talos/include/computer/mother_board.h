@@ -10,8 +10,9 @@
 
 struct MotherBoard {
     std::shared_ptr<SimpleCPU> cpu;
-    std::vector<uint8_t> ram{ };
-    std::vector<DecodedInstr> rom{ };
+    std::vector<uint8_t> ram;
+    std::vector<DecodedInstr> rom;
+    std::vector<uint8_t> hard_drive;
 
     MotherBoard(size_t ram_size) {
         if (ram_size >= 0xFFFFFF - 1) ram_size = 0xFFFFFF - 1;
@@ -37,6 +38,10 @@ struct MotherBoard {
 
     void load_prog(const std::vector<DecodedInstr>& program) {
         rom = program;
+    }
+
+    void reset_hard_drive() {
+        std::ranges::fill(hard_drive, 0);
     }
 };
 

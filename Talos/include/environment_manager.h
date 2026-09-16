@@ -2,6 +2,7 @@
 #define ERGON_ENV_MANAGER_H
 
 #include <chrono>
+#include <fstream>
 #include <thread>
 
 #include "computer/mother_board.h"
@@ -38,11 +39,27 @@ struct EnvironmentManager {
     std::atomic<bool> running = false;
     std::chrono::time_point<std::chrono::system_clock> start_time;
 
-    EnvironmentManager(size_t ram_size = 65535) :
-     RAM_SIZE(ram_size), mb(MotherBoard(ram_size)) {}
+    EnvironmentManager(size_t ram_size = 65535, const std::string& path_to_hard_drive = "") :
+     RAM_SIZE(ram_size), mb(MotherBoard(ram_size)) {
+        if (!path_to_hard_drive.empty()) {
+            std::ifstream file(path_to_hard_drive, std::ios::binary);
+
+            if (!file)
+                throw std::runtime_error("Cannot open file: " + path_to_hard_drive);
+
+            const std::streamsize size = file.tellg();
+            file.seekg(0, std::ios::beg);
+
+            mb.hard_drive.resize(size);
+
+            if (!file.read(reinterpret_cast<char*>(mb.hard_drive.data()), size))
+                throw std::runtime_error("Cannot read file: " + path_to_hard_drive);
+        }
+    }
 
     std::string handle_error(const std::string& file_name, const ErrorInfo& e) {
-        std::string e_msg = "Error at line " + std::to_string(e.index_line) + " in file " + file_name + ": \n";
+        std::string e_msg = "Error " + std::to_string((int)e.code) + " at line " + std::to_string(e.index_line) +
+            " in file " + file_name + ": \n";
         e_msg += e.message + "\n";
         e_msg += "\n";
         if (decoder.lines.size() > e.index_line) {

@@ -2,14 +2,14 @@ cmake_minimum_required(VERSION 4.1)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_executable(ergon_test_4
+add_executable(ergon_test_sys_write
         sys_write.cpp
 )
 
-target_link_libraries(ergon_test_4
+target_link_libraries(ergon_test_sys_write
         PRIVATE
         talos
         #hephaistos
 )
 
-add_test(NAME ErgonTest_4 COMMAND ergon_test_4)
+add_test(NAME ErgonTest_Sys_Write COMMAND ergon_test_sys_write)

@@ -7,7 +7,7 @@
 
 
 int main() {
-    std::string program = R"(
+    std::string macros = R"(
 %macro proc()
     push fp
     mov fp, sp
@@ -25,28 +25,46 @@ int main() {
     pop fp
     ret
 %endmacro
-
+)";
+    std::string program = macros + R"(
 .section .text
 
 .global main
 .entry main
 
 main:
-    call test_local
+    call test_locals
     halt
 
 
-test_local:
+test_locals:
     proc()
 
-    local(x, 4)
+    local(a, 4)
+    local(b, 4)
+    local(c, 4)
+    local(d, 4)
 
-    movi r0, 42
-    sbasew r0, fp, x
+    movi r0, 10
+    sbasew r0, fp, a
 
-    lbasew r1, fp, x
+    movi r0, 20
+    sbasew r0, fp, b
 
-    ; r1 doit valoir 42
+    movi r0, 30
+    sbasew r0, fp, c
+
+    movi r0, 40
+    sbasew r0, fp, d
+
+    lbasew r1, fp, a
+    lbasew r2, fp, b
+    lbasew r3, fp, c
+
+    add r0, r1, r2
+    add r0, r0, r3
+
+    ; r0 = 60
 
     endproc()
 )";
@@ -68,7 +86,8 @@ test_local:
 
     std::cout << "EXIT CODE:  " << env_m.exit_code << std::endl;
 
-    std::cout << "r1: " << (int)env_m.get_from_reg("r1") << std::endl;
+    for (int i = 0; i < 9; i ++)
+        std::cout << "r" << i << ": " << (int)env_m.get_from_reg("r" + std::to_string(i)) << std::endl;
 
     return 0;
 }
