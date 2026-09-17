@@ -3,7 +3,7 @@
 
 #include <functional>
 
-#include "computer/core.h"
+#include "hardware/core.h"
 
 
 inline void step_instr(SimpleCore& c, const DecodedInstr& prog, std::function<int()> handle_syscall) {

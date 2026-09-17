@@ -1,7 +1,7 @@
 #ifndef ERGON_INSTRUCTIONS_H
 #define ERGON_INSTRUCTIONS_H
 
-#include "computer/core.h"
+#include "hardware/core.h"
 
 #include <unordered_map>
 #include <unordered_set>
@@ -138,16 +138,6 @@ inline std::unordered_map<std::string, InstrDef> instr_table = {
 
     {"syscall", {SYSCALL, InstrType::J, { }, { } }},
     {"halt",  {HALT,  InstrType::J, { }, { } }},
-};
-
-enum ABI : uint32_t {
-    EXIT = 0,
-    WRITE = 1,
-    READ = 2,
-    CLOCK = 3,
-    TIME = 4,
-    DISK_READ = 5,
-    DISK_WRITE = 6,
 };
 
 

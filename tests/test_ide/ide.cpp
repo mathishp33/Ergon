@@ -3,7 +3,7 @@
 #include <sstream>
 #include <filesystem>
 
-#include "../../Talos/include/environment_manager.h"
+#include "../../Talos/include/virtual_machine/environment_manager.h"
 
 #include <string>
 #include <chrono>

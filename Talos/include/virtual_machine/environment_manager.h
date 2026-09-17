@@ -5,17 +5,18 @@
 #include <fstream>
 #include <thread>
 
-#include "computer/mother_board.h"
-#include "computer/instructions_handler/step_handler.h"
-#include "computer/instructions_handler/run_handler.h"
-#include "asm/assembler.h"
-#include "asm/linker.h"
+#include "../hardware/mother_board.h"
+#include "../hardware/instructions_handler/step_handler.h"
+#include "../hardware/instructions_handler/run_handler.h"
+#include "../software/assembler.h"
+#include "../software/linker.h"
 
 struct StepInfo {
-    std::array<uint32_t, 16> regs{};
-    std::array<uint32_t, 16> fregs{};
-    uint32_t& PC = regs[16 - 1];
-    uint32_t& SP = regs[16 - 2];
+    std::array<uint32_t, 16> regs;
+    std::array<uint32_t, 16> fregs;
+    uint32_t& PC = regs[15];
+    uint32_t& SP = regs[14];
+    uint32_t& FP = regs[13];
 
     DecodedInstr instr;
 
@@ -25,6 +26,7 @@ struct StepInfo {
         fregs = mb.cpu->core.fregs;
         PC = mb.cpu->core.PC;
         SP = mb.cpu->core.SP;
+        FP = mb.cpu->core.FP;
 
         instr = mb.rom[mb.cpu->core.PC];
     }
@@ -154,83 +156,6 @@ struct EnvironmentManager {
         return { mb };
     }
 
-    void handle_syscall() {
-        switch (mb.cpu->core.regs[0]) {
-        case ABI::EXIT:
-            sys_exit();
-            break;
-        case ABI::WRITE:
-            sys_write();
-            break;
-        case ABI::READ:
-            sys_read();
-            break;
-        case ABI::CLOCK:
-            sys_clock();
-            break;
-        case ABI::TIME:
-            sys_time();
-            break;
-        case ABI::DISK_READ:
-            break;
-        case ABI::DISK_WRITE:
-            break;
-        default:
-            break;
-        }
-    }
-
-    void sys_exit() {
-        running = false;
-        exit_code = 0;
-    }
-
-    void sys_write() {
-        uint32_t addr = mb.cpu->core.regs[1];
-        uint32_t size = mb.cpu->core.regs[2];
-
-        if (addr > mb.ram.size() || size > mb.ram.size() - addr) {
-            exit_code = -1;
-            mb.cpu->core.regs[0] = static_cast<uint32_t>(-1);
-            return;
-        }
-        uint8_t* data = &mb.ram[addr];
-
-        std::cout.write(reinterpret_cast<const char*>(data), size);
-    }
-
-    void sys_read() {
-        uint32_t addr = mb.cpu->core.regs[1];
-        uint32_t size = mb.cpu->core.regs[2];
-
-        if (addr > mb.ram.size() || size > mb.ram.size() - addr) {
-            mb.cpu->core.regs[0] = static_cast<uint32_t>(-1);
-            exit_code = -1;
-            return;
-        }
-        char* data = reinterpret_cast<char*>(&mb.ram[addr]);
-
-        std::streamsize n = 0;
-        std::cin.read(data, size);
-        n = std::cin.gcount();
-        if (std::cin.eof()) std::cin.clear();
-
-        mb.cpu->core.regs[0] = static_cast<uint32_t>(n);
-    }
-
-    void sys_clock() {
-        const auto now = std::chrono::system_clock::now();
-        const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start_time).count();
-
-        mb.cpu->core.regs[0] = static_cast<uint32_t>(elapsed);
-    }
-
-    void sys_time() {
-        const auto now = std::chrono::system_clock::now();
-        uint64_t timestamp = std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()).count();
-
-        mb.cpu->core.regs[0] = static_cast<uint32_t>(timestamp);
-    }
 };
 
 

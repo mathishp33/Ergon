@@ -136,45 +136,11 @@ struct SimpleCore {
         SP = ram.size();
     }
 
-    // <- memory[addr]
-    uint32_t load32(uint32_t addr) {
-        if (addr + 3 >= ram.size()) return 0;
-        return ram[addr] |
-               (ram[addr + 1] << 8) |
-               (ram[addr + 2] << 16) |
-               (ram[addr + 3] << 24);
-    }
-    uint16_t load16(uint32_t addr) {
-        if (addr + 1 >= ram.size()) return 0;
-        return ram[addr] |
-               (ram[addr + 1] << 8);
-    }
-    uint8_t load8(uint32_t addr) {
-        if (addr >= ram.size()) return 0;
-        return ram[addr];
-    }
-    // addr -> ram
-    void store32(uint32_t addr, uint32_t value) {
-        if (addr + 3 >= ram.size()) return;
-        ram[addr] = value & 0xFF;
-        ram[addr + 1] = (value >> 8) & 0xFF;
-        ram[addr + 2] = (value >> 16) & 0xFF;
-        ram[addr + 3] = (value >> 24) & 0xFF;
-    }
-    void store16(uint32_t addr, uint16_t value) {
-        if (addr + 1 >= ram.size()) return;
-        ram[addr] = value & 0xFF;
-        ram[addr + 1] = (value >> 8) & 0xFF;
-    }
-    void store8(uint32_t addr, uint8_t value) {
-        if (addr >= ram.size()) return;
-        ram[addr] = value;
-    }
-
     void reset() {
         std::ranges::fill(regs, 0);
         std::ranges::fill(fregs, 0);
         SP = ram.size();
+        FP = 0;
         PC = 0;
     }
 };

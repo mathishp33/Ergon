@@ -14,6 +14,24 @@ AJOUTER syscall handler (lower levels)
 
 ------------------------------------------------------------------------------------------------------------------------
 
+1. Storage device
+2. Storage driver
+3. Format du disque
+4. Superblock
+5. Allocation de blocs
+6. Inodes
+7. Répertoires
+8. Création/lecture/écriture de fichiers
+9. File descriptors
+10. Executable loader
+11. Process structure
+12. SYSCALL/traps
+13. Scheduler
+14. Interruptions timer
+15. USER/KERNEL privilege separation
+
+------------------------------------------------------------------------------------------------------------------------
+
 ① Storage virtuel brut\
 ↓\
 ② DISK_READ / DISK_WRITE\

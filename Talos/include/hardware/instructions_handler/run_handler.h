@@ -4,7 +4,7 @@
 #include <bit>
 #include <functional>
 
-#include "computer/core.h"
+#include "hardware/core.h"
 
 
 enum class RunResult {
