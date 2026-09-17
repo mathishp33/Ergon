@@ -2,6 +2,7 @@
 #define ERGON_MOTHER_BOARD_H
 
 #include "cpu.h"
+#include "bus.h"
 #include "software/data.h"
 
 #include <atomic>
@@ -9,17 +10,19 @@
 
 
 struct MotherBoard {
-    std::shared_ptr<SimpleCPU> cpu;
+    MMIO mmio;
     std::vector<uint8_t> ram;
+    SystemBus bus;
+    std::shared_ptr<SimpleCPU> cpu;
     std::vector<DecodedInstr> rom;
     std::vector<uint8_t> hard_drive;
 
-    MotherBoard(size_t ram_size) {
+    MotherBoard(size_t ram_size) : bus(ram, mmio) {
         if (ram_size >= 0xFFFFFF - 1) ram_size = 0xFFFFFF - 1;
         ram.resize(ram_size);
         std::ranges::fill(ram, 0);
 
-        cpu = std::make_shared<SimpleCPU>(ram);
+        cpu = std::make_shared<SimpleCPU>(bus, static_cast<uint32_t>(ram.size()));
         set_stack_size(0);
     }
 
@@ -33,7 +36,7 @@ struct MotherBoard {
     void reset() {
         std::ranges::fill(ram, 0);
         std::ranges::fill(rom, DecodedInstr());
-        cpu->core.reset();
+        cpu->core.reset(static_cast<uint32_t>(ram.size()));
     }
 
     void load_prog(const std::vector<DecodedInstr>& program) {

@@ -332,7 +332,7 @@ OP_PUSH:
     c.store32(c.SP, c.regs[instr->rs1]);
     NEXT();
 OP_POP:
-    if (c.SP + 4 > c.ram.size()) { return RunResult::STACK_UNDERFLOW; } // stack underflow
+    if (c.SP + 4 > c.bus.ram_size()) { return RunResult::STACK_UNDERFLOW; } // stack underflow
     c.regs[instr->rd] = c.load32(c.SP);
     c.SP += 4;
     NEXT();
@@ -349,11 +349,12 @@ OP_CLR:
     c.regs[instr->rd] = 0;
     NEXT();
 OP_MEMCPY: {
+    // Copie octet à octet via c.store8/c.load8 : ça respecte le
+    // routage RAM/MMIO du bus au lieu de taper direct dans le vector.
     int32_t len = instr->imm;
     if (len > 0) {
         for (uint32_t idx = 0; idx < (uint32_t)len; ++idx)
-            if (c.regs[instr->rd] + idx < c.ram.size() && c.regs[instr->rs1] + idx < c.ram.size())
-                c.ram[c.regs[instr->rd] + idx] = c.ram[c.regs[instr->rs1] + idx];
+            c.store8(c.regs[instr->rd] + idx, c.load8(c.regs[instr->rs1] + idx));
     }
     }
     NEXT();
@@ -405,7 +406,7 @@ OP_CALL:
     FETCH();
     DISPATCH();
 OP_RET:
-    if (c.SP + 4 > c.ram.size()) { return RunResult::STACK_UNDERFLOW; } // stack underflow
+    if (c.SP + 4 > c.bus.ram_size()) { return RunResult::STACK_UNDERFLOW; } // stack underflow
     c.PC = c.load32(c.SP);
     c.SP += 4;
     FETCH();

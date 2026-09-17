@@ -3,6 +3,7 @@
 
 #include "alu.h"
 #include "fpu.h"
+#include "bus.h"
 
 #include <vector>
 #include <array>
@@ -10,114 +11,42 @@
 
 enum OPCODE : uint8_t {
     //----------------- ALU OPERATIONS -----------------
-    ADD  , // R-type: add rd, rs1, rs2
-    SUB  , // R-type: sub rd, rs1, rs2
-    MUL  , // R-type: mul rd, rs1, rs2
-    DIV  , // R-type: div rd, rs1, rs2
-    MOD  , // R-type: mod rd, rs1, rs2
-    ADDI , // I-type: addi rd, rs, imm
-    SUBI , // I-type: subi rd, rs, imm
-    MULI , // I-type: muli rd, rs, imm
-    DIVI , // I-type: divi rd, rs, imm
-    MODI , // I-type: modi rd, rs, imm
+    ADD  , SUB  , MUL  , DIV  , MOD  ,
+    ADDI , SUBI , MULI , DIVI , MODI ,
 
-    AND  , // R-type: and rd, rs1, rs2
-    OR   , // R-type: or rd, rs1, rs2
-    XOR  , // R-type: xor rd, rs1, rs2
-    ANDI , // I-type: andi rd, rs, imm
-    ORI  , // I-type: ori rd, rs, imm
-    XORI , // I-type: xori rd, rs, imm
+    AND  , OR   , XOR  , ANDI , ORI  , XORI ,
 
-    SHL  , // R-type: shl rd, rs, rt
-    SHR  , // R-type: shr rd, rs, rt
-    SAR  , // R-type: sar rd, rs, rt
-    ROL  , // R-type: rol rd, rs, rt
-    ROR  , // R-type: ror rd, rs, rt
-    SHLI , // I-type: shli rd, rs, imm
-    SHRI , // I-type: shri rd, rs, imm
-    SARI , // I-type: sari rd, rs, imm
-    ROLI , // I-type: roli rd, rs, imm
-    RORI , // I-type: rori rd, rs, imm
+    SHL  , SHR  , SAR  , ROL  , ROR  ,
+    SHLI , SHRI , SARI , ROLI , RORI ,
 
-    CMP  , // R-type: cmp rs1, rs2
-    CMPU , // R-type: cmpu rs1, rs2
-    TEST , // R-type: test rs1, rs2
-    CMPI , // I-type: cmpi rs, imm
-    CMPUI, // I-type: cmpui rs, imm (unsigned)
-    TESTI, // I-type: testI rs, imm
+    CMP  , CMPU , TEST ,
+    CMPI , CMPUI, TESTI,
 
-    INC , // J-type: inc rd
-    DEC , // J-type: dec rd
-    NOT , // J-type: not rd, rs
-    ABS , // J-type: abs rd, rs
-    NEG , // J-type: neg rd, rs
-    MIN , // R-type: min rd, rs1, rs2
-    MAX , // R-type: max rd, rs1, rs2
-    MINI, // I-type: mini rd, rs1, imm
-    MAXI, // I-type: maxi rd, rs1, imm
+    INC , DEC , NOT , ABS , NEG ,
+    MIN , MAX , MINI, MAXI,
 
     //----------------- FPU OPERATIONS -----------------
-
-    FADD,
-    FSUB,
-    FMUL,
-    FDIV,
-    FMA,
-    FSQRT,
-    FABS,
-    FNEG,
-    FCMP,
-    ITOF,
-    FTOI,
-    FMOV,
-    MOVF,
-    FLDW_ABS,
-    FSTW_ABS,
-    FLDW_BASE,
-    FSTW_BASE,
-    FLDW_REG,
-    FSTW_REG,
+    FADD, FSUB, FMUL, FDIV, FMA,
+    FSQRT, FABS, FNEG, FCMP, ITOF, FTOI,
+    FMOV, MOVF, FLDW_ABS, FSTW_ABS,
+    FLDW_BASE, FSTW_BASE, FLDW_REG, FSTW_REG,
 
     //----------------- MEMORY OPERATIONS -----------------
-    MOV_IMM , // mov rd, imm
-    MOV_REG , // mov rd, rs1
-    LDB_ABS , // load byte rd, [imm]
-    LDH_ABS , // load half-word rd, [imm] (16b)
-    LDW_ABS , // load word rd, [imm] (16b)
-    STB_ABS , // store byte rd, [imm] (16b)
-    STH_ABS , // store half-word rd, [imm] (16b)
-    STW_ABS , // store word rd, [imm] (16b)
-    LDB_BASE, // load byte rd, [rs1 + imm]
-    LDH_BASE, // load half-word rd, [rs1 + imm]
-    LDW_BASE, // load word rd, [rs1 + imm]
-    LDB_REG , // load byte rd, [rs1 + rs2]
-    LDH_REG , // load half-word rd, [rs1 + rs2]
-    LDW_REG , // load word rd, [rs1 + rs2]
-    STB_BASE, // store byte rd, [rs1 + imm]
-    STH_BASE, // store half-word rd, [rs1 + imm]
-    STW_BASE, // store word rd, [rs1 + imm]
-    SDB_REG , // store byte rd, [rs1 + rs2]
-    SDH_REG , // store half-word rd, [rs1 + rs2]
-    SDW_REG , // store word rd, [rs1 + rs2]
-    PUSH    , // push rs1
-    POP     , // pop rd
-    LEA     , // lea rd, rs1, imm
-    LEAB    , // lea rd, rs1
-    SWAP    , // swap rd, rs1
-    CLR     , // clr rd
-    MEMCPY  , // memcpy rd, rs1, imm (length = imm)
+    MOV_IMM , MOV_REG ,
+    LDB_ABS , LDH_ABS , LDW_ABS ,
+    STB_ABS , STH_ABS , STW_ABS ,
+    LDB_BASE, LDH_BASE, LDW_BASE,
+    LDB_REG , LDH_REG , LDW_REG ,
+    STB_BASE, STH_BASE, STW_BASE,
+    SDB_REG , SDH_REG , SDW_REG ,
+    PUSH    , POP     ,
+    LEA     , LEAB    , SWAP    , CLR     , MEMCPY  ,
 
     //----------------- PROGRAM OPERATIONS -----------------
-    JMP , // jmp label (24b) (RELATIVE JUMP)
-    JZ  , // jz label (24b) (JMPR if Z flag is true)
-    JNZ , // jnz label (24b) (JMPR if Z flag is false)
-    JG  , // jg label (24b) (JMPR if both Z and N flag are false)
-    JL  , // jl label (24b) (JMPR if N flag is true)
-    CALL, // call label (24b)  (JMPR and saves the current PC)
-    RET , // ret (load previous PC and JMPR there)
+    JMP , JZ  , JNZ , JG  , JL  ,
+    CALL, RET ,
 
-    SYSCALL, //system call
-    HALT // halt (stops program)
+    SYSCALL, HALT
 };
 
 
@@ -130,19 +59,26 @@ struct SimpleCore {
 
     uint32_t stack_limit = 0;
 
-    std::vector<uint8_t>& ram;
+    SystemBus& bus;
 
-    SimpleCore(std::vector<uint8_t>& ram) : ram(ram) {
-        SP = ram.size();
+    SimpleCore(SystemBus& bus, uint32_t ram_size) : bus(bus) {
+        SP = ram_size;
     }
 
-    void reset() {
+    void reset(uint32_t ram_size) {
         std::ranges::fill(regs, 0);
         std::ranges::fill(fregs, 0);
-        SP = ram.size();
+        SP = ram_size;
         FP = 0;
         PC = 0;
     }
+
+    uint32_t load32(uint32_t addr) { return bus.load32(addr); }
+    uint16_t load16(uint32_t addr) { return bus.load16(addr); }
+    uint8_t load8(uint32_t addr) { return bus.load8(addr); }
+    void store32(uint32_t addr, uint32_t value) { bus.store32(addr, value); }
+    void store16(uint32_t addr, uint16_t value) { bus.store16(addr, value); }
+    void store8(uint32_t addr, uint8_t value)  { bus.store8(addr, value); }
 };
 
 
