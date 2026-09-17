@@ -32,7 +32,7 @@ struct StorageDevice {
 struct TimerDevice {
     const std::chrono::time_point<std::chrono::system_clock> start_time = std::chrono::system_clock::now();
 
-    uint32_t sys_clock() const {
+    [[nodiscard]] uint32_t sys_clock() const {
         const auto now = std::chrono::system_clock::now();
         const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - start_time).count();
         return static_cast<uint32_t>(elapsed);
@@ -47,17 +47,10 @@ struct TimerDevice {
 
 struct InterruptController {
     // TODO: registre de masque + registre de "pending" en MMIO.
-    // Quand un device veut lever une IRQ (ex: donnée dispo sur la
-    // console), il pose un bit ici ; le CORE (ou run_handler) check
-    // ce champ à chaque NEXT() si tu veux des interruptions plutôt
-    // que du polling pur.
+
 };
 
-// ------------------------------------------------------------------
-// MMIO : table de registres exposée sur le bus, offsets relatifs à
-// MMIO_BASE (voir bus.h). C'est le point d'extension pour ajouter
-// des devices : chaque device se voit attribuer une plage d'offsets.
-// ------------------------------------------------------------------
+//voir bus.h pour nouveau addressages
 struct MMIO {
     ConsoleDevice console;
     StorageDevice storage;
@@ -73,7 +66,7 @@ struct MMIO {
         // IRQ       = 0x0200..
     };
 
-    uint8_t load8(uint32_t off) {
+    static uint8_t load8(uint32_t off) {
         switch (off) {
             case CONSOLE_IN: {
                 uint8_t b = 0;
@@ -83,7 +76,7 @@ struct MMIO {
             default: return 0;
         }
     }
-    void store8(uint32_t off, uint8_t v) {
+    static void store8(uint32_t off, uint8_t v) {
         switch (off) {
             case CONSOLE_OUT: ConsoleDevice::write(&v, 1); break;
             default: break;
@@ -91,10 +84,10 @@ struct MMIO {
     }
 
 
-    uint16_t load16(uint32_t off) { return load8(off); }
-    void store16(uint32_t off, uint16_t v) { store8(off, static_cast<uint8_t>(v)); }
+    static uint16_t load16(uint32_t off) { return load8(off); }
+    static void store16(uint32_t off, uint16_t v) { store8(off, static_cast<uint8_t>(v)); }
 
-    uint32_t load32(uint32_t off) {
+    [[nodiscard]] uint32_t load32(uint32_t off) const {
         switch (off) {
             case TIMER_CLOCK:
                 return timer.sys_clock();
@@ -104,7 +97,7 @@ struct MMIO {
                 return load8(off);
         }
     }
-    void store32(uint32_t off, uint32_t v) { store8(off, static_cast<uint8_t>(v)); }
+    static void store32(uint32_t off, uint32_t v) { store8(off, static_cast<uint8_t>(v)); }
 };
 
 #endif

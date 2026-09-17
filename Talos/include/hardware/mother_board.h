@@ -4,6 +4,7 @@
 #include "cpu.h"
 #include "bus.h"
 #include "software/data.h"
+#include "virtual_machine/devices.h"
 
 #include <atomic>
 #include <vector>
@@ -14,7 +15,6 @@ struct MotherBoard {
     std::vector<uint8_t> ram;
     SystemBus bus;
     std::shared_ptr<SimpleCPU> cpu;
-    std::vector<DecodedInstr> rom;
     std::vector<uint8_t> hard_drive;
 
     MotherBoard(size_t ram_size) : bus(ram, mmio) {
@@ -35,12 +35,7 @@ struct MotherBoard {
 
     void reset() {
         std::ranges::fill(ram, 0);
-        std::ranges::fill(rom, DecodedInstr());
         cpu->core.reset(static_cast<uint32_t>(ram.size()));
-    }
-
-    void load_prog(const std::vector<DecodedInstr>& program) {
-        rom = program;
     }
 
     void reset_hard_drive() {

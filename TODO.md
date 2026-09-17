@@ -12,6 +12,14 @@ AJOUTER scheduler
 AJOUTER drivers
 AJOUTER syscall handler (lower levels)
 
+2. ABI syscall + trap (trap_vector, bit de mode, SYSRET).
+3. DISK_READ/DISK_WRITE réels sur hard_drive.
+4. Boot minimal (ROM → charge kernel → jump).
+5. Séparation USER/KERNEL (faults sur MMIO/instructions sensibles en mode user).
+6. Timer IRQ + préemption.
+7. Le reste (filesystem, scheduler, exec/exit/wait) : pur assembleur.
+
+
 ------------------------------------------------------------------------------------------------------------------------
 
 1. Storage device

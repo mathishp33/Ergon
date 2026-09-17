@@ -28,7 +28,10 @@ struct StepInfo {
         SP = mb.cpu->core.SP;
         FP = mb.cpu->core.FP;
 
-        instr = mb.rom[mb.cpu->core.PC];
+        // Avant : instr = mb.rom[mb.cpu->core.PC] (indexait un vector séparé
+        // par index d'instruction). Maintenant PC est une adresse RAM en
+        // octets, et l'instruction n'existe qu'en RAM : on la fetch via le bus.
+        instr = mb.cpu->core.bus.fetch_instr(mb.cpu->core.PC);
     }
 };
 
@@ -74,19 +77,27 @@ struct EnvironmentManager {
         return e_msg;
     }
 
-    ErrorCode load_ram( const std::vector<uint8_t>& data, const std::vector<uint8_t>& rodata, uint32_t bss_size) {
-        if (data.size() + rodata.size() + bss_size > mb.cpu->core.stack_limit)
+    // Plan mémoire : [ text ][ data ][ rodata ][ bss ][ ... pile en haut ]
+    ErrorCode load_ram(const std::vector<uint8_t>& text, const std::vector<uint8_t>& data,
+        const std::vector<uint8_t>& rodata, uint32_t bss_size) {
+        if ((uint64_t)text.size() + data.size() + rodata.size() + bss_size > mb.cpu->core.stack_limit)
             return ErrorCode::RAM_OVERFLOW;
 
+        for (size_t i = 0; i < text.size(); i++) {
+            if (i >= mb.ram.size()) return ErrorCode::RAM_OVERFLOW;
+            mb.ram[i] = text[i];
+        }
+        size_t data_start = text.size();
         for (size_t i = 0; i < data.size(); i++) {
-            if (i >= mb.ram.size()) return ErrorCode::RAM_OVERFLOW;
-            mb.ram[i] = data[i];
+            if (data_start + i >= mb.ram.size()) return ErrorCode::RAM_OVERFLOW;
+            mb.ram[data_start + i] = data[i];
         }
+        size_t rodata_start = data_start + data.size();
         for (size_t i = 0; i < rodata.size(); i++) {
-            if (i >= mb.ram.size()) return ErrorCode::RAM_OVERFLOW;
-            mb.ram[data.size() + i] = rodata[i];
+            if (rodata_start + i >= mb.ram.size()) return ErrorCode::RAM_OVERFLOW;
+            mb.ram[rodata_start + i] = rodata[i];
         }
-        size_t bss_start = data.size() + rodata.size();
+        size_t bss_start = rodata_start + rodata.size();
         for (size_t i = 0; i < bss_size; i++) {
             if (bss_start + i >= mb.ram.size()) return ErrorCode::RAM_OVERFLOW;
             mb.ram[bss_start + i] = 0;
@@ -112,10 +123,12 @@ struct EnvironmentManager {
 
         mb.reset();
         mb.set_stack_size(linked_bin.stack_size);
-        if (load_ram(linked_bin.data, linked_bin.rodata, linked_bin.bss_size) != ErrorCode::OK) return handle_error("linked binary", ErrorInfo(ErrorCode::RAM_OVERFLOW, 0));
 
-        mb.cpu->core.PC = linked_bin.entry_pc;
-        mb.load_prog(linked_bin.text);
+        const std::vector<uint8_t> text_bytes = to_bytes(linked_bin.text);
+        if (load_ram(text_bytes, linked_bin.data, linked_bin.rodata, linked_bin.bss_size) != ErrorCode::OK)
+            return handle_error("linked binary", ErrorInfo(ErrorCode::RAM_OVERFLOW, 0));
+
+        mb.cpu->core.PC = linked_bin.entry_pc; // déjà une adresse en octets (voir linker.h)
         return "";
     }
 
@@ -140,21 +153,22 @@ struct EnvironmentManager {
         running = true;
         exit_code = 1;
         start_time = std::chrono::system_clock::now();
-        run(mb.cpu->core, mb.rom, [this]() { handle_syscall(); return exit_code; });
+        run(mb.cpu->core, [this]() { handle_syscall(); return exit_code; });
         running = false;
     }
 
-    StepInfo step() {
-        if (mb.cpu->core.PC == 0) {
-            running = true;
-            exit_code = 1;
-            start_time = std::chrono::system_clock::now();
-        }
-        if (mb.cpu->core.PC >= mb.rom.size()) return { };
-        step_instr(mb.cpu->core, mb.rom[mb.cpu->core.PC], [this]() { handle_syscall(); return exit_code; });
-
-        return { mb };
-    }
+    // StepInfo step() {
+    //     if (mb.cpu->core.PC == 0) {
+    //         running = true;
+    //         exit_code = 1;
+    //         start_time = std::chrono::system_clock::now();
+    //     }
+    //     if (mb.cpu->core.PC >= mb.ram.size()) return { };
+    //     const DecodedInstr current = mb.cpu->core.bus.fetch_instr(mb.cpu->core.PC);
+    //     step_instr(mb.cpu->core, current, [this]() { handle_syscall(); return exit_code; });
+    //
+    //     return { mb };
+    // }
 
 };
 

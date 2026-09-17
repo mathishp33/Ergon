@@ -39,13 +39,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="small changes">
-      <change afterPath="$PROJECT_DIR$/Talos/include/hardware/bus.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/hardware/core.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/hardware/core.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/hardware/cpu.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/hardware/cpu.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TODO.md" beforeDir="false" afterPath="$PROJECT_DIR$/TODO.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/hardware/bus.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/hardware/bus.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Talos/include/hardware/instructions_handler/run_handler.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/hardware/instructions_handler/run_handler.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Talos/include/hardware/mother_board.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/hardware/mother_board.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/software/data.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/software/data.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/software/linker.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/software/linker.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Talos/include/virtual_machine/devices.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/virtual_machine/devices.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/virtual_machine/environment_manager.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/virtual_machine/environment_manager.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -287,7 +289,7 @@
       <workItem from="1789569522471" duration="3496000" />
       <workItem from="1789574970382" duration="7303000" />
       <workItem from="1789620976551" duration="1093000" />
-      <workItem from="1789657671170" duration="8137000" />
+      <workItem from="1789657671170" duration="10228000" />
     </task>
     <task id="LOCAL-00001" summary="checkpoint commit">
       <option name="closed" value="true" />
@@ -505,7 +507,15 @@
       <option name="project" value="LOCAL" />
       <updated>1789668355174</updated>
     </task>
-    <option name="localTasksCounter" value="28" />
+    <task id="LOCAL-00028" summary="small changes">
+      <option name="closed" value="true" />
+      <created>1789668765726</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1789668765726</updated>
+    </task>
+    <option name="localTasksCounter" value="29" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -582,9 +592,14 @@
           <option name="timeStamp" value="37" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/Talos/include/virtual_machine/devices.h</url>
-          <line>48</line>
-          <option name="timeStamp" value="38" />
+          <url>file://$PROJECT_DIR$/Talos/include/hardware/instructions_handler/run_handler.h</url>
+          <line>204</line>
+          <option name="timeStamp" value="39" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/Talos/include/hardware/instructions_handler/run_handler.h</url>
+          <line>208</line>
+          <option name="timeStamp" value="40" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

@@ -16,7 +16,7 @@ enum class RunResult {
     PC_OVERFLOW,
 };
 
-inline RunResult run(SimpleCore& c, const std::vector<DecodedInstr>& prog, std::function<int()> handle_syscall) {
+inline RunResult run(SimpleCore& c, std::function<int()> handle_syscall) {
     #if !defined(__GNUC__) && !defined(__clang__)
         #error "Computed goto requires GCC or Clang therefore you cannot use AUTO execution mode"
     #endif
@@ -58,17 +58,20 @@ inline RunResult run(SimpleCore& c, const std::vector<DecodedInstr>& prog, std::
             &&OP_SYSCALL, &&OP_HALT
         };
 
-    if (prog.empty()) return RunResult::ERROR;
+    if (c.bus.ram_size() == 0) return RunResult::ERROR;
     //magie noire >w<
-    #define FETCH() instr = &prog[c.PC];
+    #define FETCH() instr_storage = c.bus.fetch_instr(c.PC);
     #define DISPATCH() goto *dispatch_table[instr->opcode]
+    #define CHECK_PC() if ((uint64_t)c.PC + INSTR_SIZE > c.bus.ram_size()) return RunResult::PC_OVERFLOW;
     #define NEXT() \
-    c.PC++; \
-    if (c.PC >= prog.size()) return RunResult::PC_OVERFLOW; \
+    c.PC += INSTR_SIZE; \
+    CHECK_PC(); \
     FETCH(); DISPATCH();
 
-    const DecodedInstr* instr;
+    DecodedInstr instr_storage;
+    const DecodedInstr* instr = &instr_storage;
 
+    CHECK_PC();
     FETCH();
     DISPATCH();
 
@@ -165,7 +168,7 @@ OP_CMPI:
     c.regs[12] = ((int32_t)c.regs[instr->rs1] < instr->imm) ? -1 : (((int32_t)c.regs[instr->rs1] > instr->imm) ? 1 : 0);
     NEXT();
 OP_CMPUI:
-    c.regs[12] = (c.regs[instr->rs1] < (uint32_t)instr->imm) ? -1 : ((c.regs[instr->rs1] > (uint32_t)instr->rs2) ? 1 : 0);
+    c.regs[12] = (c.regs[instr->rs1] < (uint32_t)instr->imm) ? -1 : ((c.regs[instr->rs1] > (uint32_t)instr->imm) ? 1 : 0);
     NEXT();
 OP_TEST:
     c.regs[12] = ((c.regs[instr->rs1] & c.regs[instr->rs2]) != 0) ? 1 : 0;
@@ -349,8 +352,6 @@ OP_CLR:
     c.regs[instr->rd] = 0;
     NEXT();
 OP_MEMCPY: {
-    // Copie octet à octet via c.store8/c.load8 : ça respecte le
-    // routage RAM/MMIO du bus au lieu de taper direct dans le vector.
     int32_t len = instr->imm;
     if (len > 0) {
         for (uint32_t idx = 0; idx < (uint32_t)len; ++idx)
@@ -360,12 +361,14 @@ OP_MEMCPY: {
     NEXT();
 OP_JMP:
     c.PC += instr->imm;
+    CHECK_PC();
     FETCH();
     DISPATCH();
 OP_JZ:
     {
     if(c.regs[12] == 0) {
         c.PC += instr->imm;
+        CHECK_PC();
         FETCH();
         DISPATCH();
     }
@@ -375,6 +378,7 @@ OP_JNZ:
     {
     if(c.regs[12] != 0) {
         c.PC += instr->imm;
+        CHECK_PC();
         FETCH();
         DISPATCH();
     }
@@ -384,6 +388,7 @@ OP_JL:
     {
     if((int32_t)c.regs[12] < 0) {
         c.PC += instr->imm;
+        CHECK_PC();
         FETCH();
         DISPATCH();
     }
@@ -393,6 +398,7 @@ OP_JG:
     {
     if((int32_t)c.regs[12] > 0) {
         c.PC += instr->imm;
+        CHECK_PC();
         FETCH();
         DISPATCH();
     }
@@ -401,14 +407,16 @@ OP_JG:
 OP_CALL:
     if (c.SP < 4 || c.SP - 4 < c.stack_limit) { return RunResult::STACK_OVERFLOW; } // trap stack overflow
     c.SP -= 4;
-    c.store32(c.SP, c.PC + 1);
+    c.store32(c.SP, c.PC + INSTR_SIZE);
     c.PC += instr->imm;
+    CHECK_PC();
     FETCH();
     DISPATCH();
 OP_RET:
     if (c.SP + 4 > c.bus.ram_size()) { return RunResult::STACK_UNDERFLOW; } // stack underflow
     c.PC = c.load32(c.SP);
     c.SP += 4;
+    CHECK_PC();
     FETCH();
     DISPATCH();
 

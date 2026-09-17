@@ -4,7 +4,8 @@
 #include <cstdint>
 #include <vector>
 
-#include "devices.h"
+#include "virtual_machine/devices.h"
+#include "software/data.h"
 
 // ------------------------------------------------------------------
 // Carte mémoire (memory map) :
@@ -64,6 +65,24 @@ struct SystemBus {
         if (is_mmio(addr)) { mmio.store8(addr - MMIO_BASE, value); return; }
         if (addr >= ram.size()) return;
         ram[addr] = value;
+    }
+
+    // fetch/write Instr -> kernel, loader, user
+    DecodedInstr fetch_instr(uint32_t addr) {
+        DecodedInstr instr;
+        instr.opcode = load8(addr);
+        instr.rd = load8(addr + 1);
+        instr.rs1 = load8(addr + 2);
+        instr.rs2 = load8(addr + 3);
+        instr.imm = static_cast<int32_t>(load32(addr + 4));
+        return instr;
+    }
+
+    void store_instr(uint32_t addr, const DecodedInstr& instr) {
+        uint8_t bytes[INSTR_SIZE];
+        encode_instr(instr, bytes);
+        for (uint32_t i = 0; i < INSTR_SIZE; i++)
+            store8(addr + i, bytes[i]);
     }
 };
 

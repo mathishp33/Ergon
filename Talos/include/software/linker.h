@@ -38,15 +38,19 @@ inline std::pair<ErrorInfo, LinkedBinary> link(std::vector<ObjectFile>& objects)
 
     uint32_t total_data_size = 0;
     uint32_t total_rodata_size = 0;
+    uint32_t total_text_instrs = 0;
     for (const auto& obj : objects) {
         total_data_size += static_cast<uint32_t>(obj.data.size());
         total_rodata_size += static_cast<uint32_t>(obj.rodata.size());
+        total_text_instrs += static_cast<uint32_t>(obj.text.size());
     }
 
-    uint32_t text_cursor = 0;
-    uint32_t data_cursor = 0;
-    uint32_t rodata_cursor = total_data_size;
-    uint32_t bss_cursor  = total_data_size + total_rodata_size;
+    const uint32_t text_bytes_total = total_text_instrs * INSTR_SIZE;
+
+    uint32_t text_cursor = 0; // en unité d'Instr
+    uint32_t data_cursor = text_bytes_total;
+    uint32_t rodata_cursor = text_bytes_total + total_data_size;
+    uint32_t bss_cursor  = text_bytes_total + total_data_size + total_rodata_size;
 
     bool entry_found = false;
 
@@ -106,7 +110,7 @@ inline std::pair<ErrorInfo, LinkedBinary> link(std::vector<ObjectFile>& objects)
             if (!globals.contains(obj.entry_symbol))
                 return { { ErrorCode::UNKNOWN_ENTRY_SYBOL, "unknown entry symbol \"" + obj.entry_symbol + "\"" }, out };
 
-            out.entry_pc = globals[obj.entry_symbol].value;
+            out.entry_pc = globals[obj.entry_symbol].value * INSTR_SIZE;
             entry_found = true;
 
             if (obj.has_stack_size)
@@ -123,7 +127,7 @@ inline std::pair<ErrorInfo, LinkedBinary> link(std::vector<ObjectFile>& objects)
 
                 switch (S.section) {
                 case Section::TEXT:
-                    sym_addr = obj.text_base + S.value;
+                    sym_addr = (obj.text_base + S.value) * INSTR_SIZE;
                     break;
 
                 case Section::DATA:
@@ -146,7 +150,7 @@ inline std::pair<ErrorInfo, LinkedBinary> link(std::vector<ObjectFile>& objects)
                 const GlobalSymbol& GS = globals.at(rel.symbol);
                 switch (GS.section) {
                 case Section::TEXT:
-                    sym_addr = GS.value; break;
+                    sym_addr = GS.value * INSTR_SIZE; break;
                 case Section::DATA:
                     sym_addr = GS.value; break;
                 case Section::RODATA:
@@ -160,7 +164,7 @@ inline std::pair<ErrorInfo, LinkedBinary> link(std::vector<ObjectFile>& objects)
             DecodedInstr& I = out.text[obj.text_base + rel.offset];
 
             if (rel.type == RelocType::PC_REL_32) {
-                auto pc = static_cast<int32_t>(obj.text_base + rel.offset);
+                auto pc = static_cast<int32_t>((obj.text_base + rel.offset) * INSTR_SIZE);
                 I.imm = static_cast<int32_t>(sym_addr) - (pc);
             }
             if (rel.type == RelocType::ABS_32)
@@ -174,21 +178,6 @@ inline std::pair<ErrorInfo, LinkedBinary> link(std::vector<ObjectFile>& objects)
     return { { }, out };
 }
 
-//you may loose some data
-inline ObjectFile unlink(const LinkedBinary& lb, const std::unordered_map<std::string, Symbol>& symbols, const std::vector<Relocation>& relocations, const std::string& entry_symbol) {
-    ObjectFile out;
-
-    out.text = lb.text;
-    out.data = lb.data;
-    out.rodata = lb.rodata;
-    out.bss_size = lb.bss_size;
-
-    out.symbols = symbols;
-    out.relocations = relocations;
-    out.entry_symbol = entry_symbol;
-
-    return out;
-}
 
 
 #endif
