@@ -16,7 +16,7 @@ enum class RunResult {
     PC_OVERFLOW,
 };
 
-inline RunResult run(SimpleCore& c, std::function<int()> handle_syscall) {
+inline RunResult run(SimpleCore& c) {
     #if !defined(__GNUC__) && !defined(__clang__)
         #error "Computed goto requires GCC or Clang therefore you cannot use AUTO execution mode"
     #endif
@@ -55,7 +55,8 @@ inline RunResult run(SimpleCore& c, std::function<int()> handle_syscall) {
             &&OP_JMP, &&OP_JZ, &&OP_JNZ, &&OP_JG, &&OP_JL,
 
             &&OP_CALL, &&OP_RET,
-            &&OP_SYSCALL, &&OP_HALT
+            // &&OP_SYSCAL,
+            &&OP_HALT
         };
 
     if (c.bus.ram_size() == 0) return RunResult::ERROR;
@@ -420,9 +421,9 @@ OP_RET:
     FETCH();
     DISPATCH();
 
-OP_SYSCALL:
-    if (handle_syscall() != 1) return RunResult::SYSCALL_STOP;
-    NEXT();
+// OP_SYSCALL:
+//     if (handle_syscall() != 1) return RunResult::SYSCALL_STOP;
+//     NEXT();
 OP_HALT:
     return RunResult::HALTED;
 }

@@ -153,7 +153,7 @@ struct EnvironmentManager {
         running = true;
         exit_code = 1;
         start_time = std::chrono::system_clock::now();
-        run(mb.cpu->core, [this]() { handle_syscall(); return exit_code; });
+        run(mb.cpu->core);
         running = false;
     }
 
