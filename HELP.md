@@ -187,4 +187,4 @@ You can call ``syscall`` to:
 The syscall ABI is:
 r0 = call_id / return value
 r1-4 = args
-r
+r11 = trap cause

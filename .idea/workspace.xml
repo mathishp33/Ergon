@@ -38,9 +38,10 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="1. Fetch depuis la RAM (format d'instruction fixe + FETCH() via bus).">
+    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/HELP.md" beforeDir="false" afterPath="$PROJECT_DIR$/HELP.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/hardware/core.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/hardware/core.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Talos/include/hardware/instructions_handler/run_handler.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/hardware/instructions_handler/run_handler.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Talos/include/virtual_machine/environment_manager.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/virtual_machine/environment_manager.h" afterDir="false" />
     </list>
@@ -285,7 +286,8 @@
       <workItem from="1789574970382" duration="7303000" />
       <workItem from="1789620976551" duration="1093000" />
       <workItem from="1789657671170" duration="10412000" />
-      <workItem from="1789741624890" duration="111000" />
+      <workItem from="1789741624890" duration="785000" />
+      <workItem from="1790016912128" duration="334000" />
     </task>
     <task id="LOCAL-00001" summary="checkpoint commit">
       <option name="closed" value="true" />
@@ -519,7 +521,15 @@
       <option name="project" value="LOCAL" />
       <updated>1789670857198</updated>
     </task>
-    <option name="localTasksCounter" value="30" />
+    <task id="LOCAL-00030" summary="check point">
+      <option name="closed" value="true" />
+      <created>1789741969612</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1789741969612</updated>
+    </task>
+    <option name="localTasksCounter" value="31" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -555,7 +565,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="added better instruction + still trying to fix the bug" />
     <MESSAGE value="LE COMMIT DE LA JOIE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!&#10;OE TOUT MARCHE" />
     <MESSAGE value="FIXED a bug with JUMPs instructions" />
     <MESSAGE value="optimized everything" />
@@ -580,7 +589,8 @@
     <MESSAGE value="local variables are now good &amp; i fixed" />
     <MESSAGE value="small changes" />
     <MESSAGE value="1. Fetch depuis la RAM (format d'instruction fixe + FETCH() via bus)." />
-    <option name="LAST_COMMIT_MESSAGE" value="1. Fetch depuis la RAM (format d'instruction fixe + FETCH() via bus)." />
+    <MESSAGE value="check point" />
+    <option name="LAST_COMMIT_MESSAGE" value="check point" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -597,13 +607,18 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/Talos/include/hardware/instructions_handler/run_handler.h</url>
-          <line>205</line>
+          <line>208</line>
           <option name="timeStamp" value="39" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/Talos/include/hardware/instructions_handler/run_handler.h</url>
-          <line>209</line>
+          <line>212</line>
           <option name="timeStamp" value="40" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/Talos/include/virtual_machine/environment_manager.h</url>
+          <line>157</line>
+          <option name="timeStamp" value="41" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

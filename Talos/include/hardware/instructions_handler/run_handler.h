@@ -55,12 +55,15 @@ inline RunResult run(SimpleCore& c) {
             &&OP_JMP, &&OP_JZ, &&OP_JNZ, &&OP_JG, &&OP_JL,
 
             &&OP_CALL, &&OP_RET,
-            // &&OP_SYSCAL,
-            &&OP_HALT
+            &&OP_SYSCALL, &&OP_HALT,
+
+            &&OP_SETTV, &&OP_SYSRET
         };
 
     if (c.bus.ram_size() == 0) return RunResult::ERROR;
     //magie noire >w<
+    // "instr" reste un pointeur qui pointe vers
+    // "instr_storage", qui est ré  écrasée à chaque fetch depuis le BUS.
     #define FETCH() instr_storage = c.bus.fetch_instr(c.PC);
     #define DISPATCH() goto *dispatch_table[instr->opcode]
     #define CHECK_PC() if ((uint64_t)c.PC + INSTR_SIZE > c.bus.ram_size()) return RunResult::PC_OVERFLOW;
@@ -169,7 +172,7 @@ OP_CMPI:
     c.regs[12] = ((int32_t)c.regs[instr->rs1] < instr->imm) ? -1 : (((int32_t)c.regs[instr->rs1] > instr->imm) ? 1 : 0);
     NEXT();
 OP_CMPUI:
-    c.regs[12] = (c.regs[instr->rs1] < (uint32_t)instr->imm) ? -1 : ((c.regs[instr->rs1] > (uint32_t)instr->imm) ? 1 : 0);
+    c.regs[12] = (c.regs[instr->rs1] < (uint32_t)instr->imm) ? -1 : ((c.regs[instr->rs1] > (uint32_t)instr->rs2) ? 1 : 0);
     NEXT();
 OP_TEST:
     c.regs[12] = ((c.regs[instr->rs1] & c.regs[instr->rs2]) != 0) ? 1 : 0;
@@ -353,6 +356,8 @@ OP_CLR:
     c.regs[instr->rd] = 0;
     NEXT();
 OP_MEMCPY: {
+    // Copie octet à octet via c.store8/c.load8 : ça respecte le
+    // routage RAM/MMIO du bus au lieu de taper direct dans le vector.
     int32_t len = instr->imm;
     if (len > 0) {
         for (uint32_t idx = 0; idx < (uint32_t)len; ++idx)
@@ -408,6 +413,9 @@ OP_JG:
 OP_CALL:
     if (c.SP < 4 || c.SP - 4 < c.stack_limit) { return RunResult::STACK_OVERFLOW; } // trap stack overflow
     c.SP -= 4;
+    // NOTE: PC + 1 -> PC + INSTR_SIZE : l'adresse de retour est celle de
+    // l'instruction SUIVANTE, en octets, plus l'ancien "+1" ne voulait
+    // plus rien dire une fois PC en octets.
     c.store32(c.SP, c.PC + INSTR_SIZE);
     c.PC += instr->imm;
     CHECK_PC();
@@ -421,11 +429,39 @@ OP_RET:
     FETCH();
     DISPATCH();
 
-// OP_SYSCALL:
-//     if (handle_syscall() != 1) return RunResult::SYSCALL_STOP;
-//     NEXT();
+OP_SYSCALL:
+    if (c.SP < 4) return RunResult::STACK_OVERFLOW;
+    c.SP -= 4;
+    {
+        const uint32_t saved = (c.PC + INSTR_SIZE) | (c.mode == PrivMode::USER ? 1u : 0u);
+        c.store32(c.SP, saved);
+    }
+    c.regs[11] = 0;
+    c.mode = PrivMode::KERNEL;
+    c.PC = c.trap_vector;
+    CHECK_PC();
+    FETCH();
+    DISPATCH();
 OP_HALT:
     return RunResult::HALTED;
+
+OP_SETTV:
+    // Privilégié : seul le kernel doit pouvoir rediriger les traps. En
+    // mode USER c'est un no-op pour l'instant (deviendra une faute réelle
+    // à l'étape "séparation USER/KERNEL").
+    if (c.mode == PrivMode::KERNEL) c.trap_vector = c.regs[instr->rs1];
+    NEXT();
+OP_SYSRET:
+    if (c.SP + 4 > c.bus.ram_size()) return RunResult::STACK_UNDERFLOW;
+    {
+        const uint32_t saved = c.load32(c.SP);
+        c.SP += 4;
+        c.mode = (saved & 1u) ? PrivMode::USER : PrivMode::KERNEL;
+        c.PC = saved & ~1u;
+    }
+    CHECK_PC();
+    FETCH();
+    DISPATCH();
 }
 
 #endif

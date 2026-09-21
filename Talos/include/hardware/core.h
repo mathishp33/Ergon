@@ -10,45 +10,50 @@
 
 
 enum OPCODE : uint8_t {
-    //----------------- ALU OPERATIONS -----------------
-    ADD  , SUB  , MUL  , DIV  , MOD  ,
-    ADDI , SUBI , MULI , DIVI , MODI ,
+    ADD, SUB, MUL, DIV, MOD,
+    ADDI, SUBI, MULI, DIVI, MODI,
 
-    AND  , OR   , XOR  , ANDI , ORI  , XORI ,
+    AND, OR, XOR, ANDI, ORI, XORI,
 
-    SHL  , SHR  , SAR  , ROL  , ROR  ,
-    SHLI , SHRI , SARI , ROLI , RORI ,
+    SHL, SHR, SAR, ROL, ROR,
+    SHLI, SHRI, SARI, ROLI, RORI,
 
-    CMP  , CMPU , TEST ,
-    CMPI , CMPUI, TESTI,
+    CMP, CMPU, TEST,
+    CMPI, CMPUI, TESTI,
 
-    INC , DEC , NOT , ABS , NEG ,
-    MIN , MAX , MINI, MAXI,
+    INC, DEC, NOT, ABS, NEG,
+    MIN, MAX, MINI, MAXI,
 
-    //----------------- FPU OPERATIONS -----------------
     FADD, FSUB, FMUL, FDIV, FMA,
     FSQRT, FABS, FNEG, FCMP, ITOF, FTOI,
     FMOV, MOVF, FLDW_ABS, FSTW_ABS,
     FLDW_BASE, FSTW_BASE, FLDW_REG, FSTW_REG,
 
-    //----------------- MEMORY OPERATIONS -----------------
-    MOV_IMM , MOV_REG ,
-    LDB_ABS , LDH_ABS , LDW_ABS ,
-    STB_ABS , STH_ABS , STW_ABS ,
+    MOV_IMM, MOV_REG,
+    LDB_ABS, LDH_ABS, LDW_ABS,
+    STB_ABS, STH_ABS, STW_ABS,
     LDB_BASE, LDH_BASE, LDW_BASE,
-    LDB_REG , LDH_REG , LDW_REG ,
+    LDB_REG, LDH_REG, LDW_REG,
     STB_BASE, STH_BASE, STW_BASE,
-    SDB_REG , SDH_REG , SDW_REG ,
-    PUSH    , POP     ,
-    LEA     , LEAB    , SWAP    , CLR     , MEMCPY  ,
+    SDB_REG, SDH_REG, SDW_REG,
+    PUSH, POP,
+    LEA, LEAB, SWAP, CLR, MEMCPY,
 
-    //----------------- PROGRAM OPERATIONS -----------------
-    JMP , JZ  , JNZ , JG  , JL  ,
-    CALL, RET ,
+    JMP, JZ, JNZ, JG, JL,
+    CALL, RET,
 
-    SYSCALL, HALT
+    SYSCALL, HALT,
+
+    // trap/privilege
+    SETTV,  // settv rs : trap_vector = regs[rs] (kernel-only)
+    SYSRET  // sysret : depile (PC | mode) saved and restored by syscall
 };
 
+
+enum class PrivMode : uint8_t {
+    KERNEL = 0,
+    USER = 1
+};
 
 struct SimpleCore {
     std::array<uint32_t, 16> regs{};
@@ -59,6 +64,8 @@ struct SimpleCore {
 
     uint32_t stack_limit = 0;
 
+    PrivMode mode = PrivMode::KERNEL;
+    uint32_t trap_vector = 0;
     SystemBus& bus;
 
     SimpleCore(SystemBus& bus, uint32_t ram_size) : bus(bus) {
@@ -71,6 +78,8 @@ struct SimpleCore {
         SP = ram_size;
         FP = 0;
         PC = 0;
+        mode = PrivMode::KERNEL;
+        trap_vector = 0;
     }
 
     uint32_t load32(uint32_t addr) { return bus.load32(addr); }

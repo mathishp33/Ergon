@@ -19,6 +19,8 @@ struct StepInfo {
     uint32_t& FP = regs[13];
 
     DecodedInstr instr;
+    PrivMode mode = PrivMode::KERNEL;
+    uint32_t trap_vector = 0;
 
     StepInfo() = default;
     StepInfo(const MotherBoard& mb) {
@@ -27,10 +29,9 @@ struct StepInfo {
         PC = mb.cpu->core.PC;
         SP = mb.cpu->core.SP;
         FP = mb.cpu->core.FP;
+        mode = mb.cpu->core.mode;
+        trap_vector = mb.cpu->core.trap_vector;
 
-        // Avant : instr = mb.rom[mb.cpu->core.PC] (indexait un vector séparé
-        // par index d'instruction). Maintenant PC est une adresse RAM en
-        // octets, et l'instruction n'existe qu'en RAM : on la fetch via le bus.
         instr = mb.cpu->core.bus.fetch_instr(mb.cpu->core.PC);
     }
 };
@@ -77,7 +78,7 @@ struct EnvironmentManager {
         return e_msg;
     }
 
-    // Plan mémoire : [ text ][ data ][ rodata ][ bss ][ ... pile en haut ]
+    // memory: [ text ][ data ][ rodata ][ bss ][ stack ]
     ErrorCode load_ram(const std::vector<uint8_t>& text, const std::vector<uint8_t>& data,
         const std::vector<uint8_t>& rodata, uint32_t bss_size) {
         if ((uint64_t)text.size() + data.size() + rodata.size() + bss_size > mb.cpu->core.stack_limit)
@@ -154,6 +155,8 @@ struct EnvironmentManager {
         exit_code = 1;
         start_time = std::chrono::system_clock::now();
         run(mb.cpu->core);
+        //le kernel place le code de sortie dans r0 avant HALT.
+        exit_code = static_cast<int>(mb.cpu->core.regs[0]);
         running = false;
     }
 
