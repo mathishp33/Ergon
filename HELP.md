@@ -183,3 +183,8 @@ You can call ``syscall`` to:
  - 0 = exit()
  - 1 = write(buff, size)
  - 2 = read(buff, size)
+
+The syscall ABI is:
+r0 = call_id / return value
+r1-4 = args
+r11 = trap cause

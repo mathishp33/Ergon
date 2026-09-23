@@ -4,7 +4,7 @@
 #include <bit>
 #include <functional>
 
-#include "computer/core.h"
+#include "hardware/core.h"
 
 
 enum class RunResult {
@@ -16,7 +16,7 @@ enum class RunResult {
     PC_OVERFLOW,
 };
 
-inline RunResult run(SimpleCore& c, const std::vector<DecodedInstr>& prog, std::function<int()> handle_syscall) {
+inline RunResult run(SimpleCore& c) {
     #if !defined(__GNUC__) && !defined(__clang__)
         #error "Computed goto requires GCC or Clang therefore you cannot use AUTO execution mode"
     #endif
@@ -55,20 +55,41 @@ inline RunResult run(SimpleCore& c, const std::vector<DecodedInstr>& prog, std::
             &&OP_JMP, &&OP_JZ, &&OP_JNZ, &&OP_JG, &&OP_JL,
 
             &&OP_CALL, &&OP_RET,
-            &&OP_SYSCALL, &&OP_HALT
+            &&OP_SYSCALL, &&OP_HALT,
+
+            &&OP_SETTV, &&OP_SYSRET
         };
 
-    if (prog.empty()) return RunResult::ERROR;
+    if (c.bus.ram_size() == 0) return RunResult::ERROR;
     //magie noire >w<
-    #define FETCH() instr = &prog[c.PC];
+    // "instr" reste un pointeur qui pointe vers
+    // "instr_storage", qui est ré  écrasée à chaque fetch depuis le BUS.
+    #define FETCH() instr_storage = c.bus.fetch_instr(c.PC);
+
     #define DISPATCH() goto *dispatch_table[instr->opcode]
+
+    #define CHECK_PC() \
+    if (c.pending_fault) { \
+    c.pending_fault = false; \
+    const bool was_user = (c.mode == PrivMode::USER); \
+    c.mode = PrivMode::KERNEL; /* push require kernel */ \
+    if (c.SP < 4) return RunResult::STACK_OVERFLOW; \
+    c.SP -= 4; \
+    c.store32(c.SP, c.PC | (was_user ? 1u : 0u)); \
+    c.regs[11] = c.fault_cause; \
+    c.PC = c.trap_vector; \
+    } \
+    if (!c.bus.pc_in_bounds(c.PC)) return RunResult::PC_OVERFLOW;
+
     #define NEXT() \
-    c.PC++; \
-    if (c.PC >= prog.size()) return RunResult::PC_OVERFLOW; \
+    c.PC += INSTR_SIZE; \
+    CHECK_PC(); \
     FETCH(); DISPATCH();
 
-    const DecodedInstr* instr;
+    DecodedInstr instr_storage;
+    const DecodedInstr* instr = &instr_storage;
 
+    CHECK_PC();
     FETCH();
     DISPATCH();
 
@@ -332,7 +353,7 @@ OP_PUSH:
     c.store32(c.SP, c.regs[instr->rs1]);
     NEXT();
 OP_POP:
-    if (c.SP + 4 > c.ram.size()) { return RunResult::STACK_UNDERFLOW; } // stack underflow
+    if (c.SP + 4 > c.bus.ram_size()) { return RunResult::STACK_UNDERFLOW; } // stack underflow
     c.regs[instr->rd] = c.load32(c.SP);
     c.SP += 4;
     NEXT();
@@ -349,22 +370,25 @@ OP_CLR:
     c.regs[instr->rd] = 0;
     NEXT();
 OP_MEMCPY: {
+    // Copie octet à octet via c.store8/c.load8 : ça respecte le
+    // routage RAM/MMIO du bus au lieu de taper direct dans le vector.
     int32_t len = instr->imm;
     if (len > 0) {
         for (uint32_t idx = 0; idx < (uint32_t)len; ++idx)
-            if (c.regs[instr->rd] + idx < c.ram.size() && c.regs[instr->rs1] + idx < c.ram.size())
-                c.ram[c.regs[instr->rd] + idx] = c.ram[c.regs[instr->rs1] + idx];
+            c.store8(c.regs[instr->rd] + idx, c.load8(c.regs[instr->rs1] + idx));
     }
     }
     NEXT();
 OP_JMP:
     c.PC += instr->imm;
+    CHECK_PC();
     FETCH();
     DISPATCH();
 OP_JZ:
     {
     if(c.regs[12] == 0) {
         c.PC += instr->imm;
+        CHECK_PC();
         FETCH();
         DISPATCH();
     }
@@ -374,6 +398,7 @@ OP_JNZ:
     {
     if(c.regs[12] != 0) {
         c.PC += instr->imm;
+        CHECK_PC();
         FETCH();
         DISPATCH();
     }
@@ -383,6 +408,7 @@ OP_JL:
     {
     if((int32_t)c.regs[12] < 0) {
         c.PC += instr->imm;
+        CHECK_PC();
         FETCH();
         DISPATCH();
     }
@@ -392,6 +418,7 @@ OP_JG:
     {
     if((int32_t)c.regs[12] > 0) {
         c.PC += instr->imm;
+        CHECK_PC();
         FETCH();
         DISPATCH();
     }
@@ -400,22 +427,64 @@ OP_JG:
 OP_CALL:
     if (c.SP < 4 || c.SP - 4 < c.stack_limit) { return RunResult::STACK_OVERFLOW; } // trap stack overflow
     c.SP -= 4;
-    c.store32(c.SP, c.PC + 1);
+    // NOTE: PC + 1 -> PC + INSTR_SIZE : l'adresse de retour est celle de
+    // l'instruction SUIVANTE, en octets, plus l'ancien "+1" ne voulait
+    // plus rien dire une fois PC en octets.
+    c.store32(c.SP, c.PC + INSTR_SIZE);
     c.PC += instr->imm;
+    CHECK_PC();
     FETCH();
     DISPATCH();
 OP_RET:
-    if (c.SP + 4 > c.ram.size()) { return RunResult::STACK_UNDERFLOW; } // stack underflow
+    if (c.SP + 4 > c.bus.ram_size()) { return RunResult::STACK_UNDERFLOW; } // stack underflow
     c.PC = c.load32(c.SP);
     c.SP += 4;
+    CHECK_PC();
     FETCH();
     DISPATCH();
 
 OP_SYSCALL:
-    if (handle_syscall() != 1) return RunResult::SYSCALL_STOP;
-    NEXT();
+    if (c.SP < 4) return RunResult::STACK_OVERFLOW;
+    c.SP -= 4;
+    {
+        const uint32_t saved = (c.PC + INSTR_SIZE) | (c.mode == PrivMode::USER ? 1u : 0u);
+        c.store32(c.SP, saved);
+    }
+    c.regs[11] = 0;
+    c.mode = PrivMode::KERNEL;
+    c.PC = c.trap_vector;
+    CHECK_PC();
+    FETCH();
+    DISPATCH();
 OP_HALT:
+    if (c.mode == PrivMode::USER) {
+        c.pending_fault = true;
+        c.fault_cause = 2;
+        NEXT();
+    }
     return RunResult::HALTED;
+
+OP_SETTV:
+    //kernel manages traps !
+    if (c.mode == PrivMode::KERNEL) {
+        c.trap_vector = c.regs[instr->rs1];
+    }
+    else {
+        c.pending_fault = true;
+        c.fault_cause = 2;
+    }
+    NEXT();
+OP_SYSRET:
+    if (c.SP + 4 > c.bus.ram_size()) return RunResult::STACK_UNDERFLOW;
+    {
+        const uint32_t saved = c.load32(c.SP);
+        c.SP += 4;
+        c.mode = (saved & 1u) ? PrivMode::USER : PrivMode::KERNEL;
+        c.PC = saved & ~1u;
+    }
+    CHECK_PC();
+    FETCH();
+    DISPATCH();
 }
 
 #endif

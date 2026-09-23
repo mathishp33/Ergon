@@ -38,21 +38,11 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="local variables are now good &amp; i fixed">
-      <change afterPath="$PROJECT_DIR$/TODO.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Talos/include/asm/preprocessor.h" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/test_disk/CMakeLists.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/test_disk/disk.cpp" afterDir="false" />
+    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="checkpoint (à tester)">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/asm/assembler.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/asm/assembler.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/computer/mother_board.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/computer/mother_board.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/environment_manager.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/environment_manager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_4/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_sys_write/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_4/sys_write.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_sys_write/sys_write.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_5/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_sys_read/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_5/sys_read.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_sys_read/sys_read.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_stack/stack.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_stack/stack.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TODO.md" beforeDir="false" afterPath="$PROJECT_DIR$/TODO.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/software/assembler.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/software/assembler.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/software/instructions.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/software/instructions.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -67,6 +57,11 @@
   </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="master" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
@@ -106,68 +101,63 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "C/C++ File.test.cpp - Visual Studio (1).executor": "Run",
-    "C/C++ File.test.cpp - Visual Studio.executor": "Run",
-    "CMake Application.ergon_test_0.executor": "Run",
-    "CMake Application.ergon_test_1.executor": "Debug",
-    "CMake Application.ergon_test_3.executor": "Run",
-    "CMake Application.ergon_test_4.executor": "Run",
-    "CMake Application.ergon_test_5.executor": "Debug",
-    "CMake Application.ergon_test_ide.executor": "Debug",
-    "CMake Application.ergon_test_stack.executor": "Run",
-    "CMake Application.ergon_tests.executor": "Run",
-    "CMake Debug.Ergon.executor": "Debug",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.MCP Project settings loaded": "true",
-    "RunOnceActivity.RadMigrateCodeStyle": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.readMode.enableVisualFormatting": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "RunOnceActivity.west.config.association.type.startup.service": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "cf.first.check.clang-format": "false",
-    "cidr.known.project.marker": "true",
-    "codeWithMe.voiceChat.enabledByDefault": "false",
-    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
-    "git-widget-placeholder": "master",
-    "ignore.virus.scanning.warn.message": "true",
-    "junie.onboarding.icon.badge.shown": "true",
-    "last_opened_file_path": "C:/Users/mathi/CLionProjects/Ergon/tests",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "org.rust.first.attach.projects": "true",
-    "settings.editor.selected.configurable": "CPPToolchains",
-    "to.speed.mode.migration.done": "true",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;C/C++ File.test.cpp - Visual Studio (1).executor&quot;: &quot;Run&quot;,
+    &quot;C/C++ File.test.cpp - Visual Studio.executor&quot;: &quot;Run&quot;,
+    &quot;CMake Application.ergon_test_0.executor&quot;: &quot;Run&quot;,
+    &quot;CMake Application.ergon_test_1.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.ergon_test_3.executor&quot;: &quot;Run&quot;,
+    &quot;CMake Application.ergon_test_4.executor&quot;: &quot;Run&quot;,
+    &quot;CMake Application.ergon_test_5.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.ergon_test_ide.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.ergon_test_stack.executor&quot;: &quot;Run&quot;,
+    &quot;CMake Application.ergon_tests.executor&quot;: &quot;Run&quot;,
+    &quot;CMake Debug.Ergon.executor&quot;: &quot;Debug&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.RadMigrateCodeStyle&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.west.config.association.type.startup.service&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;vrai__vm&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/mathi/CLionProjects/Ergon/tests&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;org.rust.first.attach.projects&quot;: &quot;true&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;CPPToolchains&quot;,
+    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\mathi\CLionProjects\Ergon\tests" />
       <recent name="C:\Users\Utilisateur\CLionProjects\Ergon\tests\test_1" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\mathi\CLionProjects\Ergon\Talos\include\virtual_machine" />
       <recent name="C:\Users\Utilisateur\CLionProjects\Ergon\Talos\include\computer\instructions_handler" />
       <recent name="C:\Users\Utilisateur\CLionProjects\Ergon\tests\test_0" />
       <recent name="C:\Users\Utilisateur\CLionProjects\Ergon\Talos\include\asm" />
       <recent name="C:\Users\Utilisateur\CLionProjects\Ergon\Talos\include\utils" />
-      <recent name="C:\Users\Utilisateur\CLionProjects\Ergon\Talos\include\COMPUTER" />
     </key>
   </component>
   <component name="RunManager" selected="CMake Application.ergon_test_stack">
-    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="Ergon" type="CMakeListConfigurationType" factoryName="CMakeListConfigurationFactory" temporary="true">
       <method v="2" />
     </configuration>
@@ -292,7 +282,14 @@
       <workItem from="1789409458597" duration="4522000" />
       <workItem from="1789482419491" duration="16198000" />
       <workItem from="1789569522471" duration="3496000" />
-      <workItem from="1789574970382" duration="5653000" />
+      <workItem from="1789574970382" duration="7303000" />
+      <workItem from="1789620976551" duration="1093000" />
+      <workItem from="1789657671170" duration="10412000" />
+      <workItem from="1789741624890" duration="785000" />
+      <workItem from="1790016912128" duration="1493000" />
+      <workItem from="1790103869467" duration="621000" />
+      <workItem from="1790186829434" duration="75000" />
+      <workItem from="1790187024628" duration="4466000" />
     </task>
     <task id="LOCAL-00001" summary="checkpoint commit">
       <option name="closed" value="true" />
@@ -494,7 +491,71 @@
       <option name="project" value="LOCAL" />
       <updated>1789579631126</updated>
     </task>
-    <option name="localTasksCounter" value="26" />
+    <task id="LOCAL-00026" summary="small changes">
+      <option name="closed" value="true" />
+      <created>1789583890352</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1789583890352</updated>
+    </task>
+    <task id="LOCAL-00027" summary="small changes">
+      <option name="closed" value="true" />
+      <created>1789668355174</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1789668355174</updated>
+    </task>
+    <task id="LOCAL-00028" summary="small changes">
+      <option name="closed" value="true" />
+      <created>1789668765726</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1789668765726</updated>
+    </task>
+    <task id="LOCAL-00029" summary="1. Fetch depuis la RAM (format d'instruction fixe + FETCH() via bus).">
+      <option name="closed" value="true" />
+      <created>1789670857198</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1789670857198</updated>
+    </task>
+    <task id="LOCAL-00030" summary="check point">
+      <option name="closed" value="true" />
+      <created>1789741969612</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1789741969612</updated>
+    </task>
+    <task id="LOCAL-00031" summary="ABI syscall + trap (trap_vector, bit de mode, SYSRET).">
+      <option name="closed" value="true" />
+      <created>1790017272291</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1790017272291</updated>
+    </task>
+    <task id="LOCAL-00032" summary="checkpoint">
+      <option name="closed" value="true" />
+      <created>1790188214705</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1790188214706</updated>
+    </task>
+    <task id="LOCAL-00033" summary="checkpoint (à tester)">
+      <option name="closed" value="true" />
+      <created>1790190805673</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1790190805673</updated>
+    </task>
+    <option name="localTasksCounter" value="34" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -511,19 +572,25 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="vrai_vm" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
           </value>
         </entry>
       </map>
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="checkpoint commit" />
-    <MESSAGE value="I cleaned code + added more instructions" />
-    <MESSAGE value="added better instruction + still trying to fix the bug" />
-    <MESSAGE value="LE COMMIT DE LA JOIE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!&#10;OE TOUT MARCHE" />
-    <MESSAGE value="FIXED a bug with JUMPs instructions" />
-    <MESSAGE value="optimized everything" />
     <MESSAGE value="added registers names" />
     <MESSAGE value="added two pass detection labels + sections (.text, .data, .bss) + cleaned files" />
     <MESSAGE value="added linker" />
@@ -543,15 +610,41 @@
     <MESSAGE value="oupsi" />
     <MESSAGE value="fixes, including bss crushing bug" />
     <MESSAGE value="local variables are now good &amp; i fixed" />
-    <option name="LAST_COMMIT_MESSAGE" value="local variables are now good &amp; i fixed" />
+    <MESSAGE value="small changes" />
+    <MESSAGE value="1. Fetch depuis la RAM (format d'instruction fixe + FETCH() via bus)." />
+    <MESSAGE value="check point" />
+    <MESSAGE value="ABI syscall + trap (trap_vector, bit de mode, SYSRET)." />
+    <MESSAGE value="checkpoint" />
+    <MESSAGE value="checkpoint (à tester)" />
+    <option name="LAST_COMMIT_MESSAGE" value="checkpoint (à tester)" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/Talos/include/asm/parser.h</url>
+          <url>file://$PROJECT_DIR$/Talos/include/software/parser.h</url>
           <line>294</line>
           <option name="timeStamp" value="33" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/Talos/include/firmware/kernel.h</url>
+          <line>52</line>
+          <option name="timeStamp" value="37" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/Talos/include/hardware/instructions_handler/run_handler.h</url>
+          <line>222</line>
+          <option name="timeStamp" value="39" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/Talos/include/hardware/instructions_handler/run_handler.h</url>
+          <line>226</line>
+          <option name="timeStamp" value="40" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/Talos/include/virtual_machine/environment_manager.h</url>
+          <line>157</line>
+          <option name="timeStamp" value="41" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

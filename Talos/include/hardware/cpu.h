@@ -8,7 +8,7 @@
 struct SimpleCPU {
     SimpleCore core;
 
-    SimpleCPU(std::vector<uint8_t>& ram) : core(ram) {};
+    SimpleCPU(SystemBus& bus, uint32_t ram_size) : core(bus, ram_size) {};
 
 };
 

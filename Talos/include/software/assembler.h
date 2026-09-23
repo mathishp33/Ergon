@@ -80,6 +80,7 @@ struct Assembler {
         if (cur_section != Section::TEXT) return { };
         if (instr == ".global" || instr == ".extern" || instr == ".entry" || instr == ".stack_size") return { };
 
+        if (it == instr_table.end()) return { ErrorCode::INVALID_TOKEN, "unknown instruction \"" + instr + "\"" };
         InstrDef def = it->second;
 
 
