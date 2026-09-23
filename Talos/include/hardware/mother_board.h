@@ -11,17 +11,24 @@
 struct MotherBoard {
     std::vector<uint8_t> hard_drive;
     std::vector<uint8_t> ram;
+    std::vector<uint8_t> rom;
+    uint32_t rom_entry_pc = ROM_BASE;
     MMIO mmio;
     SystemBus bus;
     std::shared_ptr<SimpleCPU> cpu;
 
-    MotherBoard(size_t ram_size) : mmio(hard_drive, ram), bus(ram, mmio) {
+    MotherBoard(size_t ram_size) : mmio(hard_drive, ram), bus(ram, rom, mmio) {
         if (ram_size >= 0xFFFFFF - 1) ram_size = 0xFFFFFF - 1;
         ram.resize(ram_size);
         std::ranges::fill(ram, 0);
 
         cpu = std::make_shared<SimpleCPU>(bus, static_cast<uint32_t>(ram.size()));
         set_stack_size(0);
+    }
+
+    void load_rom(const std::vector<uint8_t>& bytes, uint32_t entry_pc = ROM_BASE) {
+        rom = bytes;
+        rom_entry_pc = entry_pc;
     }
 
     void set_stack_size(uint32_t requested) {

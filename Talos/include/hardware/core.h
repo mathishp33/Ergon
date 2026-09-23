@@ -66,9 +66,12 @@ struct SimpleCore {
 
     PrivMode mode = PrivMode::KERNEL;
     uint32_t trap_vector = 0;
+    bool pending_fault = false;
+    uint32_t fault_cause = 0; // 1 = MMIO forbidden, 2 = privileged
     SystemBus& bus;
 
     SimpleCore(SystemBus& bus, uint32_t ram_size) : bus(bus) {
+        PC = ROM_BASE;
         SP = ram_size;
     }
 
@@ -77,17 +80,61 @@ struct SimpleCore {
         std::ranges::fill(fregs, 0);
         SP = ram_size;
         FP = 0;
-        PC = 0;
+        PC = ROM_BASE;
         mode = PrivMode::KERNEL;
         trap_vector = 0;
+        pending_fault = false;
+        fault_cause = 0;
     }
 
-    uint32_t load32(uint32_t addr) { return bus.load32(addr); }
-    uint16_t load16(uint32_t addr) { return bus.load16(addr); }
-    uint8_t load8(uint32_t addr) { return bus.load8(addr); }
-    void store32(uint32_t addr, uint32_t value) { bus.store32(addr, value); }
-    void store16(uint32_t addr, uint16_t value) { bus.store16(addr, value); }
-    void store8(uint32_t addr, uint8_t value)  { bus.store8(addr, value); }
+    uint32_t load32(uint32_t addr) {
+        if (mode == PrivMode::USER && bus.is_mmio(addr)) {
+            pending_fault = true;
+            fault_cause = 1;
+            return 0;
+        }
+        return bus.load32(addr);
+    }
+    uint16_t load16(uint32_t addr) {
+        if (mode == PrivMode::USER && bus.is_mmio(addr)) {
+            pending_fault = true;
+            fault_cause = 1;
+            return 0;
+        }
+        return bus.load16(addr);
+    }
+    uint8_t load8(uint32_t addr) {
+        if (mode == PrivMode::USER && bus.is_mmio(addr)) {
+            pending_fault = true;
+            fault_cause = 1;
+            return 0;
+        }
+        return bus.load8(addr);
+    }
+    void store32(uint32_t addr, uint32_t value) {
+        if (mode == PrivMode::USER && bus.is_mmio(addr)) {
+            pending_fault = true;
+            fault_cause = 1;
+            return;
+        }
+        bus.store32(addr, value);
+    }
+    void store16(uint32_t addr, uint16_t value) {
+        if (mode == PrivMode::USER && bus.is_mmio(addr)) {
+            pending_fault = true;
+            fault_cause = 1;
+            return;
+        }
+        bus.store16(addr, value);
+    }
+    void store8(uint32_t addr, uint8_t value) {
+        if (mode == PrivMode::USER && bus.is_mmio(addr)) {
+            pending_fault = true;
+            fault_cause = 1;
+            return;
+        }
+        bus.store8(addr, value);
+    }
 };
 
 

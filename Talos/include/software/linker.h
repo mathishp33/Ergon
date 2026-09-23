@@ -33,7 +33,7 @@ struct GlobalSymbol {
     }
 };
 
-inline std::pair<ErrorInfo, LinkedBinary> link(std::vector<ObjectFile>& objects) {
+inline std::pair<ErrorInfo, LinkedBinary> link(std::vector<ObjectFile>& objects, uint32_t base_address = 0) {
     LinkedBinary out;
 
     uint32_t total_data_size = 0;
@@ -110,7 +110,7 @@ inline std::pair<ErrorInfo, LinkedBinary> link(std::vector<ObjectFile>& objects)
             if (!globals.contains(obj.entry_symbol))
                 return { { ErrorCode::UNKNOWN_ENTRY_SYBOL, "unknown entry symbol \"" + obj.entry_symbol + "\"" }, out };
 
-            out.entry_pc = globals[obj.entry_symbol].value * INSTR_SIZE;
+            out.entry_pc = globals[obj.entry_symbol].value * INSTR_SIZE + base_address;
             entry_found = true;
 
             if (obj.has_stack_size)
@@ -168,7 +168,7 @@ inline std::pair<ErrorInfo, LinkedBinary> link(std::vector<ObjectFile>& objects)
                 I.imm = static_cast<int32_t>(sym_addr) - (pc);
             }
             if (rel.type == RelocType::ABS_32)
-                I.imm = static_cast<int32_t>(sym_addr);
+                I.imm = static_cast<int32_t>(sym_addr) + static_cast<int32_t>(base_address);
 
         }
     }

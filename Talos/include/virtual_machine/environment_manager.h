@@ -160,6 +160,51 @@ struct EnvironmentManager {
         running = false;
     }
 
+    static std::vector<uint8_t> serialize(const LinkedBinary& lb) {
+        std::vector<uint8_t> image = to_bytes(lb.text);
+        image.insert(image.end(), lb.data.begin(), lb.data.end());
+        image.insert(image.end(), lb.rodata.begin(), lb.rodata.end());
+        image.resize(image.size() + lb.bss_size, 0);
+        return image;
+    }
+
+    std::string build_rom(const std::vector<std::pair<std::string, std::string>>& inputs) {
+        std::vector<ObjectFile> obj_files;
+        for (const auto& [name, program] : inputs) {
+            auto [obj_file, error_info] = decoder.decode(program);
+            if (error_info.code != ErrorCode::OK) return handle_error(name, error_info);
+            obj_files.emplace_back(obj_file);
+        }
+        auto [e, linked_bin] = link(obj_files, ROM_BASE);
+        if (e.code != ErrorCode::OK) return handle_error("rom binary", e);
+
+        mb.load_rom(serialize(linked_bin), linked_bin.entry_pc);
+        return "";
+    }
+
+    std::string build_image(const std::vector<std::pair<std::string, std::string>>& inputs, uint32_t load_address,
+        std::vector<uint8_t>& out_image, uint32_t& out_entry_pc) {
+        std::vector<ObjectFile> obj_files;
+        for (const auto& [name, program] : inputs) {
+            auto [obj_file, error_info] = decoder.decode(program);
+            if (error_info.code != ErrorCode::OK) return handle_error(name, error_info);
+            obj_files.emplace_back(obj_file);
+        }
+        auto [e, linked_bin] = link(obj_files, load_address);
+        if (e.code != ErrorCode::OK) return handle_error("image binary", e);
+
+        out_image = serialize(linked_bin);
+        out_entry_pc = linked_bin.entry_pc;
+        return "";
+    }
+
+    void flash_disk(const std::vector<uint8_t>& image, uint32_t start_block) {
+        const size_t offset = static_cast<size_t>(start_block) * StorageDevice::BLOCK_SIZE;
+        if (offset + image.size() > mb.hard_drive.size())
+            mb.hard_drive.resize(offset + image.size(), 0);
+        std::ranges::copy(image, mb.hard_drive.begin() + offset);
+    }
+
     // StepInfo step() {
     //     if (mb.cpu->core.PC == 0) {
     //         running = true;

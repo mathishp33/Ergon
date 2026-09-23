@@ -65,8 +65,22 @@ inline RunResult run(SimpleCore& c) {
     // "instr" reste un pointeur qui pointe vers
     // "instr_storage", qui est ré  écrasée à chaque fetch depuis le BUS.
     #define FETCH() instr_storage = c.bus.fetch_instr(c.PC);
+
     #define DISPATCH() goto *dispatch_table[instr->opcode]
-    #define CHECK_PC() if ((uint64_t)c.PC + INSTR_SIZE > c.bus.ram_size()) return RunResult::PC_OVERFLOW;
+
+    #define CHECK_PC() \
+    if (c.pending_fault) { \
+    c.pending_fault = false; \
+    const bool was_user = (c.mode == PrivMode::USER); \
+    c.mode = PrivMode::KERNEL; /* push require kernel */ \
+    if (c.SP < 4) return RunResult::STACK_OVERFLOW; \
+    c.SP -= 4; \
+    c.store32(c.SP, c.PC | (was_user ? 1u : 0u)); \
+    c.regs[11] = c.fault_cause; \
+    c.PC = c.trap_vector; \
+    } \
+    if (!c.bus.pc_in_bounds(c.PC)) return RunResult::PC_OVERFLOW;
+
     #define NEXT() \
     c.PC += INSTR_SIZE; \
     CHECK_PC(); \
@@ -443,13 +457,22 @@ OP_SYSCALL:
     FETCH();
     DISPATCH();
 OP_HALT:
+    if (c.mode == PrivMode::USER) {
+        c.pending_fault = true;
+        c.fault_cause = 2;
+        NEXT();
+    }
     return RunResult::HALTED;
 
 OP_SETTV:
-    // Privilégié : seul le kernel doit pouvoir rediriger les traps. En
-    // mode USER c'est un no-op pour l'instant (deviendra une faute réelle
-    // à l'étape "séparation USER/KERNEL").
-    if (c.mode == PrivMode::KERNEL) c.trap_vector = c.regs[instr->rs1];
+    //kernel manages traps !
+    if (c.mode == PrivMode::KERNEL) {
+        c.trap_vector = c.regs[instr->rs1];
+    }
+    else {
+        c.pending_fault = true;
+        c.fault_cause = 2;
+    }
     NEXT();
 OP_SYSRET:
     if (c.SP + 4 > c.bus.ram_size()) return RunResult::STACK_UNDERFLOW;
