@@ -38,15 +38,11 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="checkpoint">
+    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="checkpoint (à tester)">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/hardware/bus.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/hardware/bus.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/hardware/core.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/hardware/core.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/hardware/instructions_handler/run_handler.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/hardware/instructions_handler/run_handler.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/hardware/instructions_handler/step_handler.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/hardware/instructions_handler/step_handler.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/hardware/mother_board.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/hardware/mother_board.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/software/linker.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/software/linker.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/virtual_machine/environment_manager.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/virtual_machine/environment_manager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TODO.md" beforeDir="false" afterPath="$PROJECT_DIR$/TODO.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/software/assembler.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/software/assembler.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/software/instructions.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/software/instructions.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -293,7 +289,7 @@
       <workItem from="1790016912128" duration="1493000" />
       <workItem from="1790103869467" duration="621000" />
       <workItem from="1790186829434" duration="75000" />
-      <workItem from="1790187024628" duration="3748000" />
+      <workItem from="1790187024628" duration="4466000" />
     </task>
     <task id="LOCAL-00001" summary="checkpoint commit">
       <option name="closed" value="true" />
@@ -551,7 +547,15 @@
       <option name="project" value="LOCAL" />
       <updated>1790188214706</updated>
     </task>
-    <option name="localTasksCounter" value="33" />
+    <task id="LOCAL-00033" summary="checkpoint (à tester)">
+      <option name="closed" value="true" />
+      <created>1790190805673</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1790190805673</updated>
+    </task>
+    <option name="localTasksCounter" value="34" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -587,7 +591,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="optimized everything" />
     <MESSAGE value="added registers names" />
     <MESSAGE value="added two pass detection labels + sections (.text, .data, .bss) + cleaned files" />
     <MESSAGE value="added linker" />
@@ -612,7 +615,8 @@
     <MESSAGE value="check point" />
     <MESSAGE value="ABI syscall + trap (trap_vector, bit de mode, SYSRET)." />
     <MESSAGE value="checkpoint" />
-    <option name="LAST_COMMIT_MESSAGE" value="checkpoint" />
+    <MESSAGE value="checkpoint (à tester)" />
+    <option name="LAST_COMMIT_MESSAGE" value="checkpoint (à tester)" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

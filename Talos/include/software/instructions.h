@@ -138,6 +138,8 @@ inline std::unordered_map<std::string, InstrDef> instr_table = {
 
     {"syscall", {SYSCALL, InstrType::J, { }, { } }},
     {"halt",  {HALT,  InstrType::J, { }, { } }},
+    {"settv", {SETTV, InstrType::J, { ArgType::REG }, { 1 } }},
+    {"sysret", {SYSRET, InstrType::J, { }, { } }},
 };
 
 
