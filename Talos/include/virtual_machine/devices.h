@@ -1,9 +1,11 @@
 #ifndef ERGON_DEVICES_H
 #define ERGON_DEVICES_H
 
+#include <algorithm>
 #include <chrono>
 #include <cstdint>
 #include <iostream>
+#include <vector>
 
 
 struct ConsoleDevice {
@@ -22,11 +24,43 @@ struct ConsoleDevice {
 };
 
 struct StorageDevice {
-    // TODO: le stockage persistant se prête mal à un simple registre
-    // MMIO (transferts par bloc). Idée : garder ça côté syscall
-    // (comme aujourd'hui dans EnvironmentManager::handle_syscall),
-    // et réserver le MMIO pour un petit registre de "status"
-    // (prêt/occupé/erreur) que le kernel peut poller.
+    static constexpr uint32_t BLOCK_SIZE = 512;
+
+    std::vector<uint8_t>& hard_drive;
+    std::vector<uint8_t>& ram;
+
+    uint32_t block = 0;  // numéro de bloc ciblé par la prochaine commande
+    uint32_t buffer = 0; // adresse RAM du buffer (BLOCK_SIZE octets)
+    uint32_t status = 0; // 0 = dernière opération OK, 1 = erreur (hors limites)
+
+    StorageDevice(std::vector<uint8_t>& hard_drive, std::vector<uint8_t>& ram)
+        : hard_drive(hard_drive), ram(ram) {}
+
+    uint32_t block_count() const {
+        return static_cast<uint32_t>(hard_drive.size() / BLOCK_SIZE);
+    }
+
+    void do_read() {
+        const uint64_t disk_off = static_cast<uint64_t>(block) * BLOCK_SIZE;
+        if (block >= block_count() || (uint64_t)buffer + BLOCK_SIZE > ram.size()) {
+            status = 1;
+            return;
+        }
+        std::copy(hard_drive.begin() + disk_off, hard_drive.begin() + disk_off + BLOCK_SIZE,
+                   ram.begin() + buffer);
+        status = 0;
+    }
+
+    void do_write() {
+        const uint64_t disk_off = static_cast<uint64_t>(block) * BLOCK_SIZE;
+        if (block >= block_count() || (uint64_t)buffer + BLOCK_SIZE > ram.size()) {
+            status = 1;
+            return;
+        }
+        std::copy(ram.begin() + buffer, ram.begin() + buffer + BLOCK_SIZE,
+                   hard_drive.begin() + disk_off);
+        status = 0;
+    }
 };
 
 struct TimerDevice {
@@ -57,13 +91,22 @@ struct MMIO {
     TimerDevice timer;
     InterruptController irq;
 
+    MMIO(std::vector<uint8_t>& hard_drive, std::vector<uint8_t>& ram) : storage(hard_drive, ram) {}
+
     enum Offset : uint32_t {
-        CONSOLE_OUT  = 0x0000, // store8 : écrit un octet sur stdout
-        CONSOLE_IN   = 0x0004, // load8 : lit un octet depuis stdin (0 si rien)
-        TIMER_CLOCK  = 0x0010, // load32 : ms depuis le démarrage de la VM
-        TIMER_TIME   = 0x0014, // load32 : timestamp unix
-        // STORAGE   = 0x0100..
-        // IRQ       = 0x0200..
+        CONSOLE_OUT = 0x0000, // store8 : écrit un octet sur stdout
+        CONSOLE_IN = 0x0004, // load8 : lit un octet depuis stdin (0 si rien)
+        TIMER_CLOCK = 0x0010, // load32 : ms depuis le démarrage de la VM
+        TIMER_TIME = 0x0014, // load32 : timestamp unix
+
+        //BLOCS DE 512 OCTETS
+        DISK_BLOCK = 0x0100, // store32 : numéro de bloc pour la prochaine commande
+        DISK_BUFFER = 0x0104, // store32 : adresse RAM du buffer (BLOCK_SIZE octets)
+        DISK_CMD = 0x0108, // store32 : 1 = lire (disque -> buffer), 2 = écrire (buffer -> disque)
+        DISK_STATUS = 0x010C, // load32 : 0 = OK, 1 = erreur (bloc/buffer hors limites)
+        DISK_BLOCK_SIZE = 0x0110, // load32 : taille d'un bloc en octets (constante)
+        DISK_BLOCK_COUNT = 0x0114, // load32 : nombre total de blocs disponibles
+        // IRQ_* = 0x0200.. (c'est un outil mystère qui nous servira plus tard)
     };
 
     static uint8_t load8(uint32_t off) {
@@ -89,15 +132,31 @@ struct MMIO {
 
     [[nodiscard]] uint32_t load32(uint32_t off) const {
         switch (off) {
-            case TIMER_CLOCK:
-                return timer.sys_clock();
-            case TIMER_TIME:
-                return TimerDevice::sys_time();
-            default:
-                return load8(off);
+            case TIMER_CLOCK: return timer.sys_clock();
+            case TIMER_TIME: return TimerDevice::sys_time();
+            case DISK_STATUS: return storage.status;
+            case DISK_BLOCK_SIZE: return StorageDevice::BLOCK_SIZE;
+            case DISK_BLOCK_COUNT: return storage.block_count();
+            default: return load8(off);
         }
     }
-    static void store32(uint32_t off, uint32_t v) { store8(off, static_cast<uint8_t>(v)); }
+    void store32(uint32_t off, uint32_t v) {
+        switch (off) {
+            case DISK_BLOCK:
+                storage.block = v;
+                break;
+            case DISK_BUFFER:
+                storage.buffer = v;
+                break;
+            case DISK_CMD:
+                if (v == 1) storage.do_read();
+                else if (v == 2) storage.do_write();
+                break;
+            default:
+                store8(off, static_cast<uint8_t>(v));
+                break;
+        }
+    }
 };
 
 #endif

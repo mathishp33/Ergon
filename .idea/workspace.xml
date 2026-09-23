@@ -38,12 +38,12 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="">
+    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="ABI syscall + trap (trap_vector, bit de mode, SYSRET).">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/HELP.md" beforeDir="false" afterPath="$PROJECT_DIR$/HELP.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/hardware/core.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/hardware/core.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/hardware/instructions_handler/run_handler.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/hardware/instructions_handler/run_handler.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/virtual_machine/environment_manager.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/virtual_machine/environment_manager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TODO.md" beforeDir="false" afterPath="$PROJECT_DIR$/TODO.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/hardware/bus.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/hardware/bus.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/hardware/mother_board.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/hardware/mother_board.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/virtual_machine/devices.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/virtual_machine/devices.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -287,7 +287,10 @@
       <workItem from="1789620976551" duration="1093000" />
       <workItem from="1789657671170" duration="10412000" />
       <workItem from="1789741624890" duration="785000" />
-      <workItem from="1790016912128" duration="334000" />
+      <workItem from="1790016912128" duration="1493000" />
+      <workItem from="1790103869467" duration="621000" />
+      <workItem from="1790186829434" duration="75000" />
+      <workItem from="1790187024628" duration="951000" />
     </task>
     <task id="LOCAL-00001" summary="checkpoint commit">
       <option name="closed" value="true" />
@@ -529,7 +532,15 @@
       <option name="project" value="LOCAL" />
       <updated>1789741969612</updated>
     </task>
-    <option name="localTasksCounter" value="31" />
+    <task id="LOCAL-00031" summary="ABI syscall + trap (trap_vector, bit de mode, SYSRET).">
+      <option name="closed" value="true" />
+      <created>1790017272291</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1790017272291</updated>
+    </task>
+    <option name="localTasksCounter" value="32" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -565,7 +576,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="LE COMMIT DE LA JOIE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!&#10;OE TOUT MARCHE" />
     <MESSAGE value="FIXED a bug with JUMPs instructions" />
     <MESSAGE value="optimized everything" />
     <MESSAGE value="added registers names" />
@@ -590,7 +600,8 @@
     <MESSAGE value="small changes" />
     <MESSAGE value="1. Fetch depuis la RAM (format d'instruction fixe + FETCH() via bus)." />
     <MESSAGE value="check point" />
-    <option name="LAST_COMMIT_MESSAGE" value="check point" />
+    <MESSAGE value="ABI syscall + trap (trap_vector, bit de mode, SYSRET)." />
+    <option name="LAST_COMMIT_MESSAGE" value="ABI syscall + trap (trap_vector, bit de mode, SYSRET)." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

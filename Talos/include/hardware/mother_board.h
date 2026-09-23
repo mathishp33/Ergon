@@ -4,20 +4,18 @@
 #include "cpu.h"
 #include "bus.h"
 #include "software/data.h"
-#include "virtual_machine/devices.h"
 
-#include <atomic>
 #include <vector>
 
 
 struct MotherBoard {
-    MMIO mmio;
+    std::vector<uint8_t> hard_drive;
     std::vector<uint8_t> ram;
+    MMIO mmio;
     SystemBus bus;
     std::shared_ptr<SimpleCPU> cpu;
-    std::vector<uint8_t> hard_drive;
 
-    MotherBoard(size_t ram_size) : bus(ram, mmio) {
+    MotherBoard(size_t ram_size) : mmio(hard_drive, ram), bus(ram, mmio) {
         if (ram_size >= 0xFFFFFF - 1) ram_size = 0xFFFFFF - 1;
         ram.resize(ram_size);
         std::ranges::fill(ram, 0);

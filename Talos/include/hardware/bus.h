@@ -7,18 +7,10 @@
 #include "virtual_machine/devices.h"
 #include "software/data.h"
 
-// ------------------------------------------------------------------
-// Carte mémoire (memory map) :
+// memory:
+// [0x00000000, MMIO_BASE) -> RAM
+// [MMIO_BASE,  0xFFFFFFFF] -> MMIO
 //
-//   [0x00000000, MMIO_BASE)        -> RAM
-//   [MMIO_BASE,  0xFFFFFFFF]       -> MMIO (périphériques)
-//
-// Le CORE ne parle jamais directement à la RAM ni aux devices :
-// il passe systématiquement par le SystemBus, qui décode l'adresse
-// et route la requête. C'est ce point unique qui te permettra plus
-// tard de brancher un contrôleur d'interruptions, du memory
-// protection, etc. pour ton kernel.
-// ------------------------------------------------------------------
 
 constexpr uint32_t MMIO_BASE = 0xF0000000;
 
