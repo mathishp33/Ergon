@@ -1,7 +1,8 @@
 VOIR TUTOS sur www.tutorialspoint.com/assembly_programming
 
 
-bon j'avoue que j'ai donné le TODO à refaire par ChatGPT... (j'avais trop le flemme)
+bon j'avoue que j'ai donné le TODO à refaire par ChatGPT... (j'avais trop la flemme)
+j'ai quand meme rédigé les parties importantes :-)
 
 ===================== FAIT (vérifié dans le code) =====================
 
@@ -15,18 +16,8 @@ bon j'avoue que j'ai donné le TODO à refaire par ChatGPT... (j'avais trop le f
 ===================== BLOQUANT - À FAIRE EN PRIORITÉ =====================
 
 2. Bugs ALU déjà repérés, TOUJOURS présents dans run_handler.h :
-    - OP_CMPUI compare c.regs[instr->rs2] au lieu de (uint32_t) instr->imm
     - OP_MINI/OP_MAXI assignent instr->rs1 / instr->imm (bruts) au lieu de
       c.regs[instr->rs1] / instr->imm (valeurs)
-
-4. mother_board.h::reset() ne remet plus PC à rom_entry_pc (seulement
-   ROM_BASE, valeur par défaut, via core.reset()). Ajouter
-   "cpu->core.PC = rom_entry_pc;" après cpu->core.reset(...), sinon un
-   .entry qui n'est pas la toute première instruction de la ROM casse le boot.
-
-5. step_handler.h n'a pas reçu le même traitement que run_handler.h
-   (fetch depuis le bus, PC += INSTR_SIZE). EnvironmentManager::step()
-   est commenté en attendant -> plus de debug pas-à-pas pour le moment.
 
 ===================== KERNEL / BOOT (C++ prêt, reste l'assembleur) =====================
 6. Timer IRQ + préemption (InterruptController est un stub vide dans devices.h)
@@ -55,8 +46,6 @@ bon j'avoue que j'ai donné le TODO à refaire par ChatGPT... (j'avais trop le f
 26. CHANGER sys_time (TimerDevice, devices.h) en prévision du bug 2038
 
 ===================== NETTOYAGE (mineur, pas urgent) =====================
-- memory.h : Bus/RAMBus/RAM/ROM ne sont plus utilisés nulle part (remplacés
-  par bus.h::SystemBus + mother_board.h::rom/ram) -> supprimable.
 - run_handler.h : RunResult::SYSCALL_STOP n'est plus jamais retourné
   (callback C++ supprimé), et #include <functional> n'est plus utilisé.
 - parser.h : le registre r11 s'appelle "tmp" dans reg_table, mais l'ABI

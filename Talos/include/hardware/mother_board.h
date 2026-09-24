@@ -41,6 +41,7 @@ struct MotherBoard {
     void reset() {
         std::ranges::fill(ram, 0);
         cpu->core.reset(static_cast<uint32_t>(ram.size()));
+        cpu->core.PC = rom_entry_pc;
     }
 
     void reset_hard_drive() {

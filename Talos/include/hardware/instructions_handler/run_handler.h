@@ -186,7 +186,7 @@ OP_CMPI:
     c.regs[12] = ((int32_t)c.regs[instr->rs1] < instr->imm) ? -1 : (((int32_t)c.regs[instr->rs1] > instr->imm) ? 1 : 0);
     NEXT();
 OP_CMPUI:
-    c.regs[12] = (c.regs[instr->rs1] < (uint32_t)instr->imm) ? -1 : ((c.regs[instr->rs1] > (uint32_t)instr->rs2) ? 1 : 0);
+    c.regs[12] = (c.regs[instr->rs1] < (uint32_t)instr->imm) ? -1 : ((c.regs[instr->rs1] > (uint32_t) instr->imm) ? 1 : 0);
     NEXT();
 OP_TEST:
     c.regs[12] = ((c.regs[instr->rs1] & c.regs[instr->rs2]) != 0) ? 1 : 0;
