@@ -38,18 +38,11 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="update">
+    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="entire rework of Preprocessor">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TODO.md" beforeDir="false" afterPath="$PROJECT_DIR$/TODO.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/hardware/instructions_handler/run_handler.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/hardware/instructions_handler/run_handler.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/hardware/mother_board.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/hardware/mother_board.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/software/error.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/software/error.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/software/preprocessor.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/software/preprocessor.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/virtual_machine/environment_manager.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/virtual_machine/environment_manager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_3/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_preproc/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_3/preproc.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_preproc/preproc.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_stack/stack.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_stack/stack.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/software/parser.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/software/parser.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_ide/ide.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_ide/ide.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_ide/program_0.txt" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_ide/program_0.asm" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -62,7 +55,7 @@
   <component name="EmbeddingIndexingInfo">
     <option name="cachedIndexableFilesCount" value="276" />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
+  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Release" />
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
@@ -108,50 +101,50 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "C/C++ File.test.cpp - Visual Studio (1).executor": "Run",
-    "C/C++ File.test.cpp - Visual Studio.executor": "Run",
-    "CMake Application.ergon_test_0.executor": "Run",
-    "CMake Application.ergon_test_1.executor": "Debug",
-    "CMake Application.ergon_test_3.executor": "Run",
-    "CMake Application.ergon_test_4.executor": "Run",
-    "CMake Application.ergon_test_5.executor": "Debug",
-    "CMake Application.ergon_test_ide.executor": "Debug",
-    "CMake Application.ergon_test_preproc.executor": "Debug",
-    "CMake Application.ergon_test_stack.executor": "Run",
-    "CMake Application.ergon_tests.executor": "Run",
-    "CMake Debug.Ergon.executor": "Debug",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.MCP Project settings loaded": "true",
-    "RunOnceActivity.RadMigrateCodeStyle": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.readMode.enableVisualFormatting": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "RunOnceActivity.west.config.association.type.startup.service": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "cf.first.check.clang-format": "false",
-    "cidr.known.project.marker": "true",
-    "codeWithMe.voiceChat.enabledByDefault": "false",
-    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
-    "git-widget-placeholder": "vrai__vm",
-    "ignore.virus.scanning.warn.message": "true",
-    "junie.onboarding.icon.badge.shown": "true",
-    "last_opened_file_path": "C:/Users/mathi/CLionProjects/Ergon/tests",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "org.rust.first.attach.projects": "true",
-    "settings.editor.selected.configurable": "CPPToolchains",
-    "to.speed.mode.migration.done": "true",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;C/C++ File.test.cpp - Visual Studio (1).executor&quot;: &quot;Run&quot;,
+    &quot;C/C++ File.test.cpp - Visual Studio.executor&quot;: &quot;Run&quot;,
+    &quot;CMake Application.ergon_test_0.executor&quot;: &quot;Run&quot;,
+    &quot;CMake Application.ergon_test_1.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.ergon_test_3.executor&quot;: &quot;Run&quot;,
+    &quot;CMake Application.ergon_test_4.executor&quot;: &quot;Run&quot;,
+    &quot;CMake Application.ergon_test_5.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.ergon_test_ide.executor&quot;: &quot;Run&quot;,
+    &quot;CMake Application.ergon_test_preproc.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.ergon_test_stack.executor&quot;: &quot;Run&quot;,
+    &quot;CMake Application.ergon_tests.executor&quot;: &quot;Run&quot;,
+    &quot;CMake Debug.Ergon.executor&quot;: &quot;Debug&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.RadMigrateCodeStyle&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.west.config.association.type.startup.service&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;vrai__vm&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/mathi/CLionProjects/Ergon/tests&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;org.rust.first.attach.projects&quot;: &quot;true&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;CPPToolchains&quot;,
+    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\mathi\CLionProjects\Ergon\tests" />
@@ -165,12 +158,7 @@
       <recent name="C:\Users\Utilisateur\CLionProjects\Ergon\Talos\include\utils" />
     </key>
   </component>
-  <component name="RunManager" selected="CMake Application.ergon_test_preproc">
-    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
-      <method v="2">
-        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
-      </method>
-    </configuration>
+  <component name="RunManager" selected="CMake Application.ergon_test_ide">
     <configuration name="Ergon" type="CMakeListConfigurationType" factoryName="CMakeListConfigurationFactory" temporary="true">
       <method v="2" />
     </configuration>
@@ -215,15 +203,15 @@
       </method>
     </configuration>
     <list>
+      <item itemvalue="CMake Debug.Ergon" />
       <item itemvalue="CMake Application.ergon_test_0" />
       <item itemvalue="CMake Application.ergon_test_1" />
       <item itemvalue="CMake Application.ergon_test_2" />
-      <item itemvalue="CMake Application.ergon_test_preproc" />
       <item itemvalue="CMake Application.ergon_test_ide" />
+      <item itemvalue="CMake Application.ergon_test_preproc" />
       <item itemvalue="CMake Application.ergon_test_stack" />
       <item itemvalue="CMake Application.ergon_test_sys_read" />
       <item itemvalue="CMake Application.ergon_test_sys_write" />
-      <item itemvalue="CMake Debug.Ergon" />
     </list>
     <recent_temporary>
       <list>
@@ -305,7 +293,8 @@
       <workItem from="1790187024628" duration="4495000" />
       <workItem from="1790267947131" duration="3114000" />
       <workItem from="1790878334780" duration="312000" />
-      <workItem from="1791046162421" duration="7536000" />
+      <workItem from="1791046162421" duration="11001000" />
+      <workItem from="1791057671454" duration="6000" />
     </task>
     <task id="LOCAL-00001" summary="checkpoint commit">
       <option name="closed" value="true" />
@@ -595,7 +584,15 @@
       <option name="project" value="LOCAL" />
       <updated>1791047135250</updated>
     </task>
-    <option name="localTasksCounter" value="37" />
+    <task id="LOCAL-00037" summary="entire rework of Preprocessor">
+      <option name="closed" value="true" />
+      <created>1791054085289</created>
+      <option name="number" value="00037" />
+      <option name="presentableId" value="LOCAL-00037" />
+      <option name="project" value="LOCAL" />
+      <updated>1791054085289</updated>
+    </task>
+    <option name="localTasksCounter" value="38" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -631,7 +628,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="the AUTO execution mode is now super fast" />
     <MESSAGE value="j'ai fait des trucs importants voila tout ..." />
     <MESSAGE value="added license + fixed code" />
     <MESSAGE value="fixed linker problem" />
@@ -656,14 +652,15 @@
     <MESSAGE value="todo resolved &amp; bugs solved" />
     <MESSAGE value="bugs" />
     <MESSAGE value="update" />
-    <option name="LAST_COMMIT_MESSAGE" value="update" />
+    <MESSAGE value="entire rework of Preprocessor" />
+    <option name="LAST_COMMIT_MESSAGE" value="entire rework of Preprocessor" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/Talos/include/software/parser.h</url>
-          <line>294</line>
+          <line>291</line>
           <option name="timeStamp" value="33" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
