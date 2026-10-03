@@ -23,7 +23,7 @@ inline std::unordered_map<std::string, uint8_t> reg_table = {
     { "r8", 8 },
     { "r9", 9 },
     { "r10", 10 },
-    { "tmp", 11 },
+    { "trp", 11 },
     { "cmp", 12 },
     { "fp", 13 },
     { "sp", 14 },
@@ -52,8 +52,6 @@ static std::pair<ErrorInfo, uint8_t> parse_reg(const std::string& s) {
         return { { }, reg_table[s] };
     return { { ErrorCode::INVALID_REG, "invalid register \"" + s + "\"" }, 0 };
 }
-
-//temporary IMM parser
 
 /*
 Operations:
@@ -86,19 +84,6 @@ Types:
 
 */
 
-// inline std::pair<ErrorInfo, int> convert_to_bytes(std::string s, std::unordered_map<std::string, int32_t>& constants) {
-//     if (constants.contains(s))
-//         return { { }, constants[s] };
-//     if (s.find('.'))
-//         return string_utils::better_stof(s.substr(0, s.size() - s.back() == 'f'));
-//     if (string_utils::rep_counter(s, '\'') == 2) {
-//         if (s.size() != 3)
-//             return { { ErrorCode::INVALID_IMM, "invalid" + s.substr(2, s.size() - 3) + "character" }, 0 };
-//         return { { }, s[1] };
-//     }
-//     return string_utils::better_stoi(s);
-// }
-
 enum class TokenType { Number, Identifier, Op, LParen, RParen, End };
 
 struct Token {
@@ -117,21 +102,37 @@ inline std::pair<ErrorInfo, std::vector<Token>> tokenize(const std::string& str)
     while (i < s.size()) {
         char c = s[i];
 
-        if (std::isdigit(c) || c == '.') { //number: int or float
+        if (std::isdigit((unsigned char)c) || c == '.') {
             size_t start = i;
-            if (c == '0' && i + 1 < s.size())
-                if (s[i + 1] == 'x' || s[i + 1] == 'X' || s[i + 1] == 'b' || s[i + 1] == 'B')
+            bool isFloat = false;
+
+            if (c == '0' && i + 1 < s.size() && std::string("xXbBoO").find(s[i + 1]) != std::string::npos) {
+                bool hex = (s[i + 1] == 'x' || s[i + 1] == 'X');
+                i += 2;
+                while (i < s.size() && (hex ? std::isxdigit((unsigned char)s[i]) : std::isdigit((unsigned char)s[i]))) i++;
+            } else {
+                while (i < s.size() && (std::isdigit((unsigned char)s[i]) || s[i] == '.')) {
+                    if (s[i] == '.') isFloat = true;
                     i++;
-            while (i < s.size() && (std::isdigit(s[i]) || s[i] == '.' || s[i] == 'f')) i++;
-            std::string sub_str = s.substr(start, i - start);
-            tokens.emplace_back(TokenType::Number, sub_str, sub_str.find('f') != std::string::npos || sub_str.find('.') != std::string::npos);
+                }
+                if (i < s.size() && (s[i] == 'e' || s[i] == 'E')) { //exponent (1e5, 1e-5)
+                    size_t j = i + 1;
+                    if (j < s.size() && (s[j] == '+' || s[j] == '-')) j++;
+                    if (j < s.size() && std::isdigit((unsigned char)s[j])) {
+                        isFloat = true;
+                        i = j;
+                        while (i < s.size() && std::isdigit((unsigned char)s[i])) i++;
+                    }
+                }
+                if (i < s.size() && s[i] == 'f') { isFloat = true; i++; } // float (1.5f)
+            }
+            tokens.emplace_back(TokenType::Number, s.substr(start, i - start), isFloat);
         }
         else if (c == '\'') { //char
-            size_t start = i++;
-            while (i < s.size() && s[i] != '\'') i++;
-            i++;
-            if (i - start != 3) return { { ErrorCode::INVALID_TOKEN, "invalid token \"" + s.substr(start, i - start) + "\"" }, { } };
-            tokens.emplace_back(TokenType::Number, s.substr(start, i - start));
+            if (i + 2 >= s.size() || s[i + 2] != '\'')
+                return { { ErrorCode::INVALID_TOKEN, "invalid character literal" }, { } };
+            tokens.emplace_back(TokenType::Number, std::to_string((int)s[i + 1]));
+            i += 3;
         }
         else if (std::isalpha(c) || c == '_') { //variable or constant
             size_t start = i;
@@ -147,16 +148,12 @@ inline std::pair<ErrorInfo, std::vector<Token>> tokenize(const std::string& str)
             i++;
         }
         else { //operation
-            if (s[i] == '-') {
-                tokens.emplace_back(TokenType::Op, "-");
-                i++;
-            }
-            else {
-                size_t start = i;
-                while (i < s.size() && !std::isdigit(s[i]) && !std::isalpha(s[i]) && s[i] != '_' && s[i] != '(' && s[i] != ')' && s[i] != ' ' && s[i] != '-')
-                    i++;
-                tokens.emplace_back(TokenType::Op, s.substr(start, i - start));
-            }
+            static const char* ops[] = { "**", "<<", ">>", "<=", ">=", "==" };
+            std::string op(1, c);
+            for (auto o : ops)
+                if (s.compare(i, 2, o) == 0) { op = o; break; }
+            i += op.size();
+            tokens.emplace_back(TokenType::Op, op);
         }
     }
     tokens.emplace_back(TokenType::End, "");
@@ -281,11 +278,11 @@ private:
             advance();
             if (t.isFloat) {
                 auto [e, res] = string_utils::better_stof(t.text);
-                e_info = e;
+                if (e.code != ErrorCode::OK) e_info = e;
                 return { res };
             }
             auto [e, res] = string_utils::better_stoi(t.text);
-            e_info = e;
+            if (e.code != ErrorCode::OK) e_info = e;
             return { res };
         }
         if (t.type == TokenType::Identifier) {
@@ -311,28 +308,26 @@ private:
 
     Value parsePower() {
         if (e_info.code != ErrorCode::OK) return 0;
-        Value base = parseUnary();
+        Value base = parsePrimary();
         if (matchOp("**")) {
-            Value exponent = parsePower();
-            if (isFloat(base) || isFloat(exponent) || asFloat(exponent) < 0)
+            Value exponent = parseUnary();
+            if (isFloat(base) || isFloat(exponent) || asInt(exponent) < 0)
                 return Value{ std::pow(asFloat(base), asFloat(exponent)) };
-            else
-                return Value{ static_cast<int32_t>(std::pow(asFloat(base), asFloat(exponent))) };
+            return Value{ static_cast<int32_t>(std::pow((double)asInt(base), (double)asInt(exponent))) };
         }
         return base;
     }
 
     Value parseUnary() {
         if (e_info.code != ErrorCode::OK) return 0;
-        if (matchOp("-")) {
-            Value v = parseUnary();
+        if (matchOp("-")) { Value v = parseUnary();
             return isFloat(v) ? Value{ -asFloat(v) } : Value{ -asInt(v) };
         }
         if (matchOp("~")) {
             Value v = parseUnary();
             return Value{ ~asInt(v) };
         }
-        return parsePrimary();
+        return parsePower();
     }
 
     Value parseMulDivMod() {

@@ -17,13 +17,13 @@ struct MotherBoard {
     SystemBus bus;
     std::shared_ptr<SimpleCPU> cpu;
 
-    MotherBoard(size_t ram_size) : mmio(hard_drive, ram), bus(ram, rom, mmio) {
+    MotherBoard(size_t ram_size, uint32_t requested) : mmio(hard_drive, ram), bus(ram, rom, mmio) {
         if (ram_size >= 0xFFFFFF - 1) ram_size = 0xFFFFFF - 1;
         ram.resize(ram_size);
         std::ranges::fill(ram, 0);
 
         cpu = std::make_shared<SimpleCPU>(bus, static_cast<uint32_t>(ram.size()));
-        set_stack_size(0);
+        set_stack_size(requested);
     }
 
     void load_rom(const std::vector<uint8_t>& bytes, uint32_t entry_pc = ROM_BASE) {
@@ -41,6 +41,7 @@ struct MotherBoard {
     void reset() {
         std::ranges::fill(ram, 0);
         cpu->core.reset(static_cast<uint32_t>(ram.size()));
+        cpu->core.PC = rom_entry_pc;
     }
 
     void reset_hard_drive() {

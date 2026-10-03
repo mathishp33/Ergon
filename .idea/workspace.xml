@@ -21,11 +21,11 @@
   </component>
   <component name="CMakeRunConfigurationManager">
     <generated>
-      <config projectName="Ergon" targetName="ergon_test_3" />
       <config projectName="Ergon" targetName="ergon_test_stack" />
       <config projectName="Ergon" targetName="ergon_test_1" />
       <config projectName="Ergon" targetName="ergon_test_2" />
       <config projectName="Ergon" targetName="ergon_test_ide" />
+      <config projectName="Ergon" targetName="ergon_test_preproc" />
       <config projectName="Ergon" targetName="ergon_test_sys_read" />
       <config projectName="Ergon" targetName="ergon_test_sys_write" />
       <config projectName="Ergon" targetName="ergon_test_0" />
@@ -38,11 +38,11 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="checkpoint (à tester)">
+    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="entire rework of Preprocessor">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TODO.md" beforeDir="false" afterPath="$PROJECT_DIR$/TODO.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/software/assembler.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/software/assembler.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/software/instructions.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/software/instructions.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/software/parser.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/software/parser.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_ide/ide.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_ide/ide.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_ide/program_0.txt" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_ide/program_0.asm" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -55,7 +55,7 @@
   <component name="EmbeddingIndexingInfo">
     <option name="cachedIndexableFilesCount" value="276" />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
+  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Release" />
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
@@ -110,7 +110,8 @@
     &quot;CMake Application.ergon_test_3.executor&quot;: &quot;Run&quot;,
     &quot;CMake Application.ergon_test_4.executor&quot;: &quot;Run&quot;,
     &quot;CMake Application.ergon_test_5.executor&quot;: &quot;Debug&quot;,
-    &quot;CMake Application.ergon_test_ide.executor&quot;: &quot;Debug&quot;,
+    &quot;CMake Application.ergon_test_ide.executor&quot;: &quot;Run&quot;,
+    &quot;CMake Application.ergon_test_preproc.executor&quot;: &quot;Debug&quot;,
     &quot;CMake Application.ergon_test_stack.executor&quot;: &quot;Run&quot;,
     &quot;CMake Application.ergon_tests.executor&quot;: &quot;Run&quot;,
     &quot;CMake Debug.Ergon.executor&quot;: &quot;Debug&quot;,
@@ -157,7 +158,7 @@
       <recent name="C:\Users\Utilisateur\CLionProjects\Ergon\Talos\include\utils" />
     </key>
   </component>
-  <component name="RunManager" selected="CMake Application.ergon_test_stack">
+  <component name="RunManager" selected="CMake Application.ergon_test_ide">
     <configuration name="Ergon" type="CMakeListConfigurationType" factoryName="CMakeListConfigurationFactory" temporary="true">
       <method v="2" />
     </configuration>
@@ -176,12 +177,12 @@
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="ergon_test_3" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Ergon" TARGET_NAME="ergon_test_3" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="Ergon" RUN_TARGET_NAME="ergon_test_3">
+    <configuration name="ergon_test_ide" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Ergon" TARGET_NAME="ergon_test_ide" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="Ergon" RUN_TARGET_NAME="ergon_test_ide">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="ergon_test_ide" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Ergon" TARGET_NAME="ergon_test_ide" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="Ergon" RUN_TARGET_NAME="ergon_test_ide">
+    <configuration name="ergon_test_preproc" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="Ergon" TARGET_NAME="ergon_test_preproc" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="Ergon" RUN_TARGET_NAME="ergon_test_preproc">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
@@ -202,15 +203,15 @@
       </method>
     </configuration>
     <list>
+      <item itemvalue="CMake Debug.Ergon" />
       <item itemvalue="CMake Application.ergon_test_0" />
       <item itemvalue="CMake Application.ergon_test_1" />
       <item itemvalue="CMake Application.ergon_test_2" />
-      <item itemvalue="CMake Application.ergon_test_3" />
       <item itemvalue="CMake Application.ergon_test_ide" />
+      <item itemvalue="CMake Application.ergon_test_preproc" />
       <item itemvalue="CMake Application.ergon_test_stack" />
       <item itemvalue="CMake Application.ergon_test_sys_read" />
       <item itemvalue="CMake Application.ergon_test_sys_write" />
-      <item itemvalue="CMake Debug.Ergon" />
     </list>
     <recent_temporary>
       <list>
@@ -289,7 +290,11 @@
       <workItem from="1790016912128" duration="1493000" />
       <workItem from="1790103869467" duration="621000" />
       <workItem from="1790186829434" duration="75000" />
-      <workItem from="1790187024628" duration="4466000" />
+      <workItem from="1790187024628" duration="4495000" />
+      <workItem from="1790267947131" duration="3114000" />
+      <workItem from="1790878334780" duration="312000" />
+      <workItem from="1791046162421" duration="11001000" />
+      <workItem from="1791057671454" duration="6000" />
     </task>
     <task id="LOCAL-00001" summary="checkpoint commit">
       <option name="closed" value="true" />
@@ -555,7 +560,39 @@
       <option name="project" value="LOCAL" />
       <updated>1790190805673</updated>
     </task>
-    <option name="localTasksCounter" value="34" />
+    <task id="LOCAL-00034" summary="todo resolved &amp; bugs solved">
+      <option name="closed" value="true" />
+      <created>1790191537815</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1790191537815</updated>
+    </task>
+    <task id="LOCAL-00035" summary="bugs">
+      <option name="closed" value="true" />
+      <created>1790273277443</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1790273277443</updated>
+    </task>
+    <task id="LOCAL-00036" summary="update">
+      <option name="closed" value="true" />
+      <created>1791047135248</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1791047135250</updated>
+    </task>
+    <task id="LOCAL-00037" summary="entire rework of Preprocessor">
+      <option name="closed" value="true" />
+      <created>1791054085289</created>
+      <option name="number" value="00037" />
+      <option name="presentableId" value="LOCAL-00037" />
+      <option name="project" value="LOCAL" />
+      <updated>1791054085289</updated>
+    </task>
+    <option name="localTasksCounter" value="38" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -591,10 +628,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="added registers names" />
-    <MESSAGE value="added two pass detection labels + sections (.text, .data, .bss) + cleaned files" />
-    <MESSAGE value="added linker" />
-    <MESSAGE value="the AUTO execution mode is now super fast" />
     <MESSAGE value="j'ai fait des trucs importants voila tout ..." />
     <MESSAGE value="added license + fixed code" />
     <MESSAGE value="fixed linker problem" />
@@ -616,35 +649,44 @@
     <MESSAGE value="ABI syscall + trap (trap_vector, bit de mode, SYSRET)." />
     <MESSAGE value="checkpoint" />
     <MESSAGE value="checkpoint (à tester)" />
-    <option name="LAST_COMMIT_MESSAGE" value="checkpoint (à tester)" />
+    <MESSAGE value="todo resolved &amp; bugs solved" />
+    <MESSAGE value="bugs" />
+    <MESSAGE value="update" />
+    <MESSAGE value="entire rework of Preprocessor" />
+    <option name="LAST_COMMIT_MESSAGE" value="entire rework of Preprocessor" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/Talos/include/software/parser.h</url>
-          <line>294</line>
+          <line>291</line>
           <option name="timeStamp" value="33" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/Talos/include/firmware/kernel.h</url>
-          <line>52</line>
-          <option name="timeStamp" value="37" />
+          <url>file://$PROJECT_DIR$/Talos/include/software/preprocessor.h</url>
+          <line>12</line>
+          <option name="timeStamp" value="42" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/Talos/include/hardware/instructions_handler/run_handler.h</url>
-          <line>222</line>
-          <option name="timeStamp" value="39" />
+          <url>file://$PROJECT_DIR$/Talos/include/software/preprocessor.h</url>
+          <line>13</line>
+          <option name="timeStamp" value="43" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/Talos/include/hardware/instructions_handler/run_handler.h</url>
-          <line>226</line>
-          <option name="timeStamp" value="40" />
+          <url>file://$PROJECT_DIR$/Talos/include/software/preprocessor.h</url>
+          <line>14</line>
+          <option name="timeStamp" value="44" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/Talos/include/virtual_machine/environment_manager.h</url>
-          <line>157</line>
-          <option name="timeStamp" value="41" />
+          <url>file://$PROJECT_DIR$/Talos/include/software/preprocessor.h</url>
+          <line>15</line>
+          <option name="timeStamp" value="45" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/Talos/include/software/preprocessor.h</url>
+          <line>16</line>
+          <option name="timeStamp" value="46" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

@@ -62,8 +62,6 @@ inline RunResult run(SimpleCore& c) {
 
     if (c.bus.ram_size() == 0) return RunResult::ERROR;
     //magie noire >w<
-    // "instr" reste un pointeur qui pointe vers
-    // "instr_storage", qui est ré  écrasée à chaque fetch depuis le BUS.
     #define FETCH() instr_storage = c.bus.fetch_instr(c.PC);
 
     #define DISPATCH() goto *dispatch_table[instr->opcode]
@@ -186,7 +184,7 @@ OP_CMPI:
     c.regs[12] = ((int32_t)c.regs[instr->rs1] < instr->imm) ? -1 : (((int32_t)c.regs[instr->rs1] > instr->imm) ? 1 : 0);
     NEXT();
 OP_CMPUI:
-    c.regs[12] = (c.regs[instr->rs1] < (uint32_t)instr->imm) ? -1 : ((c.regs[instr->rs1] > (uint32_t)instr->rs2) ? 1 : 0);
+    c.regs[12] = (c.regs[instr->rs1] < (uint32_t)instr->imm) ? -1 : ((c.regs[instr->rs1] > (uint32_t) instr->imm) ? 1 : 0);
     NEXT();
 OP_TEST:
     c.regs[12] = ((c.regs[instr->rs1] & c.regs[instr->rs2]) != 0) ? 1 : 0;
@@ -220,11 +218,11 @@ OP_MAX:
     else c.regs[instr->rd] = c.regs[instr->rs2];
     NEXT();
 OP_MINI:
-    if (c.regs[instr->rs1] < instr->imm) c.regs[instr->rd] = instr->rs1;
+    if (c.regs[instr->rs1] < instr->imm) c.regs[instr->rd] = c.regs[instr->rs1];
     else c.regs[instr->rd] = instr->imm;
     NEXT();
 OP_MAXI:
-    if (c.regs[instr->rs1] > instr->imm) c.regs[instr->rd] = instr->rs1;
+    if (c.regs[instr->rs1] > instr->imm) c.regs[instr->rd] = c.regs[instr->rs1];
     else c.regs[instr->rd] = instr->imm;
     NEXT();
 
