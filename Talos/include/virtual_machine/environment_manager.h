@@ -38,15 +38,15 @@ struct StepInfo {
 
 
 struct EnvironmentManager {
-    size_t RAM_SIZE = 65535; // 2^16 - 1
+    size_t RAM_SIZE = 0xffffff - 1; // 2^16 - 1
     MotherBoard mb;
     Assembler decoder;
     int exit_code = 1;
     std::atomic<bool> running = false;
     std::chrono::time_point<std::chrono::system_clock> start_time;
 
-    EnvironmentManager(size_t ram_size = 65535, const std::string& path_to_hard_drive = "") :
-     RAM_SIZE(ram_size), mb(MotherBoard(ram_size)) {
+    EnvironmentManager(size_t ram_size = 0xffffff - 1, uint32_t stack_size = 0xfff, const std::string& path_to_hard_drive = "") :
+     RAM_SIZE(ram_size), mb(MotherBoard(ram_size, stack_size)) {
         if (!path_to_hard_drive.empty()) {
             std::ifstream file(path_to_hard_drive, std::ios::binary);
 
@@ -113,7 +113,6 @@ struct EnvironmentManager {
     //args are { { <name/path>, <my_program> } }, returns error message
     std::string build(const std::vector<std::pair<std::string, std::string>>& inputs) {
         std::vector<ObjectFile> obj_files;
-        std::vector<std::string> error_infos;
         for (const auto& [name, program] : inputs) {
             auto [obj_file, error_info] = decoder.decode(program);
             if (error_info.code != ErrorCode::OK) return handle_error(name, error_info);
@@ -150,14 +149,15 @@ struct EnvironmentManager {
         return 0;
     }
 
-    void start() {
+    RunResult start() {
         running = true;
         exit_code = 1;
         start_time = std::chrono::system_clock::now();
-        run(mb.cpu->core);
+        RunResult RR = run(mb.cpu->core);
         //le kernel place le code de sortie dans r0 avant HALT.
         exit_code = static_cast<int>(mb.cpu->core.regs[0]);
         running = false;
+        return RR;
     }
 
     static std::vector<uint8_t> serialize(const LinkedBinary& lb) {

@@ -13,30 +13,29 @@ j'ai quand meme rédigé les parties importantes :-)
 [x] Infrastructure de boot (ROM séparée, build_rom/build_image/flash_disk, base_address dans link())
 
 ===================== KERNEL / BOOT (C++ prêt, reste l'assembleur) =====================
-6. Timer IRQ + préemption (InterruptController est un stub vide dans devices.h)
-7. boot.asm : boucle DISK_READ + saut indirect (push/ret) vers le kernel
-8. kernel.asm : dispatcher de syscalls (lit r0, route, écrit r0, sysret)
-9. Storage driver (asm) au-dessus des registres DISK_*
-10. Format de disque minimal (superblock)
-11. Allocation de blocs
-12. Inodes
-13. Répertoires
-14. Création/lecture/écriture de fichiers
-15. File descriptors
-16. Format exécutable Ergon + executable loader
-17. Process structure
-18. Scheduler
-19. Plusieurs Core dans CPU (multi-coeur) -> voir note plus bas
-20. SLEEP
-21. EXEC / EXIT / WAIT
-22. USER/KERNEL : cas restants (HALT/SETTV déjà couverts ; à revoir si
-    d'autres opcodes doivent devenir privilégiés une fois le kernel réel écrit)
+1. Timer IRQ + préemption (InterruptController est un stub vide dans devices.h)
+2. boot.asm : boucle DISK_READ + saut indirect (push/ret) vers le kernel
+3. kernel.asm : dispatcher de syscalls (lit r0, route, écrit r0, sysret)
+4. Storage driver (asm) au-dessus des registres DISK_*
+5. Format de disque minimal (superblock)
+6. Allocation de blocs
+7. Inodes
+8. Répertoires
+9. Création/lecture/écriture de fichiers
+10. File descriptors
+11. Format exécutable Ergon + executable loader
+12. Process structure
+13. Scheduler
+14. Plusieurs Core dans CPU (multi-coeur) -> voir note plus bas
+15. SLEEP
+16. EXEC / EXIT / WAIT
+17. USER/KERNEL : cas restants (HALT/SETTV déjà couverts ; à revoir si 
+d'autres opcodes doivent devenir privilégiés une fois le kernel réel écrit)
 
 ===================== ASSEMBLEUR / OUTILLAGE =====================
-23. AJOUTER %if, %ifdef (stubs vides dans preprocessor.h, non implémentés)
-24. AJOUTER %include
-25. UPDATE le readme
-26. CHANGER sys_time (TimerDevice, devices.h) en prévision du bug 2038
+25. AJOUTER %include
+26. UPDATE le readme
+27. CHANGER sys_time (TimerDevice, devices.h) en prévision du bug 2038
 
 ===================== NETTOYAGE (mineur, pas urgent) =====================
 - run_handler.h : RunResult::SYSCALL_STOP n'est plus jamais retourné
@@ -57,6 +56,11 @@ problème déjà pas trivial.
 -> synchronisation/blocage d'accès au SystemBus 
 -> scheduler mono-coeur puis multi-coeur
 
+===================== NOTE : pour plus tard =====================
+Ajouter GPU, Ecran, ... (Graphiques)
+Ajouter SoundCard
+Ajouter INTERNET !!!
+
 ------------------------------------------------------------------------------------------------------------------------
 
 1. Storage device
@@ -74,6 +78,17 @@ problème déjà pas trivial.
 13. Scheduler
 14. Interruptions timer
 15. USER/KERNEL privilege separation
+
+------------------------------------------------------------------------------------------------------------------------
+
+A sample system memory map
+Address range (hexadecimal)	Size	Device
+0000–7FFF	32 KiB	RAM
+8000–80FF	256 bytes	General-purpose I/O
+9000–90FF	256 bytes	Sound controller
+A000–A7FF	2 KiB	Video controller/text-mapped display RAM
+C000–FFFF	16 KiB	ROM
+TOTAL = FFFF
 
 ------------------------------------------------------------------------------------------------------------------------
 

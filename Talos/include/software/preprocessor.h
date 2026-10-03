@@ -1,16 +1,27 @@
 #ifndef ERGON_PREPROCESSOR_H
 #define ERGON_PREPROCESSOR_H
+#include "error.h"
 
+#include <cctype>
+#include <deque>
+#include <functional>
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
+/*
+ * Extra error codes this file relies on (add them to ErrorCode in error.h):
+ *     ELSE_AFTER_ELSE      - a branch directive follows %else / %elsedef
+ *     UNEXPECTED_DIRECTIVE - %else, %endif, %endrep, ... without an opener
+ */
 
 struct RecursionHandler {
-    size_t rep_depth = 0;
-    size_t macro_expansion = 0;
+    size_t max_depth = 1000;
+    size_t max_lines = 100000000;
 
-    bool handle() {
-        rep_depth++;
-        macro_expansion++;
-        return rep_depth > 100 || macro_expansion > 100;
+    [[nodiscard]] bool depth_exceeded(size_t depth) const {
+        return depth > max_depth;
     }
 };
 
@@ -20,7 +31,7 @@ struct PreProcesser {
     std::unordered_map<std::string, Define> defines; // %define
     std::unordered_map<std::string, Macro> macros; // %macro
 
-    static std::string delimit_string(const std::string& s, size_t& idx, const std::function<bool(char, size_t)>& condition ) {
+    static std::string delimit_string(const std::string& s, size_t& idx, const std::function<bool(char, size_t)>& condition) {
         size_t start = idx;
         for (; idx < s.size() && condition(s[idx], idx); idx++) {}
         return s.substr(start, idx - start);
@@ -33,247 +44,448 @@ struct PreProcesser {
         });
     }
 
-    static std::pair<ErrorInfo, std::string> find_block_end(const std::vector<std::string>& lines, size_t& idx, const std::string& begin_dir,
-        const std::string& end_dir, ErrorInfo e_i) {
-        size_t depth = 1;
-        std::string out;
-        for (; idx < lines.size(); idx++) {
-            std::string local_line = string_utils::normalize(lines[idx]);
-            if (local_line.starts_with(begin_dir))
-                depth++;
-            else if (local_line == end_dir) {
-                depth--;
-                if (depth == 0)
-                    break;
-            }
-            out += lines[idx] + "\n";
-        }
-        e_i.index_line = idx;
-        if (depth != 0)
-            return { e_i, "" };
-        return { { }, out };
+    static bool is_ident_start(char c) {
+        return std::isalpha(static_cast<unsigned char>(c)) || c == '_';
+    }
+    static bool is_ident_char(char c) {
+        return std::isalnum(static_cast<unsigned char>(c)) || c == '_';
     }
 
-    ErrorInfo preprocess(std::string& file, RecursionHandler RH = RecursionHandler()) {
-        std::vector<std::string> lines = string_utils::slice_str(file, '\n');
-        if (RH.handle())
-            return { ErrorCode::PREPROC_RECURSION, "infinite recursion in the preprocessor", 0 };
-        for (size_t i = 0; i < lines.size(); i++) {
-            std::string line = string_utils::normalize(lines[i]);
+    static bool is_identifier(const std::string& s) {
+        if (s.empty() || !is_ident_start(s[0]))
+            return false;
+        for (char c : s)
+            if (!is_ident_char(c))
+                return false;
+        return true;
+    }
 
-            if (line.empty()) continue;
+    static std::string trim(const std::string& s) {
+        size_t b = 0, e = s.size();
+        while (b < e && std::isspace(static_cast<unsigned char>(s[b])))
+            b++;
+        while (e > b && std::isspace(static_cast<unsigned char>(s[e - 1])))
+            e--;
+        return s.substr(b, e - b);
+    }
 
-            //handle defines
-            for (const auto& [name, define] : defines) {
-                if (define.parameters.empty()) {
-                    std::string line_copy = line;
-                    string_utils::replace_string_as_token(line_copy, name, define.replacement);
-                    lines[i] = line_copy;
-                }
-                else {
-                    if (leading_identifier(line) == name) {
-                        std::string line_copy = line;
-                        if (string_utils::rep_counter(line, ')') != 1)
-                            return { ErrorCode::MISMATCHED_PAR, "mismatched parenthesis", i };
-                        if (string_utils::rep_counter(line, '(') != 1)
-                            return { ErrorCode::MISMATCHED_PAR, "mismatched parenthesis", i };
-                        if (line[name.size()] == '(') {
-                            size_t idx = name.size() + 1;
-                            std::string compacted_args = delimit_string(line, idx, [](char c, size_t idx) { return c != ')'; });
-                            std::vector<std::string> args = string_utils::slice_str(compacted_args, ',');
-                            for (auto& arg : args)
-                                arg = string_utils::remove_char(arg, ' ');
-                            string_utils::replace_string_as_token(line_copy, line, define.replacement);
-                            if (define.parameters.size() != args.size())
-                                return { ErrorCode::INVALID_ARG_SIZE, "invalid arg size, expected " + std::to_string(define.parameters.size()), i };
-                            for (size_t j = 0; j < args.size(); j++)
-                                string_utils::replace_string_as_token(line_copy, define.parameters[j], args[j]);
-                            lines[i] = line_copy;
-                        }
-                        else {
-                            return { ErrorCode::MISMATCHED_PAR, "mismatched parenthesis", i };
-                        }
+    static std::string first_token(const std::string& s) {
+        size_t i = 0;
+        while (i < s.size() && !std::isspace(static_cast<unsigned char>(s[i])))
+            i++;
+        return s.substr(0, i);
+    }
 
-                    }
+    static bool parse_call_args(const std::string& s, size_t& pos, std::vector<std::string>& args) {
+        args.clear();
+        size_t depth = 1;
+        std::string cur;
+        char quote = 0;
+        for (size_t i = pos + 1; i < s.size(); i++) {
+            char c = s[i];
+            if (quote) {
+                cur += c;
+                if (c == quote) quote = 0;
+                continue;
+            }
+            if (c == '"' || c == '\'') { quote = c; cur += c; continue; }
+            if (c == '(') depth++;
+            else if (c == ')') {
+                if (--depth == 0) {
+                    args.push_back(trim(cur));
+                    if (args.size() == 1 && args[0].empty()) args.clear(); //no args
+                    pos = i + 1;
+                    return true;
                 }
             }
-            line = string_utils::normalize(lines[i]);
-            for (const auto& [name, macro] : macros) {
-                if (leading_identifier(line) == name) {
-                    if (string_utils::rep_counter(line, ')') != 1)
-                        return { ErrorCode::MISMATCHED_PAR, "mismatched parenthesis", i };
-                    if (string_utils::rep_counter(line, '(') != 1)
-                        return { ErrorCode::MISMATCHED_PAR, "mismatched parenthesis", i };
-                    if (line[name.size()] == '(') {
-                        size_t idx = name.size() + 1;
-                        std::string compacted_args = delimit_string(line, idx, [](char c, size_t idx) { return c != ')'; });
-                        std::vector<std::string> args = string_utils::slice_str(compacted_args, ',');
-                        for (auto& arg : args)
-                            arg = string_utils::remove_char(arg, ' ');
-                        if (macro.parameters.size() != args.size())
-                            return { ErrorCode::INVALID_ARG_SIZE, "invalid arg size, expected " + std::to_string(macro.parameters.size()), i };
-                        std::vector<std::string> body;
-                        for (const auto& local_line : macro.body) {
-                            std::string local_line_copy = local_line;
-                            for (size_t j = 0; j < args.size(); j++)
-                                string_utils::replace_string_as_token(local_line_copy, macro.parameters[j], args[j]);
-                            body.emplace_back(local_line_copy);
+            else if (c == ',' && depth == 1) {
+                args.push_back(trim(cur));
+                cur.clear();
+                continue;
+            }
+            cur += c;
+        }
+        return false;
+    }
+
+    static std::string substitute_params(const std::string& text, const std::vector<std::string>& params,
+        const std::vector<std::string>& args) {
+        std::string out;
+        size_t p = 0;
+        while (p < text.size()) {
+            char c = text[p];
+            if (c == '"' || c == '\'') {
+                size_t q = text.find(c, p + 1);
+                q = (q == std::string::npos) ? text.size() : q + 1;
+                out += text.substr(p, q - p);
+                p = q;
+                continue;
+            }
+            if (is_ident_char(c)) {
+                size_t q = p;
+                while (q < text.size() && is_ident_char(text[q])) q++;
+                std::string id = text.substr(p, q - p);
+                bool replaced = false;
+                if (is_ident_start(c)) {
+                    for (size_t j = 0; j < params.size() && j < args.size(); j++) {
+                        if (params[j] == id) {
+                            out += args[j]; replaced = true;
+                            break;
                         }
-                        lines[i].clear();
-                        lines.insert(lines.begin() + i, body.begin(), body.end());
-                        //i += body.size();
-                        i--;
-                        line = string_utils::normalize(lines[i]);
+                    }
+                }
+                if (!replaced) out += id;
+                p = q;
+                continue;
+            }
+            out += c;
+            p++;
+        }
+        return out;
+    }
+
+    bool is_defined(const std::string& name) const {
+        return defines.contains(name) || constants.contains(name) || variables.contains(name) || macros.contains(name);
+    }
+
+    ErrorInfo expand_defines(std::string& line, size_t src, const RecursionHandler& RH) const {
+        if (defines.empty()) return { };
+        for (size_t pass = 0; ; pass++) {
+            if (pass > RH.max_depth || line.size() > (1u << 22))
+                return { ErrorCode::PREPROC_RECURSION, "infinite recursion in define expansion", src };
+            bool changed = false;
+            std::string out;
+            size_t p = 0;
+            while (p < line.size()) {
+                char c = line[p];
+                if (c == '"' || c == '\'') {
+                    size_t q = line.find(c, p + 1);
+                    q = (q == std::string::npos) ? line.size() : q + 1;
+                    out += line.substr(p, q - p);
+                    p = q;
+                    continue;
+                }
+                if (is_ident_char(c)) {
+                    size_t q = p;
+                    while (q < line.size() && is_ident_char(line[q])) q++;
+                    std::string id = line.substr(p, q - p);
+                    auto it = is_ident_start(c) ? defines.find(id) : defines.end();
+                    if (it == defines.end()) {
+                        out += id; p = q;
+                        continue;
+                    }
+
+                    const Define& d = it->second;
+                    if (d.parameters.empty()) {
+                        out += d.replacement;
+                        p = q;
+                        changed = true;
+                    }
+                    else if (q < line.size() && line[q] == '(') {
+                        size_t pos = q;
+                        std::vector<std::string> args;
+                        if (!parse_call_args(line, pos, args))
+                            return { ErrorCode::MISMATCHED_PAR, "mismatched parenthesis", src };
+                        if (args.size() != d.parameters.size())
+                            return { ErrorCode::INVALID_ARG_SIZE, "invalid arg size, expected " +
+                                std::to_string(d.parameters.size()), src };
+                        out += substitute_params(d.replacement, d.parameters, args);
+                        p = pos;
+                        changed = true;
                     }
                     else {
-                        return { ErrorCode::MISMATCHED_PAR, "mismatched parenthesis", i };
+                        out += id;
+                        p = q;
                     }
+                    continue;
                 }
+                out += c;
+                p++;
             }
-
-
-            if (!line.starts_with("%")) continue;
-
-            size_t idx = 0;
-            std::string instr = delimit_string(line, idx, [](char c, size_t idx) { return c != ' '; });
-            size_t instr_idx = idx++;
-
-            size_t name_idx = instr_idx;
-            std::string name;
-            if (instr != "%rep") {
-                name = delimit_string(line, idx, [](char c, size_t idx) { return c != ' ' && c != '('; });
-                name_idx = idx++;
-                if (!string_utils::check_cst_name(name))
-                    return { ErrorCode::INVALID_NAME, "invalid name, expected only letters, numbers and '_' ", i };
-            }
-
-            if (instr == "%equ") {
-                std::string expr = line.substr(name_idx);
-                auto [e, value] = parse_expr(expr, constants, variables);
-                if (e.code != ErrorCode::OK) return e;
-
-                if (constants.contains(name))
-                    return { ErrorCode::DUPLICATE_CONSTANT, "duplicate constant \"" + name + "\"", i };
-                constants[name] = value;
-                lines[i].clear();
-            }
-            if (instr == "%assign") {
-                std::string expr = line.substr(name_idx);
-                auto [e, value] = parse_expr(expr, constants, variables);
-                if (e.code != ErrorCode::OK) return e;
-
-                variables[name] = value;
-                lines[i].clear();
-            }
-            if (instr == "%define") {
-                std::vector<std::string> args;
-                std::string replacement;
-                if (line[idx - 1] == '(') { //with args
-                    if (string_utils::rep_counter(line, ')') != 1)
-                        return { ErrorCode::MISMATCHED_PAR, "mismatched parenthesis", i };
-                    if (string_utils::rep_counter(line, '(') != 1)
-                        return { ErrorCode::MISMATCHED_PAR, "mismatched parenthesis", i };
-
-                    std::string compacted_args = delimit_string(line, idx, [](char c, size_t idx) { return c != ')'; });
-                    args = string_utils::slice_str(compacted_args, ',');
-                    for (auto& arg : args)
-                        arg = string_utils::remove_char(arg, ' ');
-                    replacement = line.substr(++idx);
-                }
-                else { //no args
-                    replacement = line.substr(idx);
-                }
-
-                if (defines.contains(name))
-                    return { ErrorCode::DUPLICATE_DEFINE, "duplicate define \"" + name + "\"", i };
-                defines[name] = { args, replacement };
-                lines[i].clear();
-            }
-            if (instr == "%macro") {
-                std::vector<std::string> args;
-                std::vector<std::string> body;
-                if (line[idx - 1] == '(') { //with args
-                    if (string_utils::rep_counter(line, ')') != 1)
-                        return { ErrorCode::MISMATCHED_PAR, "mismatched parenthesis", i };
-                    if (string_utils::rep_counter(line, '(') != 1)
-                        return { ErrorCode::MISMATCHED_PAR, "mismatched parenthesis", i };
-
-                    std::string compacted_args = delimit_string(line, idx, [](char c, size_t idx) { return c != ')'; });
-                    args = string_utils::slice_str(compacted_args, ',');
-                    for (auto& arg : args)
-                        arg = string_utils::remove_char(arg, ' ');
-
-                    size_t j = i + 1;
-                    for (; ; j++) {
-                        if (j > lines.size())
-                            return { ErrorCode::MISSING_ENDMACRO, "missing an %endmacro", i };
-
-                        if (string_utils::normalize(lines[j]).starts_with("%endmacro"))
-                            break;
-                        body.emplace_back(lines[j]);
-                    }
-                    for (size_t k = i; k < j + 1; k++)
-                        lines[k].clear();
-                    i = j;
-                }
-                else {
-                    return { ErrorCode::MISMATCHED_PAR, "mismatched parenthesis", i };
-                }
-
-                if (macros.contains(name))
-                    return { ErrorCode::DUPLICATE_MACRO, "duplicate macro \"" + name + "\"", i };
-                macros[name] = { args, body };
-            }
-            if (instr == "%rep") {
-                std::string expr = line.substr(name_idx);
-                auto [e_0, value] = parse_expr(expr, constants, variables);
-                if (e_0.code != ErrorCode::OK) return e_0;
-
-                size_t j = i + 1;
-                auto [e_1, body] = find_block_end(lines, j, "%rep ", "%endrep",
-                    {ErrorCode::MISSING_ENDREP, "missing an %endrep", i });
-                if (e_1.code != ErrorCode::OK) return e_1;
-
-                std::vector<std::string> to_add;
-                for (int k = 0; k < value; k++) {
-                    std::string body_copy = body;
-                    ErrorInfo e_i = preprocess(body_copy, RH);
-                    if (e_i.code != ErrorCode::OK) {
-                        e_i.index_line += i;
-                        return e_i;
-                    }
-                    for (const auto& local_line : string_utils::slice_str(body_copy, '\n'))
-                        to_add.push_back(local_line);
-                }
-                for (size_t k = i; k < j + 1; k++)
-                    lines[k].clear();
-                i = j + 1;
-                lines.insert(lines.begin() + i, to_add.begin(), to_add.end());
-                i += to_add.size();
-                i--;
-            }
-            if (instr == "%if") {
-
-            }
-            if (instr == "%ifdef") {
-
-            }
-
-
+            line = out;
+            if (!changed) return { };
         }
-        file.clear();
-        for (const auto& line : lines)
-            if (!line.empty())
-                file += line + "\n";
+    }
 
+    static ErrorInfo parse_signature(const std::string& rest, size_t src, std::string& name, std::vector<std::string>& params,
+        std::string& tail, bool& has_params) {
+        name = leading_identifier(rest);
+        if (name.empty() || !string_utils::check_cst_name(name))
+            return { ErrorCode::INVALID_NAME, "invalid name, expected only letters, numbers and '_' ", src };
+        std::string after = rest.substr(name.size());
+        params.clear();
+        has_params = false;
+        if (!after.empty() && after[0] == '(') {
+            size_t pos = 0;
+            if (!parse_call_args(after, pos, params))
+                return { ErrorCode::MISMATCHED_PAR, "mismatched parenthesis", src };
+            for (const auto& prm : params)
+                if (!is_identifier(prm))
+                    return { ErrorCode::INVALID_NAME, "invalid parameter name \"" + prm + "\"", src };
+            has_params = true;
+            tail = trim(after.substr(pos));
+        }
+        else if (after.empty() || std::isspace((unsigned char)after[0])) {
+            tail = trim(after);
+        }
+        else {
+            return { ErrorCode::INVALID_NAME, "invalid name, expected only letters, numbers and '_' ", src };
+        }
         return { };
     }
 
-    // a rajouter
-    // %if
-    // %ifdef
+    struct Line {
+        std::string text;
+        size_t src; //line nbr
+        size_t depth;  //macro depth
+    };
 
+    // Pops lines from `work` up to the closer matching the already consumed opener.
+    // conditional: %if/%ifdef ... %endif/%endifdef     otherwise: %rep ... %endrep
+    // The closer itself is consumed and reported in `closer`.
+    static bool take_block(std::deque<Line>& work, bool conditional, std::vector<Line>& body, std::string& closer) {
+        size_t depth = 0;
+        while (!work.empty()) {
+            Line l = std::move(work.front());
+            work.pop_front();
+            std::string w = first_token(string_utils::normalize(l.text));
+            bool open = conditional ? (w == "%if" || w == "%ifdef") : (w == "%rep");
+            bool close = conditional ? (w == "%endif" || w == "%endifdef") : (w == "%endrep");
+            if (open) depth++;
+            else if (close) {
+                if (depth == 0) { closer = w; return true; }
+                depth--;
+            }
+            body.push_back(std::move(l));
+        }
+        return false;
+    }
+
+    static void push_front_lines(std::deque<Line>& work, const std::vector<Line>& lines) {
+        for (auto it = lines.rbegin(); it != lines.rend(); ++it)
+            work.push_front(*it);
+    }
+
+    static bool is_else_word(const std::string& w) {
+        return w == "%else" || w == "%elseif" || w == "%elseifdef" || w == "%elsedef";
+    }
+
+    struct Branch {
+        std::string word; // %if, %ifdef, %elseif, %elseifdef, %else, %elsedef
+        std::string arg;
+        size_t src;
+        std::vector<Line> body;
+    };
+
+
+    ErrorInfo process(std::deque<Line>& work, std::vector<std::string>& out, const RecursionHandler& RH) {
+        size_t processed = 0;
+        while (!work.empty()) {
+            Line cur = std::move(work.front());
+            work.pop_front();
+            if (RH.depth_exceeded(cur.depth) || ++processed > RH.max_lines)
+                return { ErrorCode::PREPROC_RECURSION, "infinite recursion in the preprocessor", cur.src };
+
+            std::string norm = string_utils::normalize(cur.text);
+            if (norm.empty()) continue;
+
+            std::string word = norm[0] == '%' ? first_token(norm) : std::string();
+            std::string rest = word.empty() ? std::string() : trim(norm.substr(word.size()));
+
+            if (word == "%equ" || word == "%assign") {
+                std::string name = leading_identifier(rest);
+                if (name.empty() || !string_utils::check_cst_name(name))
+                    return { ErrorCode::INVALID_NAME, "invalid name, expected only letters, numbers and '_' ", cur.src };
+                std::string expr = trim(rest.substr(name.size()));
+                if (ErrorInfo e = expand_defines(expr, cur.src, RH); e.code != ErrorCode::OK) return e;
+                auto [e, value] = parse_expr(expr, constants, variables);
+                if (e.code != ErrorCode::OK) { e.index_line = cur.src; return e; }
+
+                if (word == "%equ") {
+                    if (constants.contains(name))
+                        return { ErrorCode::DUPLICATE_CONSTANT, "duplicate constant \"" + name + "\"", cur.src };
+                    constants[name] = value;
+                }
+                else {
+                    variables[name] = value;
+                }
+                continue;
+            }
+
+            if (word == "%define") {
+                std::string name, tail;
+                std::vector<std::string> params;
+                bool has_params;
+                if (ErrorInfo e = parse_signature(rest, cur.src, name, params, tail, has_params); e.code != ErrorCode::OK)
+                    return e;
+                if (defines.contains(name))
+                    return { ErrorCode::DUPLICATE_DEFINE, "duplicate define \"" + name + "\"", cur.src };
+                defines[name] = { params, tail };
+                continue;
+            }
+
+            if (word == "%macro") {
+                std::string name, tail;
+                std::vector<std::string> params;
+                bool has_params;
+                if (ErrorInfo e = parse_signature(rest, cur.src, name, params, tail, has_params); e.code != ErrorCode::OK)
+                    return e;
+
+                std::vector<std::string> body;
+                bool closed = false;
+                while (!work.empty()) {
+                    Line l = std::move(work.front());
+                    work.pop_front();
+                    if (first_token(string_utils::normalize(l.text)) == "%endmacro") { closed = true; break; }
+                    body.push_back(l.text);
+                }
+                if (!closed)
+                    return { ErrorCode::MISSING_ENDMACRO, "missing an %endmacro", cur.src };
+                if (macros.contains(name))
+                    return { ErrorCode::DUPLICATE_MACRO, "duplicate macro \"" + name + "\"", cur.src };
+                macros[name] = { params, body };
+                continue;
+            }
+
+            if (word == "%rep") {
+                std::string expr = rest;
+                if (ErrorInfo e = expand_defines(expr, cur.src, RH); e.code != ErrorCode::OK) return e;
+                auto [e_0, value] = parse_expr(expr, constants, variables);
+                if (e_0.code != ErrorCode::OK) {
+                    e_0.index_line = cur.src;
+                    return e_0;
+                }
+
+                std::vector<Line> body;
+                std::string closer;
+                if (!take_block(work, false, body, closer))
+                    return { ErrorCode::MISSING_ENDREP, "missing an %endrep", cur.src };
+
+                if (value > 0 && !body.empty() && (size_t)value > RH.max_lines / body.size())
+                    return { ErrorCode::PREPROC_RECURSION, "%rep expansion is too large", cur.src };
+                for (long long k = 0; k < value; k++)
+                    push_front_lines(work, body);
+                continue;
+            }
+
+            if (word == "%if" || word == "%ifdef") {
+                const bool is_ifdef = word == "%ifdef";
+                std::vector<Line> block;
+                std::string closer;
+                if (!take_block(work, true, block, closer) || closer != (is_ifdef ? "%endifdef" : "%endif")) {
+                    if (is_ifdef) return { ErrorCode::MISSING_ENDIFDEF, "missing an %endifdef", cur.src };
+                    return { ErrorCode::MISSING_ENDIF, "missing an %endif", cur.src };
+                }
+
+                std::vector<Branch> branches;
+                branches.push_back({ word, rest, cur.src, { } });
+                size_t depth = 0;
+                bool seen_else = false;
+                for (Line& l : block) {
+                    std::string n = string_utils::normalize(l.text);
+                    std::string w = first_token(n);
+                    if (w == "%if" || w == "%ifdef")
+                        depth++;
+                    else if (w == "%endif" || w == "%endifdef")
+                        depth--;
+                    else if (depth == 0 && is_else_word(w)) {
+                        if (seen_else)
+                            return { ErrorCode::ELSE_AFTER_ELSE, "unexpected \"" + w + "\" after %else", l.src };
+                        if (w == "%else" || w == "%elsedef")
+                            seen_else = true;
+                        branches.push_back({ w, trim(n.substr(w.size())), l.src, { } });
+                        continue;
+                    }
+                    branches.back().body.push_back(std::move(l));
+                }
+
+                for (const Branch& b : branches) {
+                    bool take = false;
+                    if (b.word == "%if" || b.word == "%elseif") {
+                        std::string expr = b.arg;
+                        if (ErrorInfo e = expand_defines(expr, b.src, RH); e.code != ErrorCode::OK)
+                            return e;
+                        auto [e, value] = parse_expr(expr, constants, variables);
+                        if (e.code != ErrorCode::OK) { e.index_line = b.src; return e; }
+                        if (value) take = true;
+                    }
+                    else if (b.word == "%ifdef" || b.word == "%elseifdef") {
+                        if (!string_utils::check_cst_name(b.arg))
+                            return { ErrorCode::INVALID_NAME, "invalid name, expected only letters, numbers and '_' ", b.src };
+                        take = is_defined(b.arg);
+                    }
+                    else {
+                        take = true;
+                    }
+                    if (take) {
+                        push_front_lines(work, b.body);
+                        break;
+                    }
+                }
+                continue;
+            }
+
+            if (word == "%endif" || word == "%endifdef" || word == "%endrep" || word == "%endmacro" || is_else_word(word))
+                return { ErrorCode::UNEXPECTED_DIRECTIVE, "unexpected \"" + word + "\" without a matching opening directive",
+                    cur.src };
+
+            std::string line = cur.text;
+            if (ErrorInfo e = expand_defines(line, cur.src, RH); e.code != ErrorCode::OK) return e;
+            std::string n = string_utils::normalize(line);
+            if (n.empty()) continue;
+
+            std::string id = leading_identifier(n);
+            auto mit = id.empty() ? macros.end() : macros.find(id);
+            if (mit != macros.end()) {
+                const Macro& macro = mit->second;
+                std::vector<std::string> args;
+                bool is_call = false;
+                if (n.size() > id.size() && n[id.size()] == '(') {
+                    size_t pos = id.size();
+                    if (!parse_call_args(n, pos, args))
+                        return { ErrorCode::MISMATCHED_PAR, "mismatched parenthesis", cur.src };
+                    if (!trim(n.substr(pos)).empty())
+                        return { ErrorCode::MISMATCHED_PAR, "unexpected text after macro call", cur.src };
+                    is_call = true;
+                }
+                else if (n == id && macro.parameters.empty()) {
+                    is_call = true;
+                }
+                else if (!macro.parameters.empty()) {
+                    return { ErrorCode::MISMATCHED_PAR, "expected '(' after macro name \"" + id + "\"", cur.src };
+                }
+
+                if (is_call) {
+                    if (macro.parameters.size() != args.size())
+                        return { ErrorCode::INVALID_ARG_SIZE, "invalid arg size, expected " + std::to_string(macro.parameters.size()), cur.src };
+                    std::vector<Line> body;
+                    for (const auto& body_line : macro.body)
+                        body.push_back({ substitute_params(body_line, macro.parameters, args), cur.src, cur.depth + 1 });
+                    push_front_lines(work, body);
+                    continue;
+                }
+            }
+
+            out.push_back(line);
+        }
+        return { };
+    }
+
+    ErrorInfo preprocess(std::string& file, RecursionHandler RH = RecursionHandler()) {
+        std::vector<std::string> raw = string_utils::slice_str(file, '\n');
+        std::deque<Line> work;
+        for (size_t i = 0; i < raw.size(); i++)
+            work.push_back({ raw[i], i, 0 });
+
+        std::vector<std::string> out;
+        ErrorInfo e = process(work, out, RH);
+        if (e.code != ErrorCode::OK) return e;
+
+        file.clear();
+        for (const auto& line : out)
+            file += line + "\n";
+        return { };
+    }
 };
-
 
 #endif

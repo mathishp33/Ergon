@@ -89,5 +89,9 @@ test_locals:
     for (int i = 0; i < 9; i ++)
         std::cout << "r" << i << ": " << (int)env_m.get_from_reg("r" + std::to_string(i)) << std::endl;
 
+    for (size_t i = 0; i < env_m.mb.ram.size(); i ++) {
+        std::cout << i << "=" << (int)env_m.mb.ram[i] << " | ";
+    }
+
     return 0;
 }

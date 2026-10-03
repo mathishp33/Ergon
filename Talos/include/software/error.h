@@ -39,6 +39,10 @@ enum class ErrorCode : uint8_t {
     PREPROC_RECURSION, //infinite recursion in the preprocessor
     DUPLICATE_STACK_SIZE, //duplicate stack size
     STACK_SIZE_NOT_IN_ENTRY_FILE,
+    MISSING_ENDIF, //missing an %endif
+    MISSING_ENDIFDEF, //missing an %endifdef
+    ELSE_AFTER_ELSE, //unexpected " ... " after %else
+    UNEXPECTED_DIRECTIVE, //unexpected " ... " without a matching opening directive
 };
 
 // there is padding, but I don't want to #pragma pack(1) bc it gives warning

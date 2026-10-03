@@ -62,8 +62,6 @@ inline RunResult run(SimpleCore& c) {
 
     if (c.bus.ram_size() == 0) return RunResult::ERROR;
     //magie noire >w<
-    // "instr" reste un pointeur qui pointe vers
-    // "instr_storage", qui est ré  écrasée à chaque fetch depuis le BUS.
     #define FETCH() instr_storage = c.bus.fetch_instr(c.PC);
 
     #define DISPATCH() goto *dispatch_table[instr->opcode]
