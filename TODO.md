@@ -1,10 +1,9 @@
-VOIR TUTOS sur www.tutorialspoint.com/assembly_programming
 
 
 bon j'avoue que j'ai donné le TODO à refaire par ChatGPT... (j'avais trop la flemme)
 j'ai quand meme rédigé les parties importantes :-)
 
-===================== FAIT (vérifié dans le code) =====================
+===================== FAIT =====================
 
 [x] Fetch depuis la RAM (format d'instruction fixe 8o, PC = adresse octet)
 [x] ABI syscall + trap (trap_vector, mode USER/KERNEL, SYSRET)
@@ -12,12 +11,6 @@ j'ai quand meme rédigé les parties importantes :-)
 [x] Séparation USER/KERNEL (faute si MMIO touché ou instr privilégiée en USER)
 [x] DISK_READ/DISK_WRITE réels sur hard_drive (StorageDevice + registres MMIO)
 [x] Infrastructure de boot (ROM séparée, build_rom/build_image/flash_disk, base_address dans link())
-
-===================== BLOQUANT - À FAIRE EN PRIORITÉ =====================
-
-2. Bugs ALU déjà repérés, TOUJOURS présents dans run_handler.h :
-    - OP_MINI/OP_MAXI assignent instr->rs1 / instr->imm (bruts) au lieu de
-      c.regs[instr->rs1] / instr->imm (valeurs)
 
 ===================== KERNEL / BOOT (C++ prêt, reste l'assembleur) =====================
 6. Timer IRQ + préemption (InterruptController est un stub vide dans devices.h)
@@ -48,10 +41,6 @@ j'ai quand meme rédigé les parties importantes :-)
 ===================== NETTOYAGE (mineur, pas urgent) =====================
 - run_handler.h : RunResult::SYSCALL_STOP n'est plus jamais retourné
   (callback C++ supprimé), et #include <functional> n'est plus utilisé.
-- parser.h : le registre r11 s'appelle "tmp" dans reg_table, mais l'ABI
-  syscall/faute l'utilise maintenant pour la cause du trap (fault_cause).
-  Pas un bug, mais un handler de trap qui utilise "tmp" pour autre chose
-  doit lire sa valeur AVANT de l'écraser.
 
 ===================== NOTE : plusieurs Core dans CPU =====================
 Actuellement SimpleCPU ne contient qu'un seul SimpleCore. Pour du

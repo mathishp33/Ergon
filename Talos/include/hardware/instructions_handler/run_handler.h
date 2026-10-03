@@ -220,11 +220,11 @@ OP_MAX:
     else c.regs[instr->rd] = c.regs[instr->rs2];
     NEXT();
 OP_MINI:
-    if (c.regs[instr->rs1] < instr->imm) c.regs[instr->rd] = instr->rs1;
+    if (c.regs[instr->rs1] < instr->imm) c.regs[instr->rd] = c.regs[instr->rs1];
     else c.regs[instr->rd] = instr->imm;
     NEXT();
 OP_MAXI:
-    if (c.regs[instr->rs1] > instr->imm) c.regs[instr->rd] = instr->rs1;
+    if (c.regs[instr->rs1] > instr->imm) c.regs[instr->rd] = c.regs[instr->rs1];
     else c.regs[instr->rd] = instr->imm;
     NEXT();
 

@@ -32,7 +32,7 @@ Let's begin with the basics:
 | r8	  | general purpose | f8     |
 | r9	  | general purpose | f9     |
 | r10	 | general purpose | f10    |
-| tmp	 | temporary       | f11    |
+| trp	 | trap            | f11    |
 | cmp	 | comparaison     | f12    |
 | fp	  | frame pointer   | f13    |
 | sp	  | stack pointer   | f14    |

@@ -38,12 +38,15 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="todo resolved &amp; bugs solved">
+    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="bugs">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/HELP.md" beforeDir="false" afterPath="$PROJECT_DIR$/HELP.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/TODO.md" beforeDir="false" afterPath="$PROJECT_DIR$/TODO.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/firmware/kernel.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/firmware/syscall_handler.h" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Talos/include/hardware/instructions_handler/run_handler.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/hardware/instructions_handler/run_handler.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/hardware/memory.h" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/hardware/mother_board.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/hardware/mother_board.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/software/parser.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/software/parser.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/software/variables.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/software/variables.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -159,6 +162,11 @@
     </key>
   </component>
   <component name="RunManager" selected="CMake Application.ergon_test_stack">
+    <configuration default="true" type="CLionExternalRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="CLION.EXTERNAL.BUILD" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="Ergon" type="CMakeListConfigurationType" factoryName="CMakeListConfigurationFactory" temporary="true">
       <method v="2" />
     </configuration>
@@ -291,7 +299,9 @@
       <workItem from="1790103869467" duration="621000" />
       <workItem from="1790186829434" duration="75000" />
       <workItem from="1790187024628" duration="4495000" />
-      <workItem from="1790267947131" duration="2399000" />
+      <workItem from="1790267947131" duration="3114000" />
+      <workItem from="1790878334780" duration="312000" />
+      <workItem from="1791046162421" duration="818000" />
     </task>
     <task id="LOCAL-00001" summary="checkpoint commit">
       <option name="closed" value="true" />
@@ -565,7 +575,15 @@
       <option name="project" value="LOCAL" />
       <updated>1790191537815</updated>
     </task>
-    <option name="localTasksCounter" value="35" />
+    <task id="LOCAL-00035" summary="bugs">
+      <option name="closed" value="true" />
+      <created>1790273277443</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1790273277443</updated>
+    </task>
+    <option name="localTasksCounter" value="36" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -601,7 +619,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="added two pass detection labels + sections (.text, .data, .bss) + cleaned files" />
     <MESSAGE value="added linker" />
     <MESSAGE value="the AUTO execution mode is now super fast" />
     <MESSAGE value="j'ai fait des trucs importants voila tout ..." />
@@ -626,7 +643,8 @@
     <MESSAGE value="checkpoint" />
     <MESSAGE value="checkpoint (à tester)" />
     <MESSAGE value="todo resolved &amp; bugs solved" />
-    <option name="LAST_COMMIT_MESSAGE" value="todo resolved &amp; bugs solved" />
+    <MESSAGE value="bugs" />
+    <option name="LAST_COMMIT_MESSAGE" value="bugs" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -635,21 +653,6 @@
           <url>file://$PROJECT_DIR$/Talos/include/software/parser.h</url>
           <line>294</line>
           <option name="timeStamp" value="33" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/Talos/include/firmware/kernel.h</url>
-          <line>52</line>
-          <option name="timeStamp" value="37" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/Talos/include/hardware/instructions_handler/run_handler.h</url>
-          <line>222</line>
-          <option name="timeStamp" value="39" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/Talos/include/hardware/instructions_handler/run_handler.h</url>
-          <line>226</line>
-          <option name="timeStamp" value="40" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/Talos/include/virtual_machine/environment_manager.h</url>
