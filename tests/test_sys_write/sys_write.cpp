@@ -7,23 +7,22 @@
 
 
 int main() {
-    std::string program = R"(
+   std::string program = R"(
 
     .section .text
-      movi r0, 1 ; syscall = 1 (write)
-      lea r1, r6, my_char_buff ; buffer
-      ldb r2, my_size ; buffer_size
-      syscall
-
-    .section .data
-      my_char_buff:
-        .asciz "abcd"
-      my_size:
-        .word 4
-
+      .entry main
+      main:
+        movi r10, 0xF000
+        shli r10, r10, 16 ; r10 = MMIO_BASE
+        movi r1, 72 ; 'H'
+        sbaseb r1, r10, 0 ; CONSOLE_OUT
+        movi r1, 10 ; '\n'
+        sbaseb r1, r10, 0
+        movi r0, 42 ; code de sortie
+        halt
 )";
 
-    auto env_m = EnvironmentManager(0xFFFFFFFF);
+    auto env_m = EnvironmentManager();
 
     std::cout << "\n---------- BUILD RESULT ----------\n";
 
@@ -39,6 +38,7 @@ int main() {
     std::cout << "RUN DURATION: " << duration.count() << " micro_sec" << std::endl;
 
     std::cout << "EXIT CODE:  " << env_m.exit_code << std::endl;
+    std::cout << "R0:  " << env_m.get_from_reg("r0") << std::endl;
 
 
 

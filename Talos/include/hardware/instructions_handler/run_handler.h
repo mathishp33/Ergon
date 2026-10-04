@@ -57,8 +57,10 @@ inline RunResult run(SimpleCore& c) {
             &&OP_CALL, &&OP_RET,
             &&OP_SYSCALL, &&OP_HALT,
 
-            &&OP_SETTV, &&OP_SYSRET
+            &&OP_SETTV, &&OP_SYSRET,
+            &&OP_SETKSP, &&OP_SETUSP, &&OP_GETUSP
         };
+    for (auto& p : dispatch_table) if (!p) p = &&OP_ILLEGAL;
 
     if (c.bus.ram_size() == 0) return RunResult::ERROR;
     //magie noire >w<
@@ -69,13 +71,7 @@ inline RunResult run(SimpleCore& c) {
     #define CHECK_PC() \
     if (c.pending_fault) { \
     c.pending_fault = false; \
-    const bool was_user = (c.mode == PrivMode::USER); \
-    c.mode = PrivMode::KERNEL; /* push require kernel */ \
-    if (c.SP < 4) return RunResult::STACK_OVERFLOW; \
-    c.SP -= 4; \
-    c.store32(c.SP, c.PC | (was_user ? 1u : 0u)); \
-    c.regs[11] = c.fault_cause; \
-    c.PC = c.trap_vector; \
+    if (!c.enter_trap(c.PC, c.fault_cause)) return RunResult::STACK_OVERFLOW; \
     } \
     if (!c.bus.pc_in_bounds(c.PC)) return RunResult::PC_OVERFLOW;
 
@@ -83,6 +79,15 @@ inline RunResult run(SimpleCore& c) {
     c.PC += INSTR_SIZE; \
     CHECK_PC(); \
     FETCH(); DISPATCH();
+
+    #define STACK_FLOOR() (c.mode == PrivMode::USER ? c.stack_limit : 0u)
+
+    #define REQUIRE_KERNEL() \
+    if (c.mode == PrivMode::USER) { \
+    c.pending_fault = true; \
+    c.fault_cause = 2; \
+    NEXT(); \
+    }
 
     DecodedInstr instr_storage;
     const DecodedInstr* instr = &instr_storage;
@@ -346,7 +351,7 @@ OP_STW_REG:
     NEXT();
 
 OP_PUSH:
-    if (c.SP < 4 || c.SP - 4 < c.stack_limit) { return RunResult::STACK_OVERFLOW; } // trap stack overflow
+    if (c.SP < 4 || c.SP - 4 < STACK_FLOOR()) { return RunResult::STACK_OVERFLOW; }
     c.SP -= 4;
     c.store32(c.SP, c.regs[instr->rs1]);
     NEXT();
@@ -423,7 +428,7 @@ OP_JG:
     NEXT();
     }
 OP_CALL:
-    if (c.SP < 4 || c.SP - 4 < c.stack_limit) { return RunResult::STACK_OVERFLOW; } // trap stack overflow
+    if (c.SP < 4 || c.SP - 4 < STACK_FLOOR()) { return RunResult::STACK_OVERFLOW; }
     c.SP -= 4;
     // NOTE: PC + 1 -> PC + INSTR_SIZE : l'adresse de retour est celle de
     // l'instruction SUIVANTE, en octets, plus l'ancien "+1" ne voulait
@@ -442,15 +447,7 @@ OP_RET:
     DISPATCH();
 
 OP_SYSCALL:
-    if (c.SP < 4) return RunResult::STACK_OVERFLOW;
-    c.SP -= 4;
-    {
-        const uint32_t saved = (c.PC + INSTR_SIZE) | (c.mode == PrivMode::USER ? 1u : 0u);
-        c.store32(c.SP, saved);
-    }
-    c.regs[11] = 0;
-    c.mode = PrivMode::KERNEL;
-    c.PC = c.trap_vector;
+    if (!c.enter_trap(c.PC + INSTR_SIZE, 0)) { return RunResult::STACK_OVERFLOW; }
     CHECK_PC();
     FETCH();
     DISPATCH();
@@ -463,7 +460,7 @@ OP_HALT:
     return RunResult::HALTED;
 
 OP_SETTV:
-    //kernel manages traps !
+    //kernel manages trap !
     if (c.mode == PrivMode::KERNEL) {
         c.trap_vector = c.regs[instr->rs1];
     }
@@ -472,17 +469,43 @@ OP_SETTV:
         c.fault_cause = 2;
     }
     NEXT();
+
 OP_SYSRET:
+    REQUIRE_KERNEL();
     if (c.SP + 4 > c.bus.ram_size()) return RunResult::STACK_UNDERFLOW;
     {
         const uint32_t saved = c.load32(c.SP);
         c.SP += 4;
-        c.mode = (saved & 1u) ? PrivMode::USER : PrivMode::KERNEL;
         c.PC = saved & ~1u;
+        if (saved & 1u) {
+            c.mode = PrivMode::USER;
+            c.SP = c.user_sp;
+        } else {
+            c.mode = PrivMode::KERNEL; //retour de trap
+        }
     }
     CHECK_PC();
     FETCH();
     DISPATCH();
-}
 
+OP_SETKSP:
+    REQUIRE_KERNEL();
+    c.kernel_sp = c.regs[instr->rs1];
+    NEXT();
+
+OP_SETUSP:
+    REQUIRE_KERNEL();
+    c.user_sp = c.regs[instr->rs1];
+    NEXT();
+
+OP_GETUSP:
+    REQUIRE_KERNEL();
+    c.regs[instr->rd] = c.user_sp;
+    NEXT();
+
+OP_ILLEGAL:
+    c.pending_fault = true;
+    c.fault_cause = 3;
+    NEXT();
+}
 #endif

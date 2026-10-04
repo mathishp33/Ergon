@@ -53,6 +53,7 @@ inline std::pair<ErrorInfo, LinkedBinary> link(std::vector<ObjectFile>& objects,
     uint32_t bss_cursor  = text_bytes_total + total_data_size + total_rodata_size;
 
     bool entry_found = false;
+    out.entry_pc = base_address;
 
     std::unordered_map<std::string, GlobalSymbol> globals;
 
@@ -107,10 +108,18 @@ inline std::pair<ErrorInfo, LinkedBinary> link(std::vector<ObjectFile>& objects,
     // apply relocations
     for (auto& obj : objects) {
         if (!obj.entry_symbol.empty()) {
-            if (!globals.contains(obj.entry_symbol))
-                return { { ErrorCode::UNKNOWN_ENTRY_SYBOL, "unknown entry symbol \"" + obj.entry_symbol + "\"" }, out };
+            uint32_t entry_value = 0;
+            const auto g = globals.find(obj.entry_symbol);
+            if (g != globals.end() && g->second.section == Section::TEXT) {
+                entry_value = g->second.value;
+            } else {
+                const auto l = obj.symbols.find(obj.entry_symbol);
+                if (l == obj.symbols.end() || l->second.section != Section::TEXT)
+                    return { { ErrorCode::UNKNOWN_ENTRY_SYBOL, "unknown entry symbol \"" + obj.entry_symbol + "\"" }, out };
+                entry_value = obj.text_base + l->second.value;
+            }
 
-            out.entry_pc = globals[obj.entry_symbol].value * INSTR_SIZE + base_address;
+            out.entry_pc = entry_value * INSTR_SIZE + base_address;
             entry_found = true;
 
             if (obj.has_stack_size)

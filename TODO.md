@@ -11,29 +11,27 @@ j'ai quand meme rédigé les parties importantes :-)
 [x] Séparation USER/KERNEL (faute si MMIO touché ou instr privilégiée en USER)
 [x] DISK_READ/DISK_WRITE réels sur hard_drive (StorageDevice + registres MMIO)
 [x] Infrastructure de boot (ROM séparée, build_rom/build_image/flash_disk, base_address dans link())
+[x] boot.asm : boucle DISK_READ + saut indirect (push/ret) vers le kernel
+[x] kernel.asm : dispatcher de syscalls (lit r0, route, écrit r0, sysret)
 
 ===================== KERNEL / BOOT (C++ prêt, reste l'assembleur) =====================
 1. Timer IRQ + préemption (InterruptController est un stub vide dans devices.h)
-2. boot.asm : boucle DISK_READ + saut indirect (push/ret) vers le kernel
-3. kernel.asm : dispatcher de syscalls (lit r0, route, écrit r0, sysret)
-4. Storage driver (asm) au-dessus des registres DISK_*
-5. Format de disque minimal (superblock)
+4. Storage driver (asm) au-dessus des registres DISK_* (*)
+5. Format de disque minimal (superblock) (*)
 6. Allocation de blocs
 7. Inodes
 8. Répertoires
 9. Création/lecture/écriture de fichiers
 10. File descriptors
-11. Format exécutable Ergon + executable loader
+11. Format exécutable Ergon + executable loader (*)
 12. Process structure
 13. Scheduler
 14. Plusieurs Core dans CPU (multi-coeur) -> voir note plus bas
 15. SLEEP
 16. EXEC / EXIT / WAIT
-17. USER/KERNEL : cas restants (HALT/SETTV déjà couverts ; à revoir si 
-d'autres opcodes doivent devenir privilégiés une fois le kernel réel écrit)
 
 ===================== ASSEMBLEUR / OUTILLAGE =====================
-25. AJOUTER %include
+25. AJOUTER %include (*)
 26. UPDATE le readme
 27. CHANGER sys_time (TimerDevice, devices.h) en prévision du bug 2038
 

@@ -15,6 +15,9 @@
 
 constexpr uint32_t ROM_BASE  = 0x10000000;
 constexpr uint32_t MMIO_BASE = 0xF0000000;
+constexpr uint32_t KERNEL_BASE = 0x00001000;
+constexpr uint32_t KERNEL_STACK_TOP  = 0x0000F000;
+constexpr uint32_t BOOT_MAGIC  = 0x4E475245;
 
 struct SystemBus {
     std::vector<uint8_t>& ram;

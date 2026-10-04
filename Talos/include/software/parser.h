@@ -102,7 +102,9 @@ inline std::pair<ErrorInfo, std::vector<Token>> tokenize(const std::string& str)
     while (i < s.size()) {
         char c = s[i];
 
-        if (std::isdigit((unsigned char)c) || c == '.') {
+        if (std::isdigit((unsigned char)c) || c == '.' || c == '-') {
+            bool sign = c == '-';
+            i += sign;
             size_t start = i;
             bool isFloat = false;
 
@@ -126,7 +128,8 @@ inline std::pair<ErrorInfo, std::vector<Token>> tokenize(const std::string& str)
                 }
                 if (i < s.size() && s[i] == 'f') { isFloat = true; i++; } // float (1.5f)
             }
-            tokens.emplace_back(TokenType::Number, s.substr(start, i - start), isFloat);
+            std::string f_str = s.substr(start, i - start);
+            tokens.emplace_back(TokenType::Number, sign ? "-" + f_str : f_str, isFloat);
         }
         else if (c == '\'') { //char
             if (i + 2 >= s.size() || s[i + 2] != '\'')

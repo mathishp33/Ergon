@@ -48,7 +48,7 @@ struct EnvironmentManager {
     EnvironmentManager(size_t ram_size = 0xffffff - 1, uint32_t stack_size = 0xfff, const std::string& path_to_hard_drive = "") :
      RAM_SIZE(ram_size), mb(MotherBoard(ram_size, stack_size)) {
         if (!path_to_hard_drive.empty()) {
-            std::ifstream file(path_to_hard_drive, std::ios::binary);
+            std::ifstream file(path_to_hard_drive, std::ios::binary | std::ios::ate);
 
             if (!file)
                 throw std::runtime_error("Cannot open file: " + path_to_hard_drive);
@@ -179,6 +179,32 @@ struct EnvironmentManager {
         if (e.code != ErrorCode::OK) return handle_error("rom binary", e);
 
         mb.load_rom(serialize(linked_bin), linked_bin.entry_pc);
+        return "";
+    }
+
+    std::string install_kernel(const std::vector<std::pair<std::string, std::string>>& sources,
+        uint32_t load_address = KERNEL_BASE) {
+        std::vector<uint8_t> image;
+        uint32_t entry = 0;
+        if (std::string err = build_image(sources, load_address, image, entry); !err.empty()) return err;
+
+        constexpr uint32_t B = StorageDevice::BLOCK_SIZE;
+        image.resize((image.size() + B - 1) / B * B, 0); //padding
+        if ((uint64_t)load_address + image.size() > KERNEL_STACK_TOP - 0x1000)
+            return "kernel image too big\n";
+        const auto n_blocks = static_cast<uint32_t>(image.size() / B);
+
+        std::vector<uint8_t> header(B, 0);
+        auto put32 = [&](size_t off, uint32_t v) {
+            for (int i = 0; i < 4; i++) header[off + i] = (v >> (8 * i)) & 0xFF;
+        };
+        put32(0, BOOT_MAGIC);
+        put32(4, load_address);
+        put32(8, entry);
+        put32(12, n_blocks);
+
+        flash_disk(header, 0);
+        flash_disk(image, 1);
         return "";
     }
 

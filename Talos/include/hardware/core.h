@@ -45,8 +45,12 @@ enum OPCODE : uint8_t {
     SYSCALL, HALT,
 
     // trap/privilege
-    SETTV,  // settv rs : trap_vector = regs[rs] (kernel-only)
-    SYSRET  // sysret : depile (PC | mode) saved and restored by syscall
+    SETTV, // settv rs : trap_vector = regs[rs] (kernel-only)
+    SYSRET, // sysret : depile (PC | mode) saved and restored by syscall
+    SETKSP, // setksp rs : kernel_sp = regs[rs] (kernel-only)
+    SETUSP, // setusp rs : user_sp = regs[rs] (kernel-only)
+    GETUSP, // getusp rd : regs[rd] = user_sp (kernel-only)
+
 };
 
 
@@ -66,8 +70,10 @@ struct SimpleCore {
 
     PrivMode mode = PrivMode::KERNEL;
     uint32_t trap_vector = 0;
+    uint32_t kernel_sp = 0; //SP loaded at begining of trap from USER
+    uint32_t user_sp   = 0; //USER SP, saved at trap
     bool pending_fault = false;
-    uint32_t fault_cause = 0; // 1 = MMIO forbidden, 2 = privileged
+    uint32_t fault_cause = 0; //1 = MMIO forbidden, 2 = privileged
     SystemBus& bus;
 
     SimpleCore(SystemBus& bus, uint32_t ram_size) : bus(bus) {
@@ -83,8 +89,25 @@ struct SimpleCore {
         PC = ROM_BASE;
         mode = PrivMode::KERNEL;
         trap_vector = 0;
+        kernel_sp = 0;
+        user_sp = 0;
         pending_fault = false;
         fault_cause = 0;
+    }
+
+    bool enter_trap(uint32_t return_pc, uint32_t cause) {
+        const bool was_user = (mode == PrivMode::USER);
+        if (was_user) {
+            user_sp = SP;
+            SP = kernel_sp;
+        }
+        mode = PrivMode::KERNEL;
+        if (SP < 4) return false;
+        SP -= 4;
+        bus.store32(SP, return_pc | (was_user ? 1u : 0u));
+        regs[11] = cause;
+        PC = trap_vector;
+        return true;
     }
 
     uint32_t load32(uint32_t addr) {
