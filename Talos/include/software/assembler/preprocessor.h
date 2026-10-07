@@ -1,20 +1,15 @@
 #ifndef ERGON_PREPROCESSOR_H
 #define ERGON_PREPROCESSOR_H
-#include "error.h"
+#include "../error.h"
 
 #include <cctype>
 #include <deque>
 #include <functional>
+#include <ranges>
 #include <string>
 #include <unordered_map>
 #include <utility>
 #include <vector>
-
-/*
- * Extra error codes this file relies on (add them to ErrorCode in error.h):
- *     ELSE_AFTER_ELSE      - a branch directive follows %else / %elsedef
- *     UNEXPECTED_DIRECTIVE - %else, %endif, %endrep, ... without an opener
- */
 
 struct RecursionHandler {
     size_t max_depth = 1000;
@@ -30,6 +25,33 @@ struct PreProcesser {
     std::unordered_map<std::string, Value> variables; // %assign
     std::unordered_map<std::string, Define> defines; // %define
     std::unordered_map<std::string, Macro> macros; // %macro
+    const std::vector<std::pair<std::string, std::string>>* includes = nullptr;
+
+    struct SourceLoc { uint32_t file; uint32_t line; };
+    std::vector<std::string> file_names;
+    std::vector<SourceLoc> line_map;
+    size_t last_file = 0;
+
+    size_t file_id(const std::string& name) {
+        for (size_t i = 0; i < file_names.size(); i++)
+            if (file_names[i] == name) return i;
+        file_names.push_back(name);
+        return file_names.size() - 1;
+    }
+
+    static std::vector<std::string> split_lines(const std::string& s) {
+        std::vector<std::string> out;
+        size_t start = 0;
+        while (true) {
+            const size_t nl = s.find('\n', start);
+            std::string l = s.substr(start, nl == std::string::npos ? std::string::npos : nl - start);
+            if (!l.empty() && l.back() == '\r') l.pop_back();
+            out.push_back(std::move(l));
+            if (nl == std::string::npos) break;
+            start = nl + 1;
+        }
+        return out;
+    }
 
     static std::string delimit_string(const std::string& s, size_t& idx, const std::function<bool(char, size_t)>& condition) {
         size_t start = idx;
@@ -212,7 +234,7 @@ struct PreProcesser {
         name = leading_identifier(rest);
         if (name.empty() || !string_utils::check_cst_name(name))
             return { ErrorCode::INVALID_NAME, "invalid name, expected only letters, numbers and '_' ", src };
-        std::string after = rest.substr(name.size());
+        const std::string after = rest.substr(name.size());
         params.clear();
         has_params = false;
         if (!after.empty() && after[0] == '(') {
@@ -237,12 +259,11 @@ struct PreProcesser {
     struct Line {
         std::string text;
         size_t src; //line nbr
-        size_t depth;  //macro depth
+        size_t depth; //macro depth
+        std::string chain;
+        size_t file = 0;
     };
 
-    // Pops lines from `work` up to the closer matching the already consumed opener.
-    // conditional: %if/%ifdef ... %endif/%endifdef     otherwise: %rep ... %endrep
-    // The closer itself is consumed and reported in `closer`.
     static bool take_block(std::deque<Line>& work, bool conditional, std::vector<Line>& body, std::string& closer) {
         size_t depth = 0;
         while (!work.empty()) {
@@ -283,6 +304,7 @@ struct PreProcesser {
         while (!work.empty()) {
             Line cur = std::move(work.front());
             work.pop_front();
+            last_file = cur.file;
             if (RH.depth_exceeded(cur.depth) || ++processed > RH.max_lines)
                 return { ErrorCode::PREPROC_RECURSION, "infinite recursion in the preprocessor", cur.src };
 
@@ -357,11 +379,10 @@ struct PreProcesser {
                 }
 
                 std::vector<Line> body;
-                std::string closer;
-                if (!take_block(work, false, body, closer))
+                if (std::string closer; !take_block(work, false, body, closer))
                     return { ErrorCode::MISSING_ENDREP, "missing an %endrep", cur.src };
 
-                if (value > 0 && !body.empty() && (size_t)value > RH.max_lines / body.size())
+                if (value > 0 && !body.empty() && static_cast<size_t>(value) > RH.max_lines / body.size())
                     return { ErrorCode::PREPROC_RECURSION, "%rep expansion is too large", cur.src };
                 for (long long k = 0; k < value; k++)
                     push_front_lines(work, body);
@@ -425,6 +446,30 @@ struct PreProcesser {
                 continue;
             }
 
+            if (word == "%include") {
+                if (rest.size() < 3 || rest.front() != '"' || rest.back() != '"' || rest.find('"', 1) != rest.size() - 1)
+                    return { ErrorCode::INVALID_INCLUDE, "expected %include \"name\"", cur.src };
+
+                const std::string file_name = rest.substr(1, rest.size() - 2);
+                const std::string* content = nullptr;
+                if (includes)
+                    for (const auto& [name, text] : *includes)
+                        if (name == file_name) { content = &text; break; }
+                if (!content)
+                    return { ErrorCode::INCLUDE_NOT_FOUND, "cannot find include \"" + file_name + "\"", cur.src };
+
+                if (cur.chain.find("|" + file_name + "|") != std::string::npos)
+                    return { ErrorCode::INCLUDE_CYCLE, "include cycle on \"" + file_name + "\"", cur.src };
+
+                const size_t fid = file_id(file_name);
+                const std::string chain = cur.chain + file_name + "|";
+                const std::vector<std::string> inc_lines = split_lines(*content);
+                std::vector<Line> body;
+                for (size_t k = 0; k < inc_lines.size(); k++)
+                    body.push_back({ inc_lines[k], k, cur.depth + 1, chain, fid });
+                push_front_lines(work, body);
+                continue;
+            }
             if (word == "%endif" || word == "%endifdef" || word == "%endrep" || word == "%endmacro" || is_else_word(word))
                 return { ErrorCode::UNEXPECTED_DIRECTIVE, "unexpected \"" + word + "\" without a matching opening directive",
                     cur.src };
@@ -460,26 +505,37 @@ struct PreProcesser {
                         return { ErrorCode::INVALID_ARG_SIZE, "invalid arg size, expected " + std::to_string(macro.parameters.size()), cur.src };
                     std::vector<Line> body;
                     for (const auto& body_line : macro.body)
-                        body.push_back({ substitute_params(body_line, macro.parameters, args), cur.src, cur.depth + 1 });
+                        body.push_back({ substitute_params(body_line, macro.parameters, args), cur.src,
+                            cur.depth + 1, cur.chain, cur.file });
                     push_front_lines(work, body);
                     continue;
                 }
             }
 
             out.push_back(line);
+            line_map.push_back({ static_cast<uint32_t>(cur.file), static_cast<uint32_t>(cur.src) });
         }
         return { };
     }
 
-    ErrorInfo preprocess(std::string& file, RecursionHandler RH = RecursionHandler()) {
-        std::vector<std::string> raw = string_utils::slice_str(file, '\n');
+    ErrorInfo preprocess(std::string& file, RecursionHandler RH = RecursionHandler(),
+        const std::string& name = "main") {
+        file_names.clear();
+        line_map.clear();
+        const size_t main_id = file_id(name);
+        const std::string chain = "|" + name + "|";
+
+        const std::vector<std::string> raw = split_lines(file);
         std::deque<Line> work;
         for (size_t i = 0; i < raw.size(); i++)
-            work.push_back({ raw[i], i, 0 });
+            work.push_back({ raw[i], i, 0, chain, main_id });
 
         std::vector<std::string> out;
         ErrorInfo e = process(work, out, RH);
-        if (e.code != ErrorCode::OK) return e;
+        if (e.code != ErrorCode::OK) {
+            e.file = file_names[last_file];
+            return e;
+        }
 
         file.clear();
         for (const auto& line : out)

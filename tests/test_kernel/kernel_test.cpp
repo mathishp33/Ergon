@@ -11,9 +11,8 @@ namespace fs = std::filesystem;
 std::string load(const std::string& path) {
     std::ifstream file(path);
 
-    if (!file) {
+    if (!file)
         return "error";
-    }
 
     std::stringstream buffer;
     buffer << file.rdbuf();

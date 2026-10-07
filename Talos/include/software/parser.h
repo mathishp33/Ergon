@@ -9,6 +9,8 @@
 #include <unordered_map>
 #include <utility>
 #include <variant>
+#include <cmath>
+#include <cstdint>
 
 
 inline std::unordered_map<std::string, uint8_t> reg_table = {
@@ -94,17 +96,37 @@ struct Token {
     Token(TokenType t, std::string s, bool iF = false) : type(t), text(std::move(s)), isFloat(iF) {}
 };
 
+inline std::string strip_spaces_outside_quotes(const std::string& str) {
+    std::string out;
+    char quote = 0;
+    for (char c : str) {
+        if (quote) {
+            out += c;
+            if (c == quote)
+                quote = 0;
+            continue;
+        }
+        if (c == '\'') {
+            quote = c;
+            out += c;
+            continue;
+        }
+        if (c == ' ')
+            continue;
+        out += c;
+    }
+    return out;
+}
+
 inline std::pair<ErrorInfo, std::vector<Token>> tokenize(const std::string& str) {
     std::vector<Token> tokens;
-    std::string s = string_utils::remove_char(str, ' ');
+    std::string s = strip_spaces_outside_quotes(str);
 
     size_t i = 0;
     while (i < s.size()) {
         char c = s[i];
 
-        if (std::isdigit((unsigned char)c) || c == '.' || c == '-') {
-            bool sign = c == '-';
-            i += sign;
+        if (std::isdigit((unsigned char)c) || c == '.') {
             size_t start = i;
             bool isFloat = false;
 
@@ -129,7 +151,7 @@ inline std::pair<ErrorInfo, std::vector<Token>> tokenize(const std::string& str)
                 if (i < s.size() && s[i] == 'f') { isFloat = true; i++; } // float (1.5f)
             }
             std::string f_str = s.substr(start, i - start);
-            tokens.emplace_back(TokenType::Number, sign ? "-" + f_str : f_str, isFloat);
+            tokens.emplace_back(TokenType::Number, f_str, isFloat);
         }
         else if (c == '\'') { //char
             if (i + 2 >= s.size() || s[i + 2] != '\'')
@@ -137,17 +159,17 @@ inline std::pair<ErrorInfo, std::vector<Token>> tokenize(const std::string& str)
             tokens.emplace_back(TokenType::Number, std::to_string((int)s[i + 1]));
             i += 3;
         }
-        else if (std::isalpha(c) || c == '_') { //variable or constant
+        else if (std::isalpha((unsigned char)c) || c == '_') { //variable or constant
             size_t start = i;
-            while (i < s.size() && (std::isalnum(s[i]) || s[i] == '_')) i++;
+            while (i < s.size() && (std::isalnum((unsigned char)s[i]) || s[i] == '_')) i++;
             tokens.emplace_back(TokenType::Identifier, s.substr(start, i - start));
         }
         else if (c == '(') {
-            tokens.emplace_back(TokenType::LParen, std::to_string(c));
+            tokens.emplace_back(TokenType::LParen, "(");
             i++;
         }
         else if (c == ')') {
-            tokens.emplace_back(TokenType::RParen, std::to_string(c));
+            tokens.emplace_back(TokenType::RParen, ")");
             i++;
         }
         else { //operation
@@ -182,31 +204,35 @@ inline int32_t asInt(const Value& v) {
 inline Value add(const Value& a, const Value& b) {
     if (isFloat(a) || isFloat(b))
         return Value{ asFloat(a) + asFloat(b) };
-    return Value{ asInt(a) + asInt(b) };
+    return Value{ static_cast<int32_t>(static_cast<uint32_t>(asInt(a)) + static_cast<uint32_t>(asInt(b))) };
 }
 
 inline Value sub(const Value& a, const Value& b) {
     if (isFloat(a) || isFloat(b))
         return Value{ asFloat(a) - asFloat(b) };
-    return Value{ asInt(a) - asInt(b) };
+    return Value{ static_cast<int32_t>(static_cast<uint32_t>(asInt(a)) - static_cast<uint32_t>(asInt(b))) };
 }
 
 inline Value mul(const Value& a, const Value& b) {
     if (isFloat(a) || isFloat(b))
         return Value{ asFloat(a) * asFloat(b) };
-    return Value{ asInt(a) * asInt(b) };
+    return Value{ static_cast<int32_t>(static_cast<uint32_t>(asInt(a)) * static_cast<uint32_t>(asInt(b))) };
 }
 
 inline Value div(const Value& a, const Value& b) {
     if (isFloat(a) || isFloat(b))
         return Value{ asFloat(a) / asFloat(b) };
-    return Value{ asInt(a) / asInt(b) };
+    const int32_t x = asInt(a), y = asInt(b);
+    if (y == -1) return Value{ static_cast<int32_t>(0u - static_cast<uint32_t>(x)) };
+    return Value{ x / y };
 }
 
 inline Value mod(const Value& a, const Value& b) {
     if (isFloat(a) || isFloat(b))
         return Value{ std::fmod(asFloat(a), asFloat(b)) };
-    return Value{ asInt(a) % asInt(b) };
+    const int32_t x = asInt(a), y = asInt(b);
+    if (y == -1) return Value{ int32_t{0} };
+    return Value{ x % y };
 }
 
 inline Value greater(const Value& a, const Value& b) {
@@ -330,19 +356,20 @@ private:
             Value v = parseUnary();
             return Value{ ~asInt(v) };
         }
+        if (matchOp("+")) return parseUnary();
         return parsePower();
     }
 
     Value parseMulDivMod() {
         if (e_info.code != ErrorCode::OK) return 0;
-        Value left = parsePower();
+        Value left = parseUnary();
         while (true) {
             if (matchOp("*")) {
-                Value r = parsePower();
+                Value r = parseUnary();
                 left = mul(left, r);
             }
             else if (matchOp("/")) {
-                Value r = parsePower();
+                Value r = parseUnary();
                 if ((isFloat(r) && asFloat(r) == 0.0f) || (!isFloat(r) && asInt(r) == 0)) {
                     e_info = ErrorInfo(ErrorCode::INVALID_OPERATION, "invalid operation division by zero");
                     return 0;
@@ -350,7 +377,7 @@ private:
                 left = div(left, r);
             }
             else if (matchOp("%")) {
-                Value r = parsePower();
+                Value r = parseUnary();
                 if ((isFloat(r) && asFloat(r) == 0.0f) || (!isFloat(r) && asInt(r) == 0)) {
                     e_info = ErrorInfo(ErrorCode::INVALID_OPERATION, "invalid operation mod by zero");
                     return 0;
@@ -389,7 +416,7 @@ private:
                     e_info = ErrorInfo(ErrorCode::INVALID_OPERATION, "invalid operation \"<<\"");
                     return 0;
                 }
-                left = asInt(left) << asInt(r);
+                left = Value{ static_cast<int32_t>(static_cast<uint32_t>(asInt(left)) << (asInt(r) & 31)) };
             }
             else if (matchOp(">>")) {
                 Value r = parseAddSub();
@@ -397,7 +424,7 @@ private:
                     e_info = ErrorInfo(ErrorCode::INVALID_OPERATION, "invalid operation \">>\"");
                     return 0;
                 }
-                left = asInt(left) >> asInt(r);
+                left = Value{ asInt(left) >> (asInt(r) & 31) };
             }
             else break;
         }

@@ -1,11 +1,11 @@
 #ifndef ERGON_ASM_INTERPRETER_H
 #define ERGON_ASM_INTERPRETER_H
 
-#include "error.h"
-#include "instructions.h"
-#include "variables.h"
-#include "parser.h"
-#include "data.h"
+#include "../error.h"
+#include "../instructions.h"
+#include "../variables.h"
+#include "../parser.h"
+#include "../data.h"
 #include "preprocessor.h"
 
 #include <unordered_map>
@@ -42,6 +42,16 @@ struct Assembler {
     std::vector<std::string> lines;
     Section cur_section = Section::TEXT;
     size_t cur_pc = 0;
+    const std::vector<std::pair<std::string, std::string>>* includes = nullptr;
+
+    ErrorInfo locate(ErrorInfo e) const {
+        if (e.index_line < preproc.line_map.size()) {
+            const auto& loc = preproc.line_map[e.index_line];
+            e.file = preproc.file_names[loc.file];
+            e.index_line = loc.line;
+        }
+        return e;
+    }
 
     int get_var_addr(const std::string& var) {
         auto it = vars.find(var);
@@ -218,7 +228,10 @@ struct Assembler {
             }
             if (line[0] == '.') {
                 ErrorInfo e = handle_directive(line, i);
-                if (e.code != ErrorCode::OK) return e;
+                if (e.code != ErrorCode::OK) {
+                    e.index_line = i;
+                    return e;
+                }
                 continue;
             }
 
@@ -419,6 +432,7 @@ struct Assembler {
         cur_pc = 0;
 
         preproc = PreProcesser();
+        preproc.includes = includes;
         std::string copy_file = file;
         ErrorInfo e_pp = preproc.preprocess(copy_file);
         if (e_pp.code != ErrorCode::OK) return { obj_file, e_pp };
@@ -427,7 +441,7 @@ struct Assembler {
         if (lines.empty()) return { };
 
         auto e_fp = first_pass();
-        if (e_fp.code != ErrorCode::OK) return { obj_file, e_fp };
+        if (e_fp.code != ErrorCode::OK) return { obj_file, locate(e_fp) };
 
         cur_section = Section::TEXT;
         for (size_t i = 0; i < lines.size(); i++) {
@@ -436,7 +450,7 @@ struct Assembler {
 
             ErrorInfo e = decode_line(cleaned_line);
             e.index_line = i;
-            if (e.code != ErrorCode::OK) return { obj_file, e };
+            if (e.code != ErrorCode::OK) return { obj_file, locate(e) };
         }
         return { obj_file, { } };
     }

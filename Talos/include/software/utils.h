@@ -153,7 +153,6 @@ namespace string_utils {
     }
 
     static std::string normalize(std::string line) {
-        //comments
         line = line.substr(0, line.find(';'));
 
         return trim_spaces(line);

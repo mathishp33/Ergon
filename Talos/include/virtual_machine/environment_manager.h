@@ -8,8 +8,8 @@
 #include "../hardware/mother_board.h"
 #include "../hardware/instructions_handler/step_handler.h"
 #include "../hardware/instructions_handler/run_handler.h"
-#include "../software/assembler.h"
-#include "../software/linker.h"
+#include "../software/assembler/assembler.h"
+#include "../software/assembler/linker.h"
 
 struct StepInfo {
     std::array<uint32_t, 16> regs;
@@ -63,17 +63,23 @@ struct EnvironmentManager {
         }
     }
 
-    std::string handle_error(const std::string& file_name, const ErrorInfo& e) {
-        std::string e_msg = "Error " + std::to_string((int)e.code) + " at line " + std::to_string(e.index_line) +
-            " in file " + file_name + ": \n";
-        e_msg += e.message + "\n";
-        e_msg += "\n";
-        if (decoder.lines.size() > e.index_line) {
-            e_msg += decoder.lines[e.index_line];
-            e_msg += "\n";
-            for (size_t i = 0; i < decoder.lines[e.index_line].size(); i++)
-                e_msg += "^";
-            e_msg += "\n";
+    std::string handle_error(const std::string& file_name, const ErrorInfo& e) const {
+        const bool located = !e.file.empty();
+        std::string e_msg = "Error " + std::to_string(static_cast<int>(e.code));
+        if (located) e_msg += " at line " + std::to_string(e.index_line + 1) + " in file " + e.file;
+        else e_msg += " in " + file_name;
+        e_msg += ": \n" + e.message + "\n\n";
+
+        if (located && decoder.includes) {
+            for (const auto& [name, text] : *decoder.includes) {
+                if (name != e.file) continue;
+                const auto src = PreProcesser::split_lines(text);
+                if (e.index_line < src.size()) {
+                    e_msg += src[e.index_line] + "\n";
+                    e_msg += std::string(src[e.index_line].size(), '^') + "\n";
+                }
+                break;
+            }
         }
         return e_msg;
     }
@@ -88,17 +94,17 @@ struct EnvironmentManager {
             if (i >= mb.ram.size()) return ErrorCode::RAM_OVERFLOW;
             mb.ram[i] = text[i];
         }
-        size_t data_start = text.size();
+        const size_t data_start = text.size();
         for (size_t i = 0; i < data.size(); i++) {
             if (data_start + i >= mb.ram.size()) return ErrorCode::RAM_OVERFLOW;
             mb.ram[data_start + i] = data[i];
         }
-        size_t rodata_start = data_start + data.size();
+        const size_t rodata_start = data_start + data.size();
         for (size_t i = 0; i < rodata.size(); i++) {
             if (rodata_start + i >= mb.ram.size()) return ErrorCode::RAM_OVERFLOW;
             mb.ram[rodata_start + i] = rodata[i];
         }
-        size_t bss_start = rodata_start + rodata.size();
+        const size_t bss_start = rodata_start + rodata.size();
         for (size_t i = 0; i < bss_size; i++) {
             if (bss_start + i >= mb.ram.size()) return ErrorCode::RAM_OVERFLOW;
             mb.ram[bss_start + i] = 0;
@@ -113,6 +119,7 @@ struct EnvironmentManager {
     //args are { { <name/path>, <my_program> } }, returns error message
     std::string build(const std::vector<std::pair<std::string, std::string>>& inputs) {
         std::vector<ObjectFile> obj_files;
+        decoder.includes = &inputs;
         for (const auto& [name, program] : inputs) {
             auto [obj_file, error_info] = decoder.decode(program);
             if (error_info.code != ErrorCode::OK) return handle_error(name, error_info);
@@ -132,13 +139,13 @@ struct EnvironmentManager {
         return "";
     }
 
-    int get_from_ram(size_t addr) {
+    int get_from_ram(const size_t addr) const {
         if (addr < mb.ram.size())
             return mb.ram[addr];
         return 0;
     }
 
-    uint32_t get_from_reg(const std::string& reg_name) {
+    uint32_t get_from_reg(const std::string& reg_name) const {
         auto [e, reg_index] = parse_reg(reg_name);
         if (e.code != ErrorCode::OK) return 0;
 
@@ -170,6 +177,7 @@ struct EnvironmentManager {
 
     std::string build_rom(const std::vector<std::pair<std::string, std::string>>& inputs) {
         std::vector<ObjectFile> obj_files;
+        decoder.includes = &inputs;
         for (const auto& [name, program] : inputs) {
             auto [obj_file, error_info] = decoder.decode(program);
             if (error_info.code != ErrorCode::OK) return handle_error(name, error_info);
@@ -183,7 +191,7 @@ struct EnvironmentManager {
     }
 
     std::string install_kernel(const std::vector<std::pair<std::string, std::string>>& sources,
-        uint32_t load_address = KERNEL_BASE) {
+        const uint32_t load_address = KERNEL_BASE) {
         std::vector<uint8_t> image;
         uint32_t entry = 0;
         if (std::string err = build_image(sources, load_address, image, entry); !err.empty()) return err;
@@ -195,7 +203,7 @@ struct EnvironmentManager {
         const auto n_blocks = static_cast<uint32_t>(image.size() / B);
 
         std::vector<uint8_t> header(B, 0);
-        auto put32 = [&](size_t off, uint32_t v) {
+        auto put32 = [&](const size_t off, uint32_t v) {
             for (int i = 0; i < 4; i++) header[off + i] = (v >> (8 * i)) & 0xFF;
         };
         put32(0, BOOT_MAGIC);
@@ -211,6 +219,7 @@ struct EnvironmentManager {
     std::string build_image(const std::vector<std::pair<std::string, std::string>>& inputs, uint32_t load_address,
         std::vector<uint8_t>& out_image, uint32_t& out_entry_pc) {
         std::vector<ObjectFile> obj_files;
+        decoder.includes = &inputs;
         for (const auto& [name, program] : inputs) {
             auto [obj_file, error_info] = decoder.decode(program);
             if (error_info.code != ErrorCode::OK) return handle_error(name, error_info);

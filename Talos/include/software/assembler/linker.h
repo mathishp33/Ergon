@@ -4,7 +4,7 @@
 #include <algorithm>
 
 #include "assembler.h"
-#include "error.h"
+#include "../error.h"
 
 #include <string>
 

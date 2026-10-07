@@ -43,12 +43,16 @@ enum class ErrorCode : uint8_t {
     MISSING_ENDIFDEF, //missing an %endifdef
     ELSE_AFTER_ELSE, //unexpected " ... " after %else
     UNEXPECTED_DIRECTIVE, //unexpected " ... " without a matching opening directive
+    INVALID_INCLUDE, //invalid include " ... "
+    INCLUDE_NOT_FOUND,
+    INCLUDE_CYCLE,
 };
 
 // there is padding, but I don't want to #pragma pack(1) bc it gives warning
 struct ErrorInfo {
     ErrorCode code = ErrorCode::OK;
     size_t index_line = 0;
+    std::string file;
     std::string message;
 
     ErrorInfo() = default;

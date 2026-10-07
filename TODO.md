@@ -7,7 +7,6 @@ j'ai quand meme rédigé les parties importantes :-)
 
 [x] Fetch depuis la RAM (format d'instruction fixe 8o, PC = adresse octet)
 [x] ABI syscall + trap (trap_vector, mode USER/KERNEL, SYSRET)
-[x] Suppression du handle_syscall côté C++ : SYSCALL trap toujours vers le kernel
 [x] Séparation USER/KERNEL (faute si MMIO touché ou instr privilégiée en USER)
 [x] DISK_READ/DISK_WRITE réels sur hard_drive (StorageDevice + registres MMIO)
 [x] Infrastructure de boot (ROM séparée, build_rom/build_image/flash_disk, base_address dans link())
