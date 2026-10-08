@@ -4,12 +4,13 @@
 
 #include <string>
 #include <chrono>
+#include <filesystem>
 
 
 namespace fs = std::filesystem;
 
-std::string load(const std::string& path) {
-    std::ifstream file(path);
+std::string load(const fs::path& path) {
+    const std::ifstream file(fs::absolute(path).string());
 
     if (!file)
         return "error";
@@ -20,7 +21,7 @@ std::string load(const std::string& path) {
     return buffer.str();
 }
 
-static const char* to_str(RunResult r) {
+static const char* to_str(const RunResult r) {
     switch (r) {
         case RunResult::HALTED: return "HALTED";
         case RunResult::STACK_OVERFLOW: return "STACK_OVERFLOW";
@@ -37,18 +38,21 @@ int main() {
 
     std::cout << "\n---------- BUILD RESULT ----------\n";
 
-    std::string boot = load("C:/Users/mathi/CLionProjects/Ergon/tests/test_kernel/vm/boot.asm");
-    std::string kernel = load("C:/Users/mathi/CLionProjects/Ergon/tests/test_kernel/vm/kernel/kernel.asm");
+    const fs::path BOOT_PATH = { "vm/boot.asm" };
+    const fs::path KERNEL_PATH = { "vm/kernel.asm" };
+
+    const std::string boot = load(BOOT_PATH);
+    const std::string kernel = load(KERNEL_PATH);
 
     std::cout << env.build_rom({ { "boot.asm", boot } }) << std::endl;
     std::cout << env.install_kernel({ { "kernel.asm", kernel } }) << std::endl;
 
     env.mb.reset();
 
-    auto start = std::chrono::high_resolution_clock::now();
-    RunResult rr = env.start();
-    auto stop = std::chrono::high_resolution_clock::now();
-    auto duration = duration_cast<std::chrono::microseconds>(stop - start);
+    const auto start = std::chrono::high_resolution_clock::now();
+    const RunResult rr = env.start();
+    const auto stop = std::chrono::high_resolution_clock::now();
+    const auto duration = duration_cast<std::chrono::microseconds>(stop - start);
 
     std::cout << "\n---------- RUN RESULT ----------\n";
 

@@ -10,7 +10,6 @@
 
 #include <unordered_map>
 #include <string>
-#include <functional>
 
 
 struct ObjectFile {
@@ -46,16 +45,15 @@ struct Assembler {
 
     ErrorInfo locate(ErrorInfo e) const {
         if (e.index_line < preproc.line_map.size()) {
-            const auto& loc = preproc.line_map[e.index_line];
-            e.file = preproc.file_names[loc.file];
-            e.index_line = loc.line;
+            const auto& [file, line] = preproc.line_map[e.index_line];
+            e.file = preproc.file_names[file];
+            e.index_line = line;
         }
         return e;
     }
 
     int get_var_addr(const std::string& var) {
-        auto it = vars.find(var);
-        if (it != vars.end())
+        if (const auto it = vars.find(var); it != vars.end())
             return static_cast<int>(it->second.addr);
         return -1;
     }
@@ -80,22 +78,26 @@ struct Assembler {
         }
 
         //labels
-        if (line.ends_with(':')) return { };
+        if (line.ends_with(':'))
+            return { };
 
         const std::vector<std::string> tokens = string_utils::slice_str(line, ' ');
         const std::string& instr = tokens[0];
-        auto it = instr_table.find(instr);
+        const auto it = instr_table.find(instr);
 
 
-        if (cur_section != Section::TEXT) return { };
-        if (instr == ".global" || instr == ".extern" || instr == ".entry" || instr == ".stack_size") return { };
+        if (cur_section != Section::TEXT)
+            return { };
+        if (instr == ".global" || instr == ".extern" || instr == ".entry" || instr == ".stack_size")
+            return { };
 
-        if (it == instr_table.end()) return { ErrorCode::INVALID_TOKEN, "unknown instruction \"" + instr + "\"" };
-        InstrDef def = it->second;
+        if (it == instr_table.end())
+            return { ErrorCode::INVALID_TOKEN, "unknown instruction \"" + instr + "\"" };
+        const InstrDef def = it->second;
 
 
         if (def.args.empty()) {
-            DecodedInstr result = DecodedInstr(def.opcode, 0, 0, 0, 0);
+            auto result = DecodedInstr(def.opcode, 0, 0, 0, 0);
 
             if (it != instr_table.end()) cur_pc++;
             obj_file.text.emplace_back(result);
@@ -103,7 +105,8 @@ struct Assembler {
         }
         //trim instruction from line -> remove spaces (", " -> ",") -> slice into arguments
         const std::vector<std::string> args = string_utils::slice_str(string_utils::remove_char(line.substr(instr.size() + 1), ' '), ',');
-        if (args.size() != def.args.size()) return { ErrorCode::INVALID_ARG_SIZE, "invalid argument size, expected " + std::to_string(def.args.size()) + " arguments" };
+        if (args.size() != def.args.size())
+            return { ErrorCode::INVALID_ARG_SIZE, "invalid argument size, expected " + std::to_string(def.args.size()) + " arguments" };
 
         std::array<uint8_t, 3> r{}; // rd, rs1, rs2
         int32_t imm = 0;
@@ -113,7 +116,8 @@ struct Assembler {
             case ArgType::REG:
                 {
                     auto [e, temp] = parse_reg(args[i]);
-                    if (e.code != ErrorCode::OK) return e;
+                    if (e.code != ErrorCode::OK)
+                        return e;
 
                     r[def.args_pos[i]] = temp;
                     break;
@@ -121,7 +125,8 @@ struct Assembler {
             case ArgType::IMM:
                 {
                     auto [e, imm_val] = parse_expr(args[i], preproc.constants, preproc.variables);
-                    if (e.code != ErrorCode::OK) return e;
+                    if (e.code != ErrorCode::OK)
+                        return e;
 
                     if (disp8_ops.contains(def.opcode)) {
                         if (imm_val < -128 || imm_val > 127)
@@ -136,14 +141,15 @@ struct Assembler {
                 {
                     const std::string& label = args[i];
 
-                    if (!obj_file.symbols.contains(label)) return { ErrorCode::UNKNOWN_SYMBOL, "unknown symbol \"" + label + "\"" };
+                    if (!obj_file.symbols.contains(label))
+                        return { ErrorCode::UNKNOWN_SYMBOL, "unknown symbol \"" + label + "\"" };
 
                     const Symbol& S = obj_file.symbols[label];
 
                     obj_file.relocations.push_back({Section::TEXT, static_cast<uint32_t>(cur_pc), RelocType::PC_REL_32, label });
 
                     if (S.bind == SymbolBinding::LOCAL && S.section == Section::TEXT) {
-                        int32_t offset = static_cast<int32_t>(S.value) - static_cast<int32_t>(cur_pc);
+                        const int32_t offset = static_cast<int32_t>(S.value) - static_cast<int32_t>(cur_pc);
                         imm = offset;
                     } else
                         imm = 0;
@@ -153,7 +159,8 @@ struct Assembler {
             case ArgType::VAR:
                 {
                     const std::string& name = args[i];
-                    if (!obj_file.symbols.contains(name)) return { ErrorCode::UNKNOWN_SYMBOL, "unknown symbol \"" + name + "\"" };
+                    if (!obj_file.symbols.contains(name))
+                        return { ErrorCode::UNKNOWN_SYMBOL, "unknown symbol \"" + name + "\"" };
                     if (obj_file.symbols[name].section == Section::RODATA)
                         if (var_is_constant(instr))
                             return { ErrorCode::RODATA_VAR_MODIFIED, "rodata variable \"" + name + "\" is being modified" };
@@ -174,7 +181,7 @@ struct Assembler {
             }
         }
 
-        DecodedInstr result = DecodedInstr(def.opcode, r[0], r[1], r[2], imm);
+        auto result = DecodedInstr(def.opcode, r[0], r[1], r[2], imm);
 
         if (it != instr_table.end()) cur_pc++;
         obj_file.text.emplace_back(result);
@@ -200,7 +207,8 @@ struct Assembler {
             if (line.ends_with(':')) {
                 std::string name = line.substr(0, line.size() - 1);
 
-                if (obj_file.symbols.contains(name) && obj_file.symbols[name].bind == SymbolBinding::LOCAL) return { ErrorCode::DUPLICATE_LABEL, "duplicate label \"" + name + "\"", i };
+                if (obj_file.symbols.contains(name) && obj_file.symbols[name].bind == SymbolBinding::LOCAL)
+                    return { ErrorCode::DUPLICATE_LABEL, "duplicate label \"" + name + "\"", i };
 
 
                 uint32_t value = 0;
@@ -227,8 +235,7 @@ struct Assembler {
                 continue;
             }
             if (line[0] == '.') {
-                ErrorInfo e = handle_directive(line, i);
-                if (e.code != ErrorCode::OK) {
+                if (ErrorInfo e = handle_directive(line, i); e.code != ErrorCode::OK) {
                     e.index_line = i;
                     return e;
                 }
@@ -255,7 +262,7 @@ struct Assembler {
         }
     }
 
-    void modify_section_size(size_t new_size) {
+    void modify_section_size(const size_t new_size) {
         switch (cur_section) {
         case Section::DATA:
             obj_file.data.resize(new_size);
@@ -270,28 +277,27 @@ struct Assembler {
         }
     }
 
-    void align_section(size_t align) {
-        size_t sz = current_section_size();
-        size_t mask = align - 1;
-        if (sz & mask)
-            modify_section_size((sz + mask) & ~mask);
+    void align_section(const size_t align) {
+        const size_t sz = current_section_size();
+        if (const size_t mask = align - 1; sz & mask)
+            modify_section_size(sz + mask & ~mask);
     }
 
-    void emit_u8(uint8_t v) {
-        auto& buf = (cur_section == Section::DATA) ? obj_file.data : obj_file.rodata;
+    void emit_u8(const uint8_t v) {
+        auto& buf = cur_section == Section::DATA ? obj_file.data : obj_file.rodata;
         buf.push_back(v);
     }
 
-    void emit_u16(uint16_t v) {
+    void emit_u16(const uint16_t v) {
         emit_u8(v & 0xFF);
-        emit_u8((v >> 8) & 0xFF);
+        emit_u8(v >> 8 & 0xFF);
     }
 
-    void emit_u32(uint32_t v) {
+    void emit_u32(const uint32_t v) {
         emit_u8(v & 0xFF);
-        emit_u8((v >> 8) & 0xFF);
-        emit_u8((v >> 16) & 0xFF);
-        emit_u8((v >> 24) & 0xFF);
+        emit_u8(v >> 8 & 0xFF);
+        emit_u8(v >> 16 & 0xFF);
+        emit_u8(v >> 24 & 0xFF);
     }
 
     ErrorInfo handle_directive(const std::string& line, size_t i) {
@@ -310,12 +316,7 @@ struct Assembler {
         if (instr == ".extern") {
             if (args.size() != 1)
                 return { ErrorCode::INVALID_ARG_SIZE, "invalid argument size, expected 1", i };
-            obj_file.symbols[args[0]] = {
-                args[0],
-                Section::NONE,
-                0,
-                SymbolBinding::EXTERN
-            };
+            obj_file.symbols[args[0]] = { args[0], Section::NONE, 0, SymbolBinding::EXTERN };
         }
         if (instr == ".entry") {
             if (args.size() != 1)
@@ -329,7 +330,8 @@ struct Assembler {
                 return { ErrorCode::DUPLICATE_STACK_SIZE, ".stack_size defined multiple times in this file", i };
 
             auto [e, v] = parse_expr(args[0], preproc.constants, preproc.variables);
-            if (e.code != ErrorCode::OK) return e;
+            if (e.code != ErrorCode::OK)
+                return e;
 
             obj_file.stack_size = static_cast<uint32_t>(v);
             obj_file.has_stack_size = true;
@@ -338,7 +340,8 @@ struct Assembler {
         if (instr == ".byte") {
             for (auto& a : args) {
                 auto [e, v] = parse_expr(a, preproc.constants, preproc.variables);
-                if (e.code != ErrorCode::OK) return e;
+                if (e.code != ErrorCode::OK)
+                    return e;
 
                 if (cur_section == Section::BSS)
                     obj_file.bss_size += 1; // réserve 1 octet
@@ -350,7 +353,8 @@ struct Assembler {
         if (instr == ".hword") {
             for (auto& a : args) {
                 auto [e, v] = parse_expr(a, preproc.constants, preproc.variables);
-                if (e.code != ErrorCode::OK) return e;
+                if (e.code != ErrorCode::OK)
+                    return e;
 
                 if (cur_section == Section::BSS)
                     obj_file.bss_size += 2; // réserve 2 octets
@@ -362,7 +366,8 @@ struct Assembler {
         if (instr == ".word") {
             for (auto& a : args) {
                 auto [e, v] = parse_expr(a, preproc.constants, preproc.variables);
-                if (e.code != ErrorCode::OK) return e;
+                if (e.code != ErrorCode::OK)
+                    return e;
 
                 if (cur_section == Section::BSS)
                     obj_file.bss_size += 4; // réserve 4 octets
@@ -376,7 +381,8 @@ struct Assembler {
             if (args.size() != 1)
                 return { ErrorCode::INVALID_ARG_SIZE, "invalid argument size, expected 1", i };
             auto [e, v] = parse_expr(args[0], preproc.constants, preproc.variables);
-            if (e.code != ErrorCode::OK) return e;
+            if (e.code != ErrorCode::OK)
+                return e;
 
             if (cur_section == Section::BSS)
                 obj_file.bss_size += v; // réserve 1 octet
@@ -390,9 +396,8 @@ struct Assembler {
             std::string expr = line.substr(instr.size() + 1);
             if (string_utils::rep_counter(expr, '\"') != 2)
                 return { ErrorCode::INVALID_ARG_SIZE, "invalid argument size, expected 2", i };
-            bool quote_encountered = false;
-            for (size_t i = 1; i < expr.size() - 1; i++) {
-                emit_u8(expr[i]);
+            for (size_t j = 1; j < expr.size() - 1; j++) {
+                emit_u8(expr[j]);
             }
             emit_u8('\0');
 
@@ -402,14 +407,15 @@ struct Assembler {
                 return { ErrorCode::INVALID_ARG_SIZE, ".space expects 1 arg", i };
 
             auto [e, size] = parse_expr(args[0], preproc.constants, preproc.variables);
-            if (e.code != ErrorCode::OK) return e;
+            if (e.code != ErrorCode::OK)
+                return e;
 
             align_section(1);
 
             if (cur_section == Section::BSS)
                 obj_file.bss_size += size;
             else {
-                auto& buf = (cur_section == Section::DATA) ? obj_file.data : obj_file.rodata;
+                auto& buf = cur_section == Section::DATA ? obj_file.data : obj_file.rodata;
                 buf.resize(buf.size() + size, 0);
             }
             return { };
@@ -417,7 +423,8 @@ struct Assembler {
 
         if (instr == ".align") {
             auto [e, pow] = parse_expr(args[0], preproc.constants, preproc.variables);
-            if (e.code != ErrorCode::OK) return e;
+            if (e.code != ErrorCode::OK)
+                return e;
 
             align_section(1u << pow);
             return { };
@@ -434,14 +441,15 @@ struct Assembler {
         preproc = PreProcesser();
         preproc.includes = includes;
         std::string copy_file = file;
-        ErrorInfo e_pp = preproc.preprocess(copy_file);
-        if (e_pp.code != ErrorCode::OK) return { obj_file, e_pp };
+        if (ErrorInfo e_pp = preproc.preprocess(copy_file); e_pp.code != ErrorCode::OK)
+            return { obj_file, e_pp };
 
         lines = string_utils::slice_str(copy_file, '\n');
-        if (lines.empty()) return { };
+        if (lines.empty())
+            return { };
 
-        auto e_fp = first_pass();
-        if (e_fp.code != ErrorCode::OK) return { obj_file, locate(e_fp) };
+        if (const auto e_fp = first_pass(); e_fp.code != ErrorCode::OK)
+            return { obj_file, locate(e_fp) };
 
         cur_section = Section::TEXT;
         for (size_t i = 0; i < lines.size(); i++) {
@@ -450,7 +458,8 @@ struct Assembler {
 
             ErrorInfo e = decode_line(cleaned_line);
             e.index_line = i;
-            if (e.code != ErrorCode::OK) return { obj_file, locate(e) };
+            if (e.code != ErrorCode::OK)
+                return { obj_file, locate(e) };
         }
         return { obj_file, { } };
     }

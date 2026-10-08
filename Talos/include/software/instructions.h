@@ -23,7 +23,8 @@ struct InstrDef {
     std::vector<ArgType> args;
     std::vector<size_t> args_pos;
 
-    InstrDef(OPCODE opcode, InstrType type, const std::vector<ArgType>& args, const std::vector<size_t>& args_pos) : opcode(opcode), type(type), args(args), args_pos(args_pos) {
+    InstrDef(const OPCODE opcode, const InstrType type, const std::vector<ArgType>& args, const std::vector<size_t>& args_pos)
+    : opcode(opcode), type(type), args(args), args_pos(args_pos) {
         if (args.size() != args_pos.size()) throw std::exception();
     }
 };

@@ -409,7 +409,7 @@ OP_JNZ:
     }
 OP_JL:
     {
-    if((int32_t)c.regs[12] < 0) {
+    if(static_cast<int32_t>(c.regs[12]) < 0) {
         c.PC += instr->imm;
         CHECK_PC();
         FETCH();
@@ -419,7 +419,7 @@ OP_JL:
     }
 OP_JG:
     {
-    if((int32_t)c.regs[12] > 0) {
+    if(static_cast<int32_t>(c.regs[12]) > 0) {
         c.PC += instr->imm;
         CHECK_PC();
         FETCH();

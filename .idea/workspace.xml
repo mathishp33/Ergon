@@ -7,6 +7,7 @@
     <option name="/Default/Environment/UserInterface/HierarchyView/ViewStyle/@EntryValue" value="SuperTypes" type="string" />
     <option name="/Default/Housekeeping/FeatureSuggestion/FeatureSuggestionManager/DisabledSuggesters/=SwitchToGoToActionSuggester/@EntryIndexedValue" value="true" type="bool" />
     <option name="/Default/Housekeeping/GlobalSettingsUpgraded/IsUpgraded/@EntryValue" value="true" type="bool" />
+    <option name="/Default/Housekeeping/LiveTemplatesHousekeeping/HotspotSessionHintIsShown/@EntryValue" value="true" type="bool" />
     <option name="/Default/Housekeeping/OptionsDialog/SelectedPageId/@EntryValue" value="CppFormatterOtherPage" type="string" />
     <option name="/Default/RiderDebugger/RiderRestoreDecompile/RestoreDecompileSetting/@EntryValue" value="false" type="bool" />
   </component>
@@ -39,12 +40,22 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="added %include">
+    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="added %ifndef and %ifn (also did a total rework of branch system)">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/hardware/bus.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/hardware/bus.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/hardware/core.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/hardware/core.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/hardware/cpu.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/hardware/cpu.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/hardware/fpu.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/hardware/fpu.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/hardware/instructions_handler/run_handler.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/hardware/instructions_handler/run_handler.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/hardware/mother_board.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/hardware/mother_board.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/software/assembler/assembler.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/software/assembler/assembler.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/software/assembler/linker.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/software/assembler/linker.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Talos/include/software/assembler/preprocessor.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/software/assembler/preprocessor.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_kernel/boot.asm" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_kernel/vm/boot.asm" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_kernel/kernel.asm" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_kernel/vm/kernel/kernel.asm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/software/data.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/software/data.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/software/error.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/software/error.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/software/instructions.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/software/instructions.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tests/test_kernel/kernel_test.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_kernel/kernel_test.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_kernel/vm/kernel/kernel.asm" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_kernel/vm/kernel.asm" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -155,8 +166,8 @@
       <recent name="C:\Users\Utilisateur\CLionProjects\Ergon\tests\test_1" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\mathi\CLionProjects\Ergon\tests\test_kernel\vm\kernel" />
       <recent name="C:\Users\mathi\CLionProjects\Ergon\tests\test_kernel\vm" />
+      <recent name="C:\Users\mathi\CLionProjects\Ergon\tests\test_kernel\vm\kernel" />
       <recent name="C:\Users\mathi\CLionProjects\Ergon\Talos\include\software\assembler" />
       <recent name="C:\Users\mathi\CLionProjects\Ergon\Talos\include\virtual_machine" />
       <recent name="C:\Users\Utilisateur\CLionProjects\Ergon\Talos\include\computer\instructions_handler" />
@@ -315,7 +326,7 @@
       <workItem from="1791298244156" duration="2552000" />
       <workItem from="1791304512781" duration="1352000" />
       <workItem from="1791397324884" duration="3076000" />
-      <workItem from="1791483328728" duration="1005000" />
+      <workItem from="1791483328728" duration="3629000" />
     </task>
     <task id="LOCAL-00001" summary="checkpoint commit">
       <option name="closed" value="true" />
@@ -637,7 +648,15 @@
       <option name="project" value="LOCAL" />
       <updated>1791400389189</updated>
     </task>
-    <option name="localTasksCounter" value="41" />
+    <task id="LOCAL-00041" summary="added %ifndef and %ifn (also did a total rework of branch system)">
+      <option name="closed" value="true" />
+      <created>1791485455522</created>
+      <option name="number" value="00041" />
+      <option name="presentableId" value="LOCAL-00041" />
+      <option name="project" value="LOCAL" />
+      <updated>1791485455523</updated>
+    </task>
+    <option name="localTasksCounter" value="42" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -673,7 +692,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="added %rep instruction" />
     <MESSAGE value="added .zero, .asciz, basic system calls." />
     <MESSAGE value="implemented .asciz" />
     <MESSAGE value="implemented a little executor manager &gt;w&lt; hi hi hi" />
@@ -698,7 +716,8 @@
     <MESSAGE value="fixed bugs :(" />
     <MESSAGE value="added things" />
     <MESSAGE value="added %include" />
-    <option name="LAST_COMMIT_MESSAGE" value="added %include" />
+    <MESSAGE value="added %ifndef and %ifn (also did a total rework of branch system)" />
+    <option name="LAST_COMMIT_MESSAGE" value="added %ifndef and %ifn (also did a total rework of branch system)" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

@@ -1,8 +1,6 @@
 #ifndef ERGON_LINKER_H
 #define ERGON_LINKER_H
 
-#include <algorithm>
-
 #include "assembler.h"
 #include "../error.h"
 
@@ -25,7 +23,7 @@ struct GlobalSymbol {
     uint32_t value = 0;
     size_t obj_index = 0;
     GlobalSymbol() = default;
-    GlobalSymbol(const Symbol& sym, size_t index) {
+    GlobalSymbol(const Symbol& sym, const size_t index) {
         name = sym.name;
         section = sym.section;
         value = sym.value;
@@ -33,7 +31,7 @@ struct GlobalSymbol {
     }
 };
 
-inline std::pair<ErrorInfo, LinkedBinary> link(std::vector<ObjectFile>& objects, uint32_t base_address = 0) {
+inline std::pair<ErrorInfo, LinkedBinary> link(std::vector<ObjectFile>& objects, const uint32_t base_address = 0) {
     LinkedBinary out;
 
     uint32_t total_data_size = 0;
@@ -52,7 +50,7 @@ inline std::pair<ErrorInfo, LinkedBinary> link(std::vector<ObjectFile>& objects,
     uint32_t rodata_cursor = text_bytes_total + total_data_size;
     uint32_t bss_cursor  = text_bytes_total + total_data_size + total_rodata_size;
 
-    bool entry_found = false;
+    // bool entry_found = false;
     out.entry_pc = base_address;
 
     std::unordered_map<std::string, GlobalSymbol> globals;
@@ -109,8 +107,7 @@ inline std::pair<ErrorInfo, LinkedBinary> link(std::vector<ObjectFile>& objects,
     for (auto& obj : objects) {
         if (!obj.entry_symbol.empty()) {
             uint32_t entry_value = 0;
-            const auto g = globals.find(obj.entry_symbol);
-            if (g != globals.end() && g->second.section == Section::TEXT) {
+            if (const auto g = globals.find(obj.entry_symbol); g != globals.end() && g->second.section == Section::TEXT) {
                 entry_value = g->second.value;
             } else {
                 const auto l = obj.symbols.find(obj.entry_symbol);
@@ -120,21 +117,19 @@ inline std::pair<ErrorInfo, LinkedBinary> link(std::vector<ObjectFile>& objects,
             }
 
             out.entry_pc = entry_value * INSTR_SIZE + base_address;
-            entry_found = true;
+            // entry_found = true;
 
             if (obj.has_stack_size)
                 out.stack_size = obj.stack_size;
         }
         else if (obj.has_stack_size) {
-            return { { ErrorCode::STACK_SIZE_NOT_IN_ENTRY_FILE, "\".stack_size\" must be declared in the file containing \".entry\"" }, out };
+            return { { ErrorCode::STACK_SIZE_NOT_IN_ENTRY_FILE, R"(".stack_size" must be declared in the file containing ".entry")" }, out };
         }
 
         for (auto& rel : obj.relocations) {
             uint32_t sym_addr = 0;
             if (!globals.contains(rel.symbol)) {
-                const Symbol& S = obj.symbols[rel.symbol];
-
-                switch (S.section) {
+                switch (const Symbol& S = obj.symbols[rel.symbol]; S.section) {
                 case Section::TEXT:
                     sym_addr = (obj.text_base + S.value) * INSTR_SIZE;
                     break;
@@ -156,8 +151,7 @@ inline std::pair<ErrorInfo, LinkedBinary> link(std::vector<ObjectFile>& objects,
                 }
             }
             else {
-                const GlobalSymbol& GS = globals.at(rel.symbol);
-                switch (GS.section) {
+                switch (const GlobalSymbol& GS = globals.at(rel.symbol); GS.section) {
                 case Section::TEXT:
                     sym_addr = GS.value * INSTR_SIZE; break;
                 case Section::DATA:
@@ -173,8 +167,8 @@ inline std::pair<ErrorInfo, LinkedBinary> link(std::vector<ObjectFile>& objects,
             DecodedInstr& I = out.text[obj.text_base + rel.offset];
 
             if (rel.type == RelocType::PC_REL_32) {
-                auto pc = static_cast<int32_t>((obj.text_base + rel.offset) * INSTR_SIZE);
-                I.imm = static_cast<int32_t>(sym_addr) - (pc);
+                const auto pc = static_cast<int32_t>((obj.text_base + rel.offset) * INSTR_SIZE);
+                I.imm = static_cast<int32_t>(sym_addr) - pc;
             }
             if (rel.type == RelocType::ABS_32)
                 I.imm = static_cast<int32_t>(sym_addr) + static_cast<int32_t>(base_address);

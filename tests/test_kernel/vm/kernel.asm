@@ -1,7 +1,8 @@
 %equ KSTACK_TOP 0xF000
 %equ MMIO_HI 0xF000
 %equ SYS_EXIT 0 ; r0 = syscall/retour, r1..r3 = args
-%equ SYS_WRITE 1 ; r0 = syscall/octets écrit, r1 = ptr, r2 = len
+%equ SYS_WRITE 1 ; r0 = syscall écrit, r1 = ptr, r2 = len
+%equ SYS_READ 2 ; r0 = syscall écrit, r1 = ptr, r2 = len
 
 .section .text
   .entry kmain

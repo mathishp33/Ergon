@@ -1,10 +1,6 @@
 #ifndef ERGON_FPU_H
 #define ERGON_FPU_H
 
-#include <cmath>
-#include <cstdint>
-#include <cstring>
-
 
 enum class FPUOp {
     FADD, // a + b

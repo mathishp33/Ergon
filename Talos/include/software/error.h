@@ -56,9 +56,9 @@ struct ErrorInfo {
     std::string message;
 
     ErrorInfo() = default;
-    ErrorInfo(ErrorCode e_code, size_t i) : code(e_code), index_line(i) {}
-    ErrorInfo(ErrorCode e_code, std::string e_msg) : code(e_code), message(std::move(e_msg)) {}
-    ErrorInfo(ErrorCode e_code, std::string e_msg, size_t i) : code(e_code), message(std::move(e_msg)), index_line(i) {}
+    ErrorInfo(const ErrorCode e_code, const size_t i) : code(e_code), index_line(i) {}
+    ErrorInfo(const ErrorCode e_code, std::string e_msg) : code(e_code), message(std::move(e_msg)) {}
+    ErrorInfo(const ErrorCode e_code, std::string e_msg, const size_t i) : code(e_code), index_line(i), message(std::move(e_msg)) {}
 
 };
 

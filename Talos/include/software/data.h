@@ -63,7 +63,8 @@ struct DecodedInstr {
 
     DecodedInstr() = default;
 
-    DecodedInstr(uint8_t opcode, uint8_t rd, uint8_t rs1, uint8_t rs2, int32_t imm) : opcode(opcode), rd(rd), rs1(rs1), rs2(rs2), imm(imm) {}
+    DecodedInstr(const uint8_t opcode, const uint8_t rd, const uint8_t rs1, const uint8_t rs2, const int32_t imm) :
+        opcode(opcode), rd(rd), rs1(rs1), rs2(rs2), imm(imm) {}
 };
 /*
 * Instr:
@@ -83,9 +84,9 @@ inline void encode_instr(const DecodedInstr& instr, uint8_t* out) {
     out[3] = instr.rs2;
     const auto imm_bits = static_cast<uint32_t>(instr.imm);
     out[4] = imm_bits & 0xFF;
-    out[5] = (imm_bits >> 8) & 0xFF;
-    out[6] = (imm_bits >> 16) & 0xFF;
-    out[7] = (imm_bits >> 24) & 0xFF;
+    out[5] = imm_bits >> 8 & 0xFF;
+    out[6] = imm_bits >> 16 & 0xFF;
+    out[7] = imm_bits >> 24 & 0xFF;
 }
 
 inline std::vector<uint8_t> to_bytes(const std::vector<DecodedInstr>& text) {
