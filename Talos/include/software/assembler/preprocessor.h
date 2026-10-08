@@ -73,6 +73,28 @@ struct PreProcesser {
         return std::isalnum(static_cast<unsigned char>(c)) || c == '_';
     }
 
+    static bool is_if_open(const std::string& w) {
+        return w == "%if" || w == "%ifn" || w == "%ifdef" || w == "%ifndef";
+    }
+    static bool is_if_close(const std::string& w) {
+        return w == "%endif" || w == "%endifdef";
+    }
+
+    static bool is_expr_word(const std::string& w) {
+        return w == "%if" || w == "%ifn" || w == "%elseif" || w == "%elseifn";
+    }
+
+    static bool is_def_word(const std::string& w) {
+        return w == "%ifdef" || w == "%ifndef" || w == "%elseifdef" || w == "%elseifndef";
+    }
+    static bool is_negated_word(const std::string& w) {
+        return w == "%ifn" || w == "%ifndef" || w == "%elseifn" || w == "%elseifndef";
+    }
+
+    static bool is_else_word(const std::string& w) {
+        return w == "%else" || w == "%elseif" || w == "%elseifn" || w == "%elseifdef" || w == "%elseifndef" || w == "%elsedef";
+    }
+
     static bool is_identifier(const std::string& s) {
         if (s.empty() || !is_ident_start(s[0]))
             return false;
@@ -270,8 +292,8 @@ struct PreProcesser {
             Line l = std::move(work.front());
             work.pop_front();
             std::string w = first_token(string_utils::normalize(l.text));
-            bool open = conditional ? (w == "%if" || w == "%ifdef") : (w == "%rep");
-            bool close = conditional ? (w == "%endif" || w == "%endifdef") : (w == "%endrep");
+            bool open = conditional ? is_if_open(w) : (w == "%rep");
+            bool close = conditional ? is_if_close(w) : (w == "%endrep");
             if (open) depth++;
             else if (close) {
                 if (depth == 0) { closer = w; return true; }
@@ -285,10 +307,6 @@ struct PreProcesser {
     static void push_front_lines(std::deque<Line>& work, const std::vector<Line>& lines) {
         for (auto it = lines.rbegin(); it != lines.rend(); ++it)
             work.push_front(*it);
-    }
-
-    static bool is_else_word(const std::string& w) {
-        return w == "%else" || w == "%elseif" || w == "%elseifdef" || w == "%elsedef";
     }
 
     struct Branch {
@@ -389,8 +407,8 @@ struct PreProcesser {
                 continue;
             }
 
-            if (word == "%if" || word == "%ifdef") {
-                const bool is_ifdef = word == "%ifdef";
+            if (is_if_open(word)) {
+                const bool is_ifdef = (word == "%ifdef" || word == "%ifndef");
                 std::vector<Line> block;
                 std::string closer;
                 if (!take_block(work, true, block, closer) || closer != (is_ifdef ? "%endifdef" : "%endif")) {
@@ -405,9 +423,9 @@ struct PreProcesser {
                 for (Line& l : block) {
                     std::string n = string_utils::normalize(l.text);
                     std::string w = first_token(n);
-                    if (w == "%if" || w == "%ifdef")
+                    if (is_if_open(w))
                         depth++;
-                    else if (w == "%endif" || w == "%endifdef")
+                    else if (is_if_close(w))
                         depth--;
                     else if (depth == 0 && is_else_word(w)) {
                         if (seen_else)
@@ -422,22 +440,24 @@ struct PreProcesser {
 
                 for (const Branch& b : branches) {
                     bool take = false;
-                    if (b.word == "%if" || b.word == "%elseif") {
+                    if (is_expr_word(b.word)) {
                         std::string expr = b.arg;
                         if (ErrorInfo e = expand_defines(expr, b.src, RH); e.code != ErrorCode::OK)
                             return e;
                         auto [e, value] = parse_expr(expr, constants, variables);
                         if (e.code != ErrorCode::OK) { e.index_line = b.src; return e; }
-                        if (value) take = true;
+                        take = (value != 0);
                     }
-                    else if (b.word == "%ifdef" || b.word == "%elseifdef") {
+                    else if (is_def_word(b.word)) {
                         if (!string_utils::check_cst_name(b.arg))
                             return { ErrorCode::INVALID_NAME, "invalid name, expected only letters, numbers and '_' ", b.src };
                         take = is_defined(b.arg);
                     }
                     else {
-                        take = true;
+                        take = true; //%else || %elsedef
                     }
+                    if (is_negated_word(b.word)) take = !take;
+
                     if (take) {
                         push_front_lines(work, b.body);
                         break;

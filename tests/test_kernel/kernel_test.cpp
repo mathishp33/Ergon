@@ -37,8 +37,8 @@ int main() {
 
     std::cout << "\n---------- BUILD RESULT ----------\n";
 
-    std::string boot = load("C:/Users/mathi/CLionProjects/Ergon/tests/test_kernel/boot.asm");
-    std::string kernel = load("C:/Users/mathi/CLionProjects/Ergon/tests/test_kernel/kernel.asm");
+    std::string boot = load("C:/Users/mathi/CLionProjects/Ergon/tests/test_kernel/vm/boot.asm");
+    std::string kernel = load("C:/Users/mathi/CLionProjects/Ergon/tests/test_kernel/vm/kernel/kernel.asm");
 
     std::cout << env.build_rom({ { "boot.asm", boot } }) << std::endl;
     std::cout << env.install_kernel({ { "kernel.asm", kernel } }) << std::endl;

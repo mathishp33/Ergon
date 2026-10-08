@@ -39,16 +39,11 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="added things">
+    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="added %include">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/TODO.md" beforeDir="false" afterPath="$PROJECT_DIR$/TODO.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/software/assembler.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/software/assembler/assembler.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/software/error.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/software/error.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/software/linker.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/software/assembler/linker.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/software/parser.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/software/parser.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/software/preprocessor.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/software/assembler/preprocessor.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/software/utils.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/software/utils.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/virtual_machine/environment_manager.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/virtual_machine/environment_manager.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/software/assembler/preprocessor.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/software/assembler/preprocessor.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_kernel/boot.asm" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_kernel/vm/boot.asm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_kernel/kernel.asm" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_kernel/vm/kernel/kernel.asm" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tests/test_kernel/kernel_test.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_kernel/kernel_test.cpp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -160,11 +155,11 @@
       <recent name="C:\Users\Utilisateur\CLionProjects\Ergon\tests\test_1" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\mathi\CLionProjects\Ergon\tests\test_kernel\vm\kernel" />
+      <recent name="C:\Users\mathi\CLionProjects\Ergon\tests\test_kernel\vm" />
       <recent name="C:\Users\mathi\CLionProjects\Ergon\Talos\include\software\assembler" />
       <recent name="C:\Users\mathi\CLionProjects\Ergon\Talos\include\virtual_machine" />
       <recent name="C:\Users\Utilisateur\CLionProjects\Ergon\Talos\include\computer\instructions_handler" />
-      <recent name="C:\Users\Utilisateur\CLionProjects\Ergon\tests\test_0" />
-      <recent name="C:\Users\Utilisateur\CLionProjects\Ergon\Talos\include\asm" />
     </key>
   </component>
   <component name="RunManager" selected="CMake Application.ergon_test_kernel">
@@ -319,7 +314,8 @@
       <workItem from="1791221983119" duration="1750000" />
       <workItem from="1791298244156" duration="2552000" />
       <workItem from="1791304512781" duration="1352000" />
-      <workItem from="1791397324884" duration="3037000" />
+      <workItem from="1791397324884" duration="3076000" />
+      <workItem from="1791483328728" duration="1005000" />
     </task>
     <task id="LOCAL-00001" summary="checkpoint commit">
       <option name="closed" value="true" />
@@ -633,7 +629,15 @@
       <option name="project" value="LOCAL" />
       <updated>1791121815574</updated>
     </task>
-    <option name="localTasksCounter" value="40" />
+    <task id="LOCAL-00040" summary="added %include">
+      <option name="closed" value="true" />
+      <created>1791400389189</created>
+      <option name="number" value="00040" />
+      <option name="presentableId" value="LOCAL-00040" />
+      <option name="project" value="LOCAL" />
+      <updated>1791400389189</updated>
+    </task>
+    <option name="localTasksCounter" value="41" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -669,7 +673,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fixed linker problem" />
     <MESSAGE value="added %rep instruction" />
     <MESSAGE value="added .zero, .asciz, basic system calls." />
     <MESSAGE value="implemented .asciz" />
@@ -694,7 +697,8 @@
     <MESSAGE value="entire rework of Preprocessor" />
     <MESSAGE value="fixed bugs :(" />
     <MESSAGE value="added things" />
-    <option name="LAST_COMMIT_MESSAGE" value="added things" />
+    <MESSAGE value="added %include" />
+    <option name="LAST_COMMIT_MESSAGE" value="added %include" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
