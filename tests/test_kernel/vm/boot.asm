@@ -2,27 +2,26 @@
 %include "mmio.inc"
 %equ HDR_BUF 0x0400
 
-.section .text
-  .entry boot
+.entry boot
 
-  ; disk_read_block : r1 = n° de bloc, r2 = adresse RAM ; retourne r0 = status (0 = OK)
+.section .text
+  ; disk_read_block : r1 = bloc, r2 = adresse RAM -> r0 = statut
   ; clobber : r5, r6 ; suppose r10 = MMIO_BASE
-    disk_read_block:
-      addi r5, r10, DISK_BLOCK
-      sbasew r1, r5, 0
-      addi r5, r10, DISK_BUFFER
-      sbasew r2, r5, 0
-      movi r6, 1 ; 1 = lecture (disque -> RAM)
-      addi r5, r10, DISK_CMD
-      sbasew r6, r5, 0 ; synchrone dans la VM
-      addi r5, r10, DISK_STATUS
-      lbasew r0, r5, 0
-      ret
+  disk_read_block:
+    addi r5, r10, DISK_BLOCK
+    sbasew r1, r5, 0
+    addi r5, r10, DISK_BUFFER
+    sbasew r2, r5, 0
+    movi r6, DISK_CMD_READ
+    addi r5, r10, DISK_CMD
+    sbasew r6, r5, 0
+    addi r5, r10, DISK_STATUS
+    lbasew r0, r5, 0
+    ret
 
   boot:
     movi r10, MMIO_BASE
 
-    ; header
     movi r1, 0
     movi r2, HDR_BUF
     call disk_read_block
@@ -42,10 +41,6 @@
     lbasew r8, r3, SB_KENTRY ; entrée du kernel
     mov r3, r9 ; blocs restants
 
-    ; boucle de chargement : blocs_1..blocks_n -> load_addr
-    movi r1, 1 ; bloc courant
-    mov r2, r7 ; adresse RAM courante
-    mov r3, r9 ; blocs restants
   load_loop:
     cmpi r3, 0
     jz load_done
@@ -58,9 +53,9 @@
     jmp load_loop
 
   load_done:
-    push r8 ; saut indirect: empile
-    ret ; dépile dans PC
+    push r8
+    ret
 
   boot_fail:
-      movi r0, 255
-      halt
+    movi r0, 255
+    halt

@@ -8,22 +8,22 @@
 [x] Infrastructure de boot (ROM séparée, build_rom/build_image/flash_disk, base_address dans link())
 [x] boot.asm : boucle DISK_READ + saut indirect (push/ret) vers le kernel
 [x] kernel.asm : dispatcher de syscalls (lit r0, route, écrit r0, sysret)
-[x] Storage driver (asm) au-dessus des registres DISK_* (*)
+[x] Storage driver (asm) au-dessus des registres DISK_*
 [x] superblocs
 [x] Format executable
 
 ===================== KERNEL / BOOT (C++ prêt, reste l'assembleur) =====================
 1. Timer IRQ + préemption (InterruptController est un stub vide dans devices.h)
-6. Allocation de blocs
-7. Inodes
-8. Répertoires
-9. Création/lecture/écriture de fichiers
-10. File descriptors
-12. Process structure
-13. Scheduler
-14. Plusieurs Core dans CPU (multi-coeur) -> voir note plus bas
-15. SLEEP
-16. EXEC / EXIT / WAIT
+2. Allocation de blocs
+3. Inodes
+4. Répertoires
+5. Création/lecture/écriture de fichiers
+6. File descriptors
+7. Process structure
+8. Scheduler
+9. Plusieurs Core dans CPU (multi-coeur) -> voir note plus bas
+10. SLEEP
+11. EXEC / EXIT / WAIT
 
 ===================== ASSEMBLEUR / OUTILLAGE =====================
 25. AJOUTER %include (*)

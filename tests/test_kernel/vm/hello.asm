@@ -13,8 +13,8 @@
     leab r1, buf
     movi r2, 64
     syscall
-
     mov r2, r0 ; nombre d'octets lus
+
     movi r0, SYS_WRITE
     leab r1, buf
     syscall
