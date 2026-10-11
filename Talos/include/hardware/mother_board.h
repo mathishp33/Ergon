@@ -7,6 +7,10 @@
 
 #include <vector>
 
+struct ProgramSource {
+    std::string name; //15 chars max
+    std::vector<std::pair<std::string, std::string>> files; // { name, content }
+};
 
 struct MotherBoard {
     std::vector<uint8_t> hard_drive;

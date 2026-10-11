@@ -2,7 +2,7 @@
 #define ERGON_RUN_HANDLER_H
 
 #include <bit>
-#include <functional>
+#include <cmath>
 
 #include "hardware/core.h"
 
@@ -159,10 +159,10 @@ OP_SAR:
     c.regs[instr->rd] = static_cast<uint32_t>(static_cast<int32_t>(c.regs[instr->rs1]) >> (c.regs[instr->rs2] & 31));
     NEXT();
 OP_ROL:
-    c.regs[instr->rd] = (c.regs[instr->rs1] << (c.regs[instr->rs2] & 31)) | (c.regs[instr->rs1] >> (32 - (c.regs[instr->rs2] & 31)));
+    c.regs[instr->rd] = std::rotl(c.regs[instr->rs1], static_cast<int>(c.regs[instr->rs2] & 31));
     NEXT();
 OP_ROR:
-    c.regs[instr->rd] = (c.regs[instr->rs1] >> (c.regs[instr->rs2] & 31)) | (c.regs[instr->rs1] << (32 - (c.regs[instr->rs2] & 31)));
+    c.regs[instr->rd] = std::rotr(c.regs[instr->rs1], static_cast<int>(c.regs[instr->rs2] & 31));
     NEXT();
 OP_SHLI:
     c.regs[instr->rd] = c.regs[instr->rs1] << ((uint32_t)instr->imm & 31);
@@ -174,10 +174,10 @@ OP_SARI:
     c.regs[instr->rd] = (uint32_t)((int32_t)c.regs[instr->rs1] >> ((uint32_t)instr->imm & 31));
     NEXT();
 OP_ROLI:
-    c.regs[instr->rd] = (c.regs[instr->rs1] << ((uint32_t)instr->imm & 31)) | (c.regs[instr->rs1] >> (32 - ((uint32_t)instr->imm & 31)));
+    c.regs[instr->rd] = std::rotl(c.regs[instr->rs1], static_cast<int>(static_cast<uint32_t>(instr->imm) & 31));
     NEXT();
 OP_RORI:
-    c.regs[instr->rd] = (c.regs[instr->rs1] >> ((uint32_t)instr->imm & 31)) | (c.regs[instr->rs1] << (32 - ((uint32_t)instr->imm & 31)));
+    c.regs[instr->rd] = std::rotr(c.regs[instr->rs1], static_cast<int>(static_cast<uint32_t>(instr->imm) & 31));
     NEXT();
 OP_CMP:
     c.regs[12] = ((int32_t)c.regs[instr->rs1] < (int32_t)c.regs[instr->rs2]) ? -1 : (((int32_t)c.regs[instr->rs1] > (int32_t)c.regs[instr->rs2]) ? 1 : 0);
@@ -215,19 +215,19 @@ OP_NEG:
     if ((int32_t)c.regs[instr->rs1] != INT32_MIN) c.regs[instr->rd] = (uint32_t)-(int32_t)c.regs[instr->rs1];
     NEXT();
 OP_MIN:
-    if (c.regs[instr->rs1] < c.regs[instr->rs2]) c.regs[instr->rd] = c.regs[instr->rs1];
+    if ((int32_t)c.regs[instr->rs1] < (int32_t)c.regs[instr->rs2]) c.regs[instr->rd] = c.regs[instr->rs1]; //signed
     else c.regs[instr->rd] = c.regs[instr->rs2];
     NEXT();
 OP_MAX:
-    if (c.regs[instr->rs1] > c.regs[instr->rs2]) c.regs[instr->rd] = c.regs[instr->rs1];
+    if ((int32_t)c.regs[instr->rs1] > (int32_t)c.regs[instr->rs2]) c.regs[instr->rd] = c.regs[instr->rs1]; //signed
     else c.regs[instr->rd] = c.regs[instr->rs2];
     NEXT();
 OP_MINI:
-    if (c.regs[instr->rs1] < instr->imm) c.regs[instr->rd] = c.regs[instr->rs1];
+    if ((int32_t)c.regs[instr->rs1] < instr->imm) c.regs[instr->rd] = c.regs[instr->rs1]; //signed
     else c.regs[instr->rd] = instr->imm;
     NEXT();
 OP_MAXI:
-    if (c.regs[instr->rs1] > instr->imm) c.regs[instr->rd] = c.regs[instr->rs1];
+    if ((int32_t)c.regs[instr->rs1] > instr->imm) c.regs[instr->rd] = c.regs[instr->rs1]; //signed
     else c.regs[instr->rd] = instr->imm;
     NEXT();
 
@@ -259,10 +259,18 @@ OP_FCMP:
     c.regs[12] = std::bit_cast<uint32_t>(std::bit_cast<float>(c.fregs[instr->rs1]) < std::bit_cast<float>(c.fregs[instr->rs2]) ? -1 : std::bit_cast<float>(c.fregs[instr->rs1]) > std::bit_cast<float>(c.fregs[instr->rs2]) ? 1 : 0);
     NEXT();
 OP_ITOF:
-    c.fregs[instr->rd] = std::bit_cast<uint32_t>(std::bit_cast<float>(c.regs[instr->rs1]));
+    c.fregs[instr->rd] = std::bit_cast<uint32_t>(static_cast<float>(static_cast<int32_t>(c.regs[instr->rs1])));
     NEXT();
 OP_FTOI:
-    c.regs[instr->rd] = std::bit_cast<uint32_t>(c.fregs[instr->rs1]);
+    {
+    const auto f = std::bit_cast<float>(c.fregs[instr->rs1]);
+    int32_t r;
+    if (std::isnan(f)) r = 0;
+    else if (f >= 2147483648.0f) r = INT32_MAX;
+    else if (f <= -2147483648.0f) r = INT32_MIN;
+    else r = static_cast<int32_t>(f);
+    c.regs[instr->rd] = static_cast<uint32_t>(r);
+    }
     NEXT();
 OP_FMOV:
     c.fregs[instr->rd] = c.regs[instr->rs1];

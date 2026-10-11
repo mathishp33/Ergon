@@ -38,7 +38,8 @@ struct StepInfo {
 
 
 struct EnvironmentManager {
-    size_t RAM_SIZE = 0xffffff - 1; // 2^16 - 1
+    size_t ram_size = 0xffffff - 1; // 2^16 - 1
+    uint32_t default_stack = 0xfff;
     MotherBoard mb;
     Assembler decoder;
     int exit_code = 1;
@@ -46,7 +47,8 @@ struct EnvironmentManager {
     std::chrono::time_point<std::chrono::system_clock> start_time;
 
     EnvironmentManager(size_t ram_size = 0xffffff - 1, uint32_t stack_size = 0xfff, const std::string& path_to_hard_drive = "") :
-     RAM_SIZE(ram_size), mb(MotherBoard(ram_size, stack_size)) {
+     ram_size(ram_size), mb(MotherBoard(ram_size, stack_size)) {
+        default_stack = stack_size;
         if (!path_to_hard_drive.empty()) {
             std::ifstream file(path_to_hard_drive, std::ios::binary | std::ios::ate);
 
@@ -121,7 +123,7 @@ struct EnvironmentManager {
         std::vector<ObjectFile> obj_files;
         decoder.includes = &inputs;
         for (const auto& [name, program] : inputs) {
-            auto [obj_file, error_info] = decoder.decode(program);
+            auto [obj_file, error_info] = decoder.decode(name, program);
             if (error_info.code != ErrorCode::OK) return handle_error(name, error_info);
             obj_files.emplace_back(obj_file);
         }
@@ -129,7 +131,11 @@ struct EnvironmentManager {
         if (e.code != ErrorCode::OK) return handle_error("linked binary", e);
 
         mb.reset();
-        mb.set_stack_size(linked_bin.stack_size);
+        try {
+            mb.set_stack_size(linked_bin.stack_size ? linked_bin.stack_size : default_stack);
+        } catch (const std::invalid_argument& ex) {
+            return std::string("Error: ") + ex.what() + "\n";
+        }
 
         const std::vector<uint8_t> text_bytes = to_bytes(linked_bin.text);
         if (load_ram(text_bytes, linked_bin.data, linked_bin.rodata, linked_bin.bss_size) != ErrorCode::OK)
@@ -179,7 +185,7 @@ struct EnvironmentManager {
         std::vector<ObjectFile> obj_files;
         decoder.includes = &inputs;
         for (const auto& [name, program] : inputs) {
-            auto [obj_file, error_info] = decoder.decode(program);
+            auto [obj_file, error_info] = decoder.decode(name, program);
             if (error_info.code != ErrorCode::OK) return handle_error(name, error_info);
             obj_files.emplace_back(obj_file);
         }
@@ -190,29 +196,84 @@ struct EnvironmentManager {
         return "";
     }
 
-    std::string install_kernel(const std::vector<std::pair<std::string, std::string>>& sources,
-        const uint32_t load_address = KERNEL_BASE) {
-        std::vector<uint8_t> image;
-        uint32_t entry = 0;
-        if (std::string err = build_image(sources, load_address, image, entry); !err.empty()) return err;
+    static void put32(std::vector<uint8_t>& v, const size_t off, const uint32_t x) {
+        for (int i = 0; i < 4; i++)
+            v[off + i] = x >> (8 * i) & 0xFF;
+    }
 
+    std::string build_executable(const std::vector<std::pair<std::string, std::string>>& inputs,
+        std::vector<uint8_t>& out_blocks, const uint32_t default_stack = 0x4000) {
         constexpr uint32_t B = StorageDevice::BLOCK_SIZE;
-        image.resize((image.size() + B - 1) / B * B, 0); //padding
-        if ((uint64_t)load_address + image.size() > KERNEL_STACK_TOP - 0x1000)
-            return "kernel image too big\n";
-        const auto n_blocks = static_cast<uint32_t>(image.size() / B);
+        std::vector<ObjectFile> objs;
+        decoder.includes = &inputs;
+        for (const auto& [name, program] : inputs) {
+            auto [obj, err] = decoder.decode(name, program);
+            if (err.code != ErrorCode::OK) return handle_error(name, err);
+            objs.emplace_back(obj);
+        }
+        auto [e, lb] = link(objs, USER_BASE);
+        if (e.code != ErrorCode::OK) return handle_error("executable", e);
+
+        std::vector<uint8_t> image = to_bytes(lb.text);
+        image.insert(image.end(), lb.data.begin(), lb.data.end());
+        image.insert(image.end(), lb.rodata.begin(), lb.rodata.end());
+        const auto image_size = static_cast<uint32_t>(image.size());
+        image.resize((image.size() + B - 1) / B * B, 0);
 
         std::vector<uint8_t> header(B, 0);
-        auto put32 = [&](const size_t off, uint32_t v) {
-            for (int i = 0; i < 4; i++) header[off + i] = (v >> (8 * i)) & 0xFF;
-        };
-        put32(0, BOOT_MAGIC);
-        put32(4, load_address);
-        put32(8, entry);
-        put32(12, n_blocks);
+        put32(header, 0, EXEC_MAGIC);
+        put32(header, 4, USER_BASE);
+        put32(header, 8, lb.entry_pc);
+        put32(header, 12, image_size);
+        put32(header, 16, lb.bss_size);
+        put32(header, 20, lb.stack_size ? lb.stack_size : default_stack);
 
-        flash_disk(header, 0);
-        flash_disk(image, 1);
+        out_blocks = header;
+        out_blocks.insert(out_blocks.end(), image.begin(), image.end());
+        return "";
+    }
+
+        // Construit tout le disque : superblock, table, kernel, programmes.
+    std::string build_disk(const std::vector<std::pair<std::string, std::string>>& kernel_sources,
+        const std::vector<ProgramSource>& programs, const uint32_t load_address = KERNEL_BASE) {
+        constexpr uint32_t B = StorageDevice::BLOCK_SIZE;
+        constexpr uint32_t ENTRY = 32;
+        if (programs.size() > B / ENTRY) return "too many programs (max 16)\n";
+
+        std::vector<uint8_t> k_image;
+        uint32_t k_entry = 0;
+        if (std::string err = build_image(kernel_sources, load_address, k_image, k_entry); !err.empty()) return err;
+        k_image.resize((k_image.size() + B - 1) / B * B, 0);
+        if (static_cast<uint64_t>(load_address) + k_image.size() > KERNEL_STACK_TOP - 0x1000)
+            return "kernel image too large\n";
+        const auto k_blocks = static_cast<uint32_t>(k_image.size() / B);
+
+        std::vector<uint8_t> disk(2 * B, 0); //bloc 0 = superblock, bloc 1 = table
+        disk.insert(disk.end(), k_image.begin(), k_image.end());
+
+        for (size_t i = 0; i < programs.size(); i++) {
+            std::vector<uint8_t> exe;
+            if (std::string err = build_executable(programs[i].files, exe); !err.empty()) return err;
+            const size_t t = B + i * ENTRY;
+            const std::string& n = programs[i].name;
+            for (size_t k = 0; k < n.size() && k < 15; k++) disk[t + k] = static_cast<uint8_t>(n[k]);
+            put32(disk, t + 16, static_cast<uint32_t>(disk.size() / B)); //header bloc
+            put32(disk, t + 20, static_cast<uint32_t>(exe.size() / B));
+            disk.insert(disk.end(), exe.begin(), exe.end());
+        }
+
+        put32(disk, 0, BOOT_MAGIC);
+        put32(disk, 4, DISK_VERSION);
+        put32(disk, 8, B);
+        put32(disk, 12, static_cast<uint32_t>(disk.size() / B));
+        put32(disk, 16, 2); // kernel_start
+        put32(disk, 20, k_blocks);
+        put32(disk, 24, load_address);
+        put32(disk, 28, k_entry);
+        put32(disk, 32, 1); // table_start
+        put32(disk, 36, static_cast<uint32_t>(programs.size()));
+
+        mb.hard_drive = std::move(disk);
         return "";
     }
 
@@ -221,7 +282,7 @@ struct EnvironmentManager {
         std::vector<ObjectFile> obj_files;
         decoder.includes = &inputs;
         for (const auto& [name, program] : inputs) {
-            auto [obj_file, error_info] = decoder.decode(program);
+            auto [obj_file, error_info] = decoder.decode(name, program);
             if (error_info.code != ErrorCode::OK) return handle_error(name, error_info);
             obj_files.emplace_back(obj_file);
         }

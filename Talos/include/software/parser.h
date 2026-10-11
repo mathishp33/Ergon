@@ -93,7 +93,7 @@ struct Token {
     std::string text; // for Identifier/Op, or raw number text
     bool isFloat = false; // '.' or 'f'
 
-    Token(TokenType t, std::string s, bool iF = false) : type(t), text(std::move(s)), isFloat(iF) {}
+    Token(const TokenType t, std::string s, const bool iF = false) : type(t), text(std::move(s)), isFloat(iF) {}
 };
 
 inline std::string strip_spaces_outside_quotes(const std::string& str) {
@@ -124,14 +124,14 @@ inline std::pair<ErrorInfo, std::vector<Token>> tokenize(const std::string& str)
 
     size_t i = 0;
     while (i < s.size()) {
-        char c = s[i];
+        const char c = s[i];
 
         if (std::isdigit((unsigned char)c) || c == '.') {
-            size_t start = i;
+            const size_t start = i;
             bool isFloat = false;
 
             if (c == '0' && i + 1 < s.size() && std::string("xXbBoO").find(s[i + 1]) != std::string::npos) {
-                bool hex = (s[i + 1] == 'x' || s[i + 1] == 'X');
+                const bool hex = s[i + 1] == 'x' || s[i + 1] == 'X';
                 i += 2;
                 while (i < s.size() && (hex ? std::isxdigit((unsigned char)s[i]) : std::isdigit((unsigned char)s[i]))) i++;
             } else {
@@ -142,10 +142,10 @@ inline std::pair<ErrorInfo, std::vector<Token>> tokenize(const std::string& str)
                 if (i < s.size() && (s[i] == 'e' || s[i] == 'E')) { //exponent (1e5, 1e-5)
                     size_t j = i + 1;
                     if (j < s.size() && (s[j] == '+' || s[j] == '-')) j++;
-                    if (j < s.size() && std::isdigit((unsigned char)s[j])) {
+                    if (j < s.size() && std::isdigit(static_cast<unsigned char>(s[j]))) {
                         isFloat = true;
                         i = j;
-                        while (i < s.size() && std::isdigit((unsigned char)s[i])) i++;
+                        while (i < s.size() && std::isdigit(static_cast<unsigned char>(s[i]))) i++;
                     }
                 }
                 if (i < s.size() && s[i] == 'f') { isFloat = true; i++; } // float (1.5f)
@@ -159,9 +159,9 @@ inline std::pair<ErrorInfo, std::vector<Token>> tokenize(const std::string& str)
             tokens.emplace_back(TokenType::Number, std::to_string((int)s[i + 1]));
             i += 3;
         }
-        else if (std::isalpha((unsigned char)c) || c == '_') { //variable or constant
-            size_t start = i;
-            while (i < s.size() && (std::isalnum((unsigned char)s[i]) || s[i] == '_')) i++;
+        else if (std::isalpha(static_cast<unsigned char>(c)) || c == '_') { //variable or constant
+            const size_t start = i;
+            while (i < s.size() && (std::isalnum(static_cast<unsigned char>(s[i])) || s[i] == '_')) i++;
             tokens.emplace_back(TokenType::Identifier, s.substr(start, i - start));
         }
         else if (c == '(') {

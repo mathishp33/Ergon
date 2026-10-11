@@ -153,9 +153,69 @@ namespace string_utils {
     }
 
     static std::string normalize(std::string line) {
-        line = line.substr(0, line.find(';'));
-
+        char quote = 0;
+        for (size_t i = 0; i < line.size(); i++) {
+            const char c = line[i];
+            if (quote) {
+                if (c == '\\' && quote == '"') {
+                    i++;
+                    continue;
+                }
+                if (c == quote) quote = 0;
+            }
+            else if (c == '"' || c == '\'')
+                quote = c;
+            else if (c == ';') {
+                line.resize(i);
+                break;
+            }
+        }
         return trim_spaces(line);
+    }
+
+    inline bool unescape(const std::string& s, std::string& out, std::string& err) {
+        out.clear();
+        for (size_t i = 0; i < s.size(); i++) {
+            if (s[i] != '\\') {
+                out += s[i];
+                continue;
+            }
+            if (++i >= s.size()) {
+                err = "trailing backslash in string";
+                return false;
+            }
+            switch (s[i]) {
+            case 'n':  out += '\n'; break;
+            case 't':  out += '\t'; break;
+            case 'r':  out += '\r'; break;
+            case 'a':  out += '\a'; break;
+            case 'b':  out += '\b'; break;
+            case 'f':  out += '\f'; break;
+            case 'v':  out += '\v'; break;
+            case '0':  out += '\0'; break;
+            case '\\': out += '\\'; break;
+            case '"':  out += '"';  break;
+            case '\'': out += '\''; break;
+            case 'x': {
+                if (i + 2 >= s.size()) {
+                    err = "\\x expects 2 hex digits";
+                    return false;
+                }
+                const int hi = char_to_int(s[i + 1]), lo = char_to_int(s[i + 2]);
+                if (hi < 0 || hi > 15 || lo < 0 || lo > 15) {
+                    err = "\\x expects 2 hex digits";
+                    return false;
+                }
+                out += static_cast<char>(hi * 16 + lo);
+                i += 2;
+                break;
+            }
+            default:
+                err = std::string("unknown escape sequence '\\") + s[i] + "'";
+                return false;
+            }
+        }
+        return true;
     }
 
     inline void remove_blank_lines(std::string& s) {

@@ -60,19 +60,19 @@ struct Assembler {
 
     ErrorInfo decode_line(const std::string& line) {
         //sections
-        if (line == ".section .text" || line == ".text") {
+        if (line == ".section .text") {
             cur_section = Section::TEXT;
             return { };
         }
-        if (line == ".section .data" || line == ".data") {
+        if (line == ".section .data") {
             cur_section = Section::DATA;
             return { };
         }
-        if (line == ".section .rodata" || line == ".rodata") {
+        if (line == ".section .rodata") {
             cur_section = Section::RODATA;
             return { };
         }
-        if (line == ".section .bss" || line == ".bss") {
+        if (line == ".section .bss") {
             cur_section = Section::BSS;
             return { };
         }
@@ -393,14 +393,36 @@ struct Assembler {
             return { };
         }
         if (instr == ".asciz") {
-            std::string expr = line.substr(instr.size() + 1);
-            if (string_utils::rep_counter(expr, '\"') != 2)
-                return { ErrorCode::INVALID_ARG_SIZE, "invalid argument size, expected 2", i };
-            for (size_t j = 1; j < expr.size() - 1; j++) {
-                emit_u8(expr[j]);
-            }
-            emit_u8('\0');
+            const std::string expr = line.size() > instr.size() ? string_utils::trim_spaces(line.substr(instr.size() + 1)) : "";
+            if (expr.empty() || expr.front() != '"')
+                return { ErrorCode::INVALID_ARG, "expected .asciz \"text\"", i };
 
+            size_t close = 0;
+            if (expr.size() > 1) {
+                for (size_t j = 1; j < expr.size(); j++) {
+                    if (expr[j] == '\\') {
+                        j++;
+                        continue;
+                    }
+                    if (expr[j] == '"') {
+                        close = j;
+                        break;
+                    }
+                }
+            }
+            if (close == 0)
+                return { ErrorCode::INVALID_ARG, "unterminated string", i };
+            if (close != expr.size() - 1)
+                return { ErrorCode::INVALID_ARG, "unexpected text after string", i };
+
+            std::string bytes, err;
+            if (!string_utils::unescape(expr.substr(1, close - 1), bytes, err))
+                return { ErrorCode::INVALID_ARG, err, i };
+
+            for (const char ch : bytes)
+                emit_u8(static_cast<uint8_t>(ch));
+            emit_u8(0);
+            return { };
         }
         if (instr == ".space") {
             if (args.size() != 1)
@@ -433,7 +455,7 @@ struct Assembler {
         return { };
     }
 
-    std::pair<ObjectFile, ErrorInfo> decode(const std::string& file) {
+    std::pair<ObjectFile, ErrorInfo> decode(const std::string& name, const std::string& file) {
         obj_file = ObjectFile();
         vars.clear();
         cur_pc = 0;
@@ -441,7 +463,7 @@ struct Assembler {
         preproc = PreProcesser();
         preproc.includes = includes;
         std::string copy_file = file;
-        if (ErrorInfo e_pp = preproc.preprocess(copy_file); e_pp.code != ErrorCode::OK)
+        if (ErrorInfo e_pp = preproc.preprocess(copy_file, RecursionHandler(), name); e_pp.code != ErrorCode::OK)
             return { obj_file, e_pp };
 
         lines = string_utils::slice_str(copy_file, '\n');

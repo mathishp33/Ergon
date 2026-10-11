@@ -40,22 +40,26 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="added %ifndef and %ifn (also did a total rework of branch system)">
+    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="cleaned lines">
+      <change afterPath="$PROJECT_DIR$/tests/test_kernel/vm/hello.asm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/test_kernel/vm/layout.inc" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/test_kernel/vm/loader.asm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/test_kernel/vm/mmio.inc" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/test_kernel/vm/storage.asm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/test_kernel/vm/syscalls.inc" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/TODO.md" beforeDir="false" afterPath="$PROJECT_DIR$/TODO.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Talos/include/hardware/bus.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/hardware/bus.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/hardware/core.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/hardware/core.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/hardware/cpu.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/hardware/cpu.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/hardware/fpu.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/hardware/fpu.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Talos/include/hardware/instructions_handler/run_handler.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/hardware/instructions_handler/run_handler.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Talos/include/hardware/mother_board.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/hardware/mother_board.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Talos/include/software/assembler/assembler.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/software/assembler/assembler.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/software/assembler/linker.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/software/assembler/linker.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/software/assembler/preprocessor.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/software/assembler/preprocessor.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/software/data.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/software/data.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/software/error.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/software/error.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Talos/include/software/instructions.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/software/instructions.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/software/parser.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/software/parser.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/software/utils.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/software/utils.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/virtual_machine/environment_manager.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/virtual_machine/environment_manager.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tests/test_kernel/kernel_test.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_kernel/kernel_test.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_kernel/vm/kernel/kernel.asm" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_kernel/vm/kernel.asm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_kernel/vm/boot.asm" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_kernel/vm/boot.asm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_kernel/vm/kernel.asm" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_kernel/vm/kernel.asm" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -89,6 +93,9 @@
     &quot;accountId&quot;: &quot;d265dc3e-7c09-43ad-ad06-a226187da898&quot;
   }
 }</component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/tests/test_kernel/vm/mmio.inc" root0="FORCE_HIGHLIGHTING" />
+  </component>
   <component name="MacroExpansionManager">
     <option name="directoryName" value="d1oNEqBJ" />
   </component>
@@ -326,7 +333,12 @@
       <workItem from="1791298244156" duration="2552000" />
       <workItem from="1791304512781" duration="1352000" />
       <workItem from="1791397324884" duration="3076000" />
-      <workItem from="1791483328728" duration="3629000" />
+      <workItem from="1791483328728" duration="3680000" />
+      <workItem from="1791561987605" duration="2023000" />
+      <workItem from="1791569944728" duration="4053000" />
+      <workItem from="1791633140267" duration="2508000" />
+      <workItem from="1791639818664" duration="7930000" />
+      <workItem from="1791703692745" duration="317000" />
     </task>
     <task id="LOCAL-00001" summary="checkpoint commit">
       <option name="closed" value="true" />
@@ -656,7 +668,15 @@
       <option name="project" value="LOCAL" />
       <updated>1791485455523</updated>
     </task>
-    <option name="localTasksCounter" value="42" />
+    <task id="LOCAL-00042" summary="cleaned lines">
+      <option name="closed" value="true" />
+      <created>1791488068572</created>
+      <option name="number" value="00042" />
+      <option name="presentableId" value="LOCAL-00042" />
+      <option name="project" value="LOCAL" />
+      <updated>1791488068572</updated>
+    </task>
+    <option name="localTasksCounter" value="43" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -692,7 +712,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="added .zero, .asciz, basic system calls." />
     <MESSAGE value="implemented .asciz" />
     <MESSAGE value="implemented a little executor manager &gt;w&lt; hi hi hi" />
     <MESSAGE value="fixed linker bug with align" />
@@ -717,7 +736,19 @@
     <MESSAGE value="added things" />
     <MESSAGE value="added %include" />
     <MESSAGE value="added %ifndef and %ifn (also did a total rework of branch system)" />
-    <option name="LAST_COMMIT_MESSAGE" value="added %ifndef and %ifn (also did a total rework of branch system)" />
+    <MESSAGE value="cleaned lines" />
+    <option name="LAST_COMMIT_MESSAGE" value="cleaned lines" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/tests/test_kernel/kernel_test.cpp</url>
+          <line>57</line>
+          <option name="timeStamp" value="19" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

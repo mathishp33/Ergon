@@ -1,11 +1,6 @@
-%equ MMIO_HI 0xF000
-%equ DISK_BLOCK 0x0100
-%equ DISK_BUFFER 0x0104
-%equ DISK_CMD 0x0108
-%equ DISK_STATUS 0x010C
+%include "layout.inc"
+%include "mmio.inc"
 %equ HDR_BUF 0x0400
-%equ BLOCK_SIZE 512
-%equ BOOT_MAGIC 0x4E475245
 
 .section .text
   .entry boot
@@ -25,28 +20,32 @@
       ret
 
   boot:
-      movi r10, MMIO_HI
-      shli r10, r10, 16 ; r10 = MMIO_BASE
+    movi r10, MMIO_BASE
 
-      ; header
-      movi r1, 0
-      movi r2, HDR_BUF
-      call disk_read_block
-      cmpi r0, 0
-      jnz boot_fail
+    ; header
+    movi r1, 0
+    movi r2, HDR_BUF
+    call disk_read_block
+    cmpi r0, 0
+    jnz boot_fail
 
-      movi r3, HDR_BUF
-      lbasew r4, r3, 0 ; magic
-      cmpi r4, BOOT_MAGIC
-      jnz boot_fail
-      lbasew r7, r3, 4 ; load_addr
-      lbasew r8, r3, 8 ; entry
-      lbasew r9, r3, 12 ; n_blocks
+    movi r3, HDR_BUF
+    lbasew r4, r3, SB_MAGIC
+    cmpi r4, BOOT_MAGIC
+    jnz boot_fail
+    lbasew r4, r3, SB_VERSION
+    cmpi r4, DISK_VERSION
+    jnz boot_fail
+    lbasew r1, r3, SB_KSTART ; bloc courant
+    lbasew r9, r3, SB_KBLOCKS
+    lbasew r2, r3, SB_KLOAD ; adresse RAM courante
+    lbasew r8, r3, SB_KENTRY ; entrée du kernel
+    mov r3, r9 ; blocs restants
 
-      ; boucle de chargement : blocs_1..blocks_n -> load_addr
-      movi r1, 1 ; bloc courant
-      mov r2, r7 ; adresse RAM courante
-      mov r3, r9 ; blocs restants
+    ; boucle de chargement : blocs_1..blocks_n -> load_addr
+    movi r1, 1 ; bloc courant
+    mov r2, r7 ; adresse RAM courante
+    mov r3, r9 ; blocs restants
   load_loop:
     cmpi r3, 0
     jz load_done

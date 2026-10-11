@@ -1,8 +1,4 @@
 
-
-bon j'avoue que j'ai donné le TODO à refaire par ChatGPT... (j'avais trop la flemme)
-j'ai quand meme rédigé les parties importantes :-)
-
 ===================== FAIT =====================
 
 [x] Fetch depuis la RAM (format d'instruction fixe 8o, PC = adresse octet)
@@ -12,17 +8,17 @@ j'ai quand meme rédigé les parties importantes :-)
 [x] Infrastructure de boot (ROM séparée, build_rom/build_image/flash_disk, base_address dans link())
 [x] boot.asm : boucle DISK_READ + saut indirect (push/ret) vers le kernel
 [x] kernel.asm : dispatcher de syscalls (lit r0, route, écrit r0, sysret)
+[x] Storage driver (asm) au-dessus des registres DISK_* (*)
+[x] superblocs
+[x] Format executable
 
 ===================== KERNEL / BOOT (C++ prêt, reste l'assembleur) =====================
 1. Timer IRQ + préemption (InterruptController est un stub vide dans devices.h)
-4. Storage driver (asm) au-dessus des registres DISK_* (*)
-5. Format de disque minimal (superblock) (*)
 6. Allocation de blocs
 7. Inodes
 8. Répertoires
 9. Création/lecture/écriture de fichiers
 10. File descriptors
-11. Format exécutable Ergon + executable loader (*)
 12. Process structure
 13. Scheduler
 14. Plusieurs Core dans CPU (multi-coeur) -> voir note plus bas
@@ -57,6 +53,21 @@ problème déjà pas trivial.
 Ajouter GPU, Ecran, ... (Graphiques)
 Ajouter SoundCard
 Ajouter INTERNET !!!
+
+===================== STORAGE =====================
+
+Applications(open(), write(), ...) -> User ASM(SYS_OPEN, SYS_WRITE) -> VFS(Files, Dirs, Paths)
+-> FileSystem Manager(Allocations, inodes, directories) -> BlockStorage Layer(Block cache, block requests, I/O scheduler)
+-> Storage Driver(read/write sectors, device interface)
+-> devices.h(memory, flash, ...)
+
+bloc 0        superblock
+bloc 1        table des exécutables (16 entrées × 32 o)
+blocs 2..K    image kernel
+blocs K+1..   exécutables : [header 512 o][image paddée à 512 o]
+
+boot.asm (ROM) ─ lit le superblock ─► charge le kernel
+kernel.asm ─► loader.asm (exec_load) ─► storage.asm (disk_read / disk_write) ─► MMIO
 
 ------------------------------------------------------------------------------------------------------------------------
 

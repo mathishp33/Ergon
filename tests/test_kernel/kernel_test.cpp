@@ -9,8 +9,9 @@
 
 namespace fs = std::filesystem;
 
-std::string load(const fs::path& path) {
-    const std::ifstream file(fs::absolute(path).string());
+std::string load(const fs::path& base_path, const fs::path& path) {
+    fs::path full_path = base_path / path;
+    const std::ifstream file(full_path.string());
 
     if (!file)
         return "error";
@@ -34,18 +35,22 @@ static const char* to_str(const RunResult r) {
 }
 
 int main() {
-    auto env = EnvironmentManager(0xFFFFFFFF);
+    auto env = EnvironmentManager();
 
     std::cout << "\n---------- BUILD RESULT ----------\n";
 
-    const fs::path BOOT_PATH = { "vm/boot.asm" };
-    const fs::path KERNEL_PATH = { "vm/kernel.asm" };
+    const fs::path BASE_PATH = { "C:/Users/mathi/CLionProjects/Ergon/tests/test_kernel/vm/" };
+    const std::vector<std::pair<std::string, std::string>> incs = {
+        { "mmio.inc", load(BASE_PATH, "mmio.inc") }, { "layout.inc", load(BASE_PATH, "layout.inc") },
+        { "syscalls.inc", load(BASE_PATH, "syscalls.inc") } };
+    auto pool = [&](std::vector<std::pair<std::string, std::string>> v) {
+        v.insert(v.end(), incs.begin(), incs.end()); return v; };
 
-    const std::string boot = load(BOOT_PATH);
-    const std::string kernel = load(KERNEL_PATH);
-
-    std::cout << env.build_rom({ { "boot.asm", boot } }) << std::endl;
-    std::cout << env.install_kernel({ { "kernel.asm", kernel } }) << std::endl;
+    std::cout << env.build_rom(pool({ { "boot.asm", load(BASE_PATH, "boot.asm") } })) << std::endl;
+    std::cout << env.build_disk(pool({ { "kernel.asm", load(BASE_PATH, "kernel.asm") },
+        { "storage.asm", load(BASE_PATH, "storage.asm") },{ "loader.asm", load(BASE_PATH, "loader.asm") } }),
+        { { "hello", pool({ { "hello.asm", load(BASE_PATH, "hello.asm") } }) } })
+    << std::endl;
 
     env.mb.reset();
 
@@ -56,9 +61,9 @@ int main() {
 
     std::cout << "\n---------- RUN RESULT ----------\n";
 
-    std::cout << "RUN DURATION: " << duration.count() << " micro_sec" << std::endl;
+    std::cout << "RUN DURATION: " << duration.count() << " micro_sec\n" << std::endl;
 
-    std::cout << "\n" << to_str(rr) << ", exit_code=" << env.exit_code << "\n";
+    std::cout << "RunResult: " << to_str(rr) << "\n";
 
     std::cout << "EXIT CODE:  " << env.exit_code << std::endl;
 

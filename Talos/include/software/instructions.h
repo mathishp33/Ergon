@@ -94,6 +94,8 @@ inline std::unordered_map<std::string, InstrDef> instr_table = {
     {"fcmp", {FCMP, InstrType::R, { ArgType::REG, ArgType::REG }, { 1, 2 } }},
     {"fmov", {FMOV, InstrType::R, { ArgType::REG, ArgType::REG }, { 0, 1 } }},
     {"movf", {MOVF, InstrType::R, { ArgType::REG, ArgType::REG }, { 0, 1 } }},
+    {"itof", {ITOF, InstrType::R, { ArgType::REG, ArgType::REG }, { 0, 1 } }},
+    {"ftoi", {FTOI, InstrType::R, { ArgType::REG, ArgType::REG }, { 0, 1 } }},
     {"fldw", {FLDW_ABS, InstrType::I, { ArgType::REG, ArgType::VAR }, { 0, 2 } }},
     {"fstw", {FSTW_ABS, InstrType::I, { ArgType::REG, ArgType::VAR }, { 0, 2 } }},
     {"flbasew", {FLDW_BASE, InstrType::I, { ArgType::REG, ArgType::REG, ArgType::IMM }, { 0, 1, 2 } }},
