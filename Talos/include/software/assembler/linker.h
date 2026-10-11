@@ -12,6 +12,7 @@ struct LinkedBinary {
     std::vector<uint8_t> data;
     std::vector<uint8_t> rodata;
     uint32_t bss_size = 0;
+    std::vector<uint32_t> abs_relocs;
 
     uint32_t entry_pc = 0;
     uint32_t stack_size = 0;
@@ -107,13 +108,12 @@ inline std::pair<ErrorInfo, LinkedBinary> link(std::vector<ObjectFile>& objects,
     for (auto& obj : objects) {
         if (!obj.entry_symbol.empty()) {
             uint32_t entry_value = 0;
-            if (const auto g = globals.find(obj.entry_symbol); g != globals.end() && g->second.section == Section::TEXT) {
+            if (const auto l = obj.symbols.find(obj.entry_symbol); l != obj.symbols.end() && l->second.bind == SymbolBinding::LOCAL && l->second.section == Section::TEXT) {
+                entry_value = obj.text_base + l->second.value;
+            } else if (const auto g = globals.find(obj.entry_symbol); g != globals.end() && g->second.section == Section::TEXT) {
                 entry_value = g->second.value;
             } else {
-                const auto l = obj.symbols.find(obj.entry_symbol);
-                if (l == obj.symbols.end() || l->second.section != Section::TEXT)
-                    return { { ErrorCode::UNKNOWN_ENTRY_SYBOL, "unknown entry symbol \"" + obj.entry_symbol + "\"" }, out };
-                entry_value = obj.text_base + l->second.value;
+                return { { ErrorCode::UNKNOWN_ENTRY_SYBOL, std::format("unknown entry symbol \"{}\"", obj.entry_symbol) }, out };
             }
 
             out.entry_pc = entry_value * INSTR_SIZE + base_address;
@@ -128,40 +128,25 @@ inline std::pair<ErrorInfo, LinkedBinary> link(std::vector<ObjectFile>& objects,
 
         for (auto& rel : obj.relocations) {
             uint32_t sym_addr = 0;
-            if (!globals.contains(rel.symbol)) {
-                switch (const Symbol& S = obj.symbols[rel.symbol]; S.section) {
+            if (const auto lit = obj.symbols.find(rel.symbol); lit != obj.symbols.end() && lit->second.bind == SymbolBinding::LOCAL) {
+                switch (const Symbol& S = lit->second; S.section) {
                 case Section::TEXT:
-                    sym_addr = (obj.text_base + S.value) * INSTR_SIZE;
-                    break;
-
+                    sym_addr = (obj.text_base + S.value) * INSTR_SIZE; break;
                 case Section::DATA:
-                    sym_addr = obj.data_base + S.value;
-                    break;
-
+                    sym_addr = obj.data_base + S.value; break;
                 case Section::RODATA:
-                    sym_addr = obj.rodata_base + S.value;
-                    break;
-
+                    sym_addr = obj.rodata_base + S.value; break;
                 case Section::BSS:
-                    sym_addr = obj.bss_base + S.value;
-                    break;
-
-                default:
-                    break;
-                }
-            }
-            else {
-                switch (const GlobalSymbol& GS = globals.at(rel.symbol); GS.section) {
-                case Section::TEXT:
-                    sym_addr = GS.value * INSTR_SIZE; break;
-                case Section::DATA:
-                    sym_addr = GS.value; break;
-                case Section::RODATA:
-                    sym_addr = GS.value; break; // RAM offset = total data size
-                case Section::BSS:
-                    sym_addr = GS.value; break; // RAM offset = total data + rodata size
+                    sym_addr = obj.bss_base + S.value; break;
                 default: break;
                 }
+            }
+            else if (const auto git = globals.find(rel.symbol); git != globals.end()) {
+                if (const GlobalSymbol& GS = git->second; GS.section == Section::TEXT) sym_addr = GS.value * INSTR_SIZE;
+                else sym_addr = GS.value; // DATA / RODATA / BSS : déjà en octets depuis le début de l'image
+            }
+            else {
+                return { { ErrorCode::UNKNOWN_SYMBOL, "unresolved symbol \"" + rel.symbol + "\"" }, out };
             }
 
             DecodedInstr& I = out.text[obj.text_base + rel.offset];
@@ -170,9 +155,11 @@ inline std::pair<ErrorInfo, LinkedBinary> link(std::vector<ObjectFile>& objects,
                 const auto pc = static_cast<int32_t>((obj.text_base + rel.offset) * INSTR_SIZE);
                 I.imm = static_cast<int32_t>(sym_addr) - pc;
             }
-            if (rel.type == RelocType::ABS_32)
+            if (rel.type == RelocType::ABS_32) {
                 I.imm = static_cast<int32_t>(sym_addr) + static_cast<int32_t>(base_address);
-
+                // le texte est au début de l'image, l'imm est à +4 dans l'instruction
+                out.abs_relocs.push_back((obj.text_base + rel.offset) * INSTR_SIZE + 4);
+            }
         }
     }
 

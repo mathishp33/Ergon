@@ -58,7 +58,8 @@ inline RunResult run(SimpleCore& c) {
             &&OP_SYSCALL, &&OP_HALT,
 
             &&OP_SETTV, &&OP_SYSRET,
-            &&OP_SETKSP, &&OP_SETUSP, &&OP_GETUSP
+            &&OP_SETKSP, &&OP_SETUSP, &&OP_GETUSP,
+            &&OP_SETSL, &&OP_SETUB, &&OP_SETUL
         };
     for (auto& p : dispatch_table) if (!p) p = &&OP_ILLEGAL;
 
@@ -72,6 +73,9 @@ inline RunResult run(SimpleCore& c) {
     if (c.pending_fault) { \
     c.pending_fault = false; \
     if (!c.enter_trap(c.PC, c.fault_cause)) return RunResult::STACK_OVERFLOW; \
+    } \
+    if (c.mode == PrivMode::USER && !c.in_user_region(c.PC, INSTR_SIZE)) { \
+    if (!c.enter_trap(c.PC, 5)) return RunResult::STACK_OVERFLOW; \
     } \
     if (!c.bus.pc_in_bounds(c.PC)) return RunResult::PC_OVERFLOW;
 
@@ -359,7 +363,14 @@ OP_STW_REG:
     NEXT();
 
 OP_PUSH:
-    if (c.SP < 4 || c.SP - 4 < STACK_FLOOR()) { return RunResult::STACK_OVERFLOW; }
+    if (c.SP < 4 || c.SP - 4 < STACK_FLOOR()) {
+        if (c.mode == PrivMode::USER) {
+            c.pending_fault = true;
+            c.fault_cause = 4;
+            NEXT();
+        }
+        return RunResult::STACK_OVERFLOW;
+    }
     c.SP -= 4;
     c.store32(c.SP, c.regs[instr->rs1]);
     NEXT();
@@ -380,14 +391,14 @@ OP_SWAP:
 OP_CLR:
     c.regs[instr->rd] = 0;
     NEXT();
-OP_MEMCPY: {
-    // Copie octet à octet via c.store8/c.load8 : ça respecte le
-    // routage RAM/MMIO du bus au lieu de taper direct dans le vector.
-    int32_t len = instr->imm;
-    if (len > 0) {
-        for (uint32_t idx = 0; idx < (uint32_t)len; ++idx)
-            c.store8(c.regs[instr->rd] + idx, c.load8(c.regs[instr->rs1] + idx));
-    }
+OP_MEMCPY:
+    {
+        // Copie octet à octet via c.store8/c.load8 : ça respecte le
+        // routage RAM/MMIO du bus au lieu de taper direct dans le vector.
+        int32_t len = instr->imm;
+        if (len > 0)
+            for (uint32_t idx = 0; idx < (uint32_t)len; ++idx)
+                c.store8(c.regs[instr->rd] + idx, c.load8(c.regs[instr->rs1] + idx));
     }
     NEXT();
 OP_JMP:
@@ -436,11 +447,15 @@ OP_JG:
     NEXT();
     }
 OP_CALL:
-    if (c.SP < 4 || c.SP - 4 < STACK_FLOOR()) { return RunResult::STACK_OVERFLOW; }
+    if (c.SP < 4 || c.SP - 4 < STACK_FLOOR()) {
+        if (c.mode == PrivMode::USER) {
+            c.pending_fault = true;
+            c.fault_cause = 4;
+            NEXT();
+        }
+        return RunResult::STACK_OVERFLOW;
+    }
     c.SP -= 4;
-    // NOTE: PC + 1 -> PC + INSTR_SIZE : l'adresse de retour est celle de
-    // l'instruction SUIVANTE, en octets, plus l'ancien "+1" ne voulait
-    // plus rien dire une fois PC en octets.
     c.store32(c.SP, c.PC + INSTR_SIZE);
     c.PC += instr->imm;
     CHECK_PC();
@@ -509,6 +524,21 @@ OP_SETUSP:
 OP_GETUSP:
     REQUIRE_KERNEL();
     c.regs[instr->rd] = c.user_sp;
+    NEXT();
+
+OP_SETSL:
+    REQUIRE_KERNEL();
+    c.stack_limit = c.regs[instr->rs1];
+    NEXT();
+
+OP_SETUB:
+    REQUIRE_KERNEL();
+    c.user_base = c.regs[instr->rs1];
+    NEXT();
+
+OP_SETUL:
+    REQUIRE_KERNEL();
+    c.user_limit = c.regs[instr->rs1];
     NEXT();
 
 OP_ILLEGAL:

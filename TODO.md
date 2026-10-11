@@ -26,13 +26,10 @@
 11. EXEC / EXIT / WAIT
 
 ===================== ASSEMBLEUR / OUTILLAGE =====================
-25. AJOUTER %include (*)
-26. UPDATE le readme
 27. CHANGER sys_time (TimerDevice, devices.h) en prévision du bug 2038
 
 ===================== NETTOYAGE (mineur, pas urgent) =====================
-- run_handler.h : RunResult::SYSCALL_STOP n'est plus jamais retourné
-  (callback C++ supprimé), et #include <functional> n'est plus utilisé.
+- run_handler.h : RunResult::SYSCALL_STOP pas utilisé
 
 ===================== NOTE : plusieurs Core dans CPU =====================
 Actuellement SimpleCPU ne contient qu'un seul SimpleCore. Pour du

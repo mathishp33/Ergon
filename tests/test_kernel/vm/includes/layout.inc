@@ -1,9 +1,22 @@
+%equ DISK_VERSION 2
+
+; ---- HEADER EXEC ----
+%equ XH_NRELOC 24
+
+; ---- PROCESSUS ----
+%equ PROC_SLOT_BASE 0x100000
+%equ PROC_SLOT_SHIFT 20
+%equ PROC_SLOT_SIZE 0x100000
+%equ PROC_MAX 8
+%equ P_STATE 0 ; entrée de 16o = état, base, sommet
+%equ P_BASE 4
+%equ P_TOP 8
+
 %equ KERNEL_BASE 0x1000
 %equ KERNEL_STACK_TOP 0xF000
 %equ USER_BASE 0x10000
 %equ BOOT_MAGIC 0x4E475245
 %equ EXEC_MAGIC 0x43455845
-%equ DISK_VERSION 1
 %equ BLOCK_SIZE 512
 
 ; ---- SUPERBLOCK (bloc 0) ----

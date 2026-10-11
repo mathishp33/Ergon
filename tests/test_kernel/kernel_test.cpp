@@ -14,7 +14,7 @@ std::string load(const fs::path& base_path, const fs::path& path) {
     const std::ifstream file(full_path.string());
 
     if (!file)
-        return "error";
+        return "file not found";
 
     std::stringstream buffer;
     buffer << file.rdbuf();
@@ -39,18 +39,33 @@ int main() {
 
     std::cout << "\n---------- BUILD RESULT ----------\n";
 
-    const fs::path BASE_PATH = { "C:/Users/mathi/CLionProjects/Ergon/tests/test_kernel/vm/" };
-    const std::vector<std::pair<std::string, std::string>> incs = {
-        { "mmio.inc", load(BASE_PATH, "mmio.inc") }, { "layout.inc", load(BASE_PATH, "layout.inc") },
-        { "syscalls.inc", load(BASE_PATH, "syscalls.inc") } };
-    auto pool = [&](std::vector<std::pair<std::string, std::string>> v) {
-        v.insert(v.end(), incs.begin(), incs.end()); return v; };
+    const fs::path BASE_PATH = { "C:/Users/mathi/CLionProjects/Ergon/tests/test_kernel/" };
+    const fs::path KERNEL_PATH = BASE_PATH / "vm/kernel";
+    const fs::path BOOT_PATH = BASE_PATH / "vm/boot";
+    const fs::path INCS_PATH = BASE_PATH / "vm/includes/";
+    const fs::path PROGS_PATH = BASE_PATH / "vm/programs/";
 
-    std::cout << env.build_rom(pool({ { "boot.asm", load(BASE_PATH, "boot.asm") } })) << std::endl;
-    std::cout << env.build_disk(pool({ { "kernel.asm", load(BASE_PATH, "kernel.asm") },
-        { "storage.asm", load(BASE_PATH, "storage.asm") },{ "loader.asm", load(BASE_PATH, "loader.asm") } }),
-        { { "hello", pool({ { "hello.asm", load(BASE_PATH, "hello.asm") } }) } })
-    << std::endl;
+    const std::vector<std::pair<std::string, std::string>> incs = {
+        { "mmio.inc", load(INCS_PATH, "mmio.inc") },
+        { "layout.inc", load(INCS_PATH, "layout.inc") },
+        { "syscalls.inc", load(INCS_PATH, "syscalls.inc") }
+    };
+    auto pool = [&](std::vector<std::pair<std::string, std::string>> v) {
+        v.insert(v.end(), incs.begin(), incs.end()); return v;
+    };
+    const std::vector<std::pair<std::string, std::string>> kernel_soures = pool({
+        { "kernel.asm", load(KERNEL_PATH, "kernel.asm") },
+        { "storage.asm", load(KERNEL_PATH, "storage.asm") },
+        { "loader.asm", load(KERNEL_PATH, "loader.asm") } }
+        );
+    const std::vector<ProgramSource> programs = {
+        { "hello", pool({ { "hello.asm", load(PROGS_PATH, "hello.asm") } }) },
+     { "mem_fault", pool({ { "mem_fault.asm", load(PROGS_PATH, "mem_fault.asm") } }) },
+        { "stack_overflow.asm", pool({ { "stack_overflow.asm", load(PROGS_PATH, "stack_overflow.asm") } }) },
+    };
+
+    std::cout << "ROM_BUILD: " << env.build_rom(pool({ { "boot.asm", load(BOOT_PATH, "boot.asm") } })) << std::endl;
+    std::cout << "KERNEL_BUILD: " << env.build_disk(kernel_soures, programs) << std::endl;
 
     env.mb.reset();
 

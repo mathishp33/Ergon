@@ -4,3 +4,9 @@
 
 %equ SYS_ENOSYS -1
 %equ SYS_EFAULT -2
+
+%equ SYS_EXEC 3 ; r1 = indice de la table -> ne revient pas si OK, sinon r0 < 0
+
+%equ SYS_ENOENT -3
+%equ SYS_EBADEXEC -4
+%equ SYS_EIO -5

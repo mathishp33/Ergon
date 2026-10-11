@@ -48,7 +48,9 @@ enum OPCODE : uint8_t {
     SETKSP, // setksp rs : kernel_sp = regs[rs] (kernel-only)
     SETUSP, // setusp rs : user_sp = regs[rs] (kernel-only)
     GETUSP, // getusp rd : regs[rd] = user_sp (kernel-only)
-
+    SETSL, // setsl rs : stack_limit = regs[rs] (kernel-only)
+    SETUB, // setub rs : user_base = regs[rs] (kernel-only)
+    SETUL, // setul rs : user_limit = regs[rs] (kernel-only, borne exclusive)
 };
 
 
@@ -70,6 +72,8 @@ struct SimpleCore {
     uint32_t trap_vector = 0;
     uint32_t kernel_sp = 0; //SP loaded at begining of trap from USER
     uint32_t user_sp   = 0; //USER SP, saved at trap
+    uint32_t user_base  = 0; // USER : accès autorisés dans [user_base, user_limit)
+    uint32_t user_limit = 0xFFFFFFFF; // borne exclusive
     bool pending_fault = false;
     uint32_t fault_cause = 0; //1 = MMIO forbidden, 2 = privileged
     SystemBus& bus;
@@ -89,6 +93,8 @@ struct SimpleCore {
         trap_vector = 0;
         kernel_sp = 0;
         user_sp = 0;
+        user_base = 0;
+        user_limit = 0xFFFFFFFF;
         pending_fault = false;
         fault_cause = 0;
     }
@@ -108,52 +114,48 @@ struct SimpleCore {
         return true;
     }
 
-    uint32_t load32(const uint32_t addr) {
-        if (mode == PrivMode::USER && SystemBus::is_mmio(addr)) {
+    [[nodiscard]] bool in_user_region(const uint32_t addr, const uint32_t size) const {
+        return addr >= user_base && static_cast<uint64_t>(addr) + size <= user_limit;
+    }
+
+    // USER : MMIO interdit (cause 1), hors [user_base, user_limit) interdit (cause 5)
+    bool user_denied(const uint32_t addr, const uint32_t size) {
+        if (mode != PrivMode::USER) return false;
+        if (SystemBus::is_mmio(addr)) {
             pending_fault = true;
             fault_cause = 1;
-            return 0;
+            return true;
         }
+        if (!in_user_region(addr, size)) {
+            pending_fault = true;
+            fault_cause = 5;
+            return true;
+        }
+        return false;
+    }
+
+    uint32_t load32(const uint32_t addr) {
+        if (user_denied(addr, 4)) return 0;
         return bus.load32(addr);
     }
     uint16_t load16(const uint32_t addr) {
-        if (mode == PrivMode::USER && SystemBus::is_mmio(addr)) {
-            pending_fault = true;
-            fault_cause = 1;
-            return 0;
-        }
+        if (user_denied(addr, 2)) return 0;
         return bus.load16(addr);
     }
     uint8_t load8(const uint32_t addr) {
-        if (mode == PrivMode::USER && SystemBus::is_mmio(addr)) {
-            pending_fault = true;
-            fault_cause = 1;
-            return 0;
-        }
+        if (user_denied(addr, 1)) return 0;
         return bus.load8(addr);
     }
     void store32(const uint32_t addr, const uint32_t value) {
-        if (mode == PrivMode::USER && SystemBus::is_mmio(addr)) {
-            pending_fault = true;
-            fault_cause = 1;
-            return;
-        }
+        if (user_denied(addr, 4)) return;
         bus.store32(addr, value);
     }
     void store16(const uint32_t addr, const uint16_t value) {
-        if (mode == PrivMode::USER && SystemBus::is_mmio(addr)) {
-            pending_fault = true;
-            fault_cause = 1;
-            return;
-        }
+        if (user_denied(addr, 2)) return;
         bus.store16(addr, value);
     }
     void store8(const uint32_t addr, const uint8_t value) {
-        if (mode == PrivMode::USER && SystemBus::is_mmio(addr)) {
-            pending_fault = true;
-            fault_cause = 1;
-            return;
-        }
+        if (user_denied(addr, 1)) return;
         bus.store8(addr, value);
     }
 };

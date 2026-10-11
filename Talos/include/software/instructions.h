@@ -146,6 +146,9 @@ inline std::unordered_map<std::string, InstrDef> instr_table = {
     {"setksp", {SETKSP, InstrType::J, { ArgType::REG }, { 1 } }},
     {"setusp", {SETUSP, InstrType::J, { ArgType::REG }, { 1 } }},
     {"getusp", {GETUSP, InstrType::J, { ArgType::REG }, { 0 } }},
+    {"setsl", {SETSL, InstrType::J, { ArgType::REG }, { 1 } }},
+    {"setub", {SETUB, InstrType::J, { ArgType::REG }, { 1 } }},
+    {"setul", {SETUL, InstrType::J, { ArgType::REG }, { 1 } }},
 };
 
 

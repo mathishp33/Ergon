@@ -88,8 +88,8 @@ struct EnvironmentManager {
 
     // memory: [ text ][ data ][ rodata ][ bss ][ stack ]
     ErrorCode load_ram(const std::vector<uint8_t>& text, const std::vector<uint8_t>& data,
-        const std::vector<uint8_t>& rodata, uint32_t bss_size) {
-        if ((uint64_t)text.size() + data.size() + rodata.size() + bss_size > mb.cpu->core.stack_limit)
+        const std::vector<uint8_t>& rodata, const uint32_t bss_size) {
+        if (text.size() + data.size() + rodata.size() + bss_size > mb.cpu->core.stack_limit)
             return ErrorCode::RAM_OVERFLOW;
 
         for (size_t i = 0; i < text.size(); i++) {
@@ -137,8 +137,7 @@ struct EnvironmentManager {
             return std::string("Error: ") + ex.what() + "\n";
         }
 
-        const std::vector<uint8_t> text_bytes = to_bytes(linked_bin.text);
-        if (load_ram(text_bytes, linked_bin.data, linked_bin.rodata, linked_bin.bss_size) != ErrorCode::OK)
+        if (const std::vector<uint8_t> text_bytes = to_bytes(linked_bin.text); load_ram(text_bytes, linked_bin.data, linked_bin.rodata, linked_bin.bss_size) != ErrorCode::OK)
             return handle_error("linked binary", ErrorInfo(ErrorCode::RAM_OVERFLOW, 0));
 
         mb.cpu->core.PC = linked_bin.entry_pc; // déjà une adresse en octets (voir linker.h)
@@ -166,7 +165,7 @@ struct EnvironmentManager {
         running = true;
         exit_code = 1;
         start_time = std::chrono::system_clock::now();
-        RunResult RR = run(mb.cpu->core);
+        const RunResult RR = run(mb.cpu->core);
         //le kernel place le code de sortie dans r0 avant HALT.
         exit_code = static_cast<int>(mb.cpu->core.regs[0]);
         running = false;
@@ -201,8 +200,9 @@ struct EnvironmentManager {
             v[off + i] = x >> (8 * i) & 0xFF;
     }
 
+    // [header 512 o][image paddée][table de relocalisation paddée]. Liée à USER_BASE. Le bss n'est PAS dans l'image.
     std::string build_executable(const std::vector<std::pair<std::string, std::string>>& inputs,
-        std::vector<uint8_t>& out_blocks, const uint32_t default_stack = 0x4000) {
+        std::vector<uint8_t>& out_blocks, const uint32_t fallback_stack = 0x4000) {
         constexpr uint32_t B = StorageDevice::BLOCK_SIZE;
         std::vector<ObjectFile> objs;
         decoder.includes = &inputs;
@@ -220,16 +220,23 @@ struct EnvironmentManager {
         const auto image_size = static_cast<uint32_t>(image.size());
         image.resize((image.size() + B - 1) / B * B, 0);
 
+        std::vector<uint8_t> relocs(lb.abs_relocs.size() * 4);
+        for (size_t i = 0; i < lb.abs_relocs.size(); i++)
+            put32(relocs, i * 4, lb.abs_relocs[i]);
+        relocs.resize((relocs.size() + B - 1) / B * B, 0);
+
         std::vector<uint8_t> header(B, 0);
         put32(header, 0, EXEC_MAGIC);
         put32(header, 4, USER_BASE);
         put32(header, 8, lb.entry_pc);
         put32(header, 12, image_size);
         put32(header, 16, lb.bss_size);
-        put32(header, 20, lb.stack_size ? lb.stack_size : default_stack);
+        put32(header, 20, lb.stack_size ? lb.stack_size : fallback_stack);
+        put32(header, 24, static_cast<uint32_t>(lb.abs_relocs.size()));
 
         out_blocks = header;
         out_blocks.insert(out_blocks.end(), image.begin(), image.end());
+        out_blocks.insert(out_blocks.end(), relocs.begin(), relocs.end());
         return "";
     }
 
