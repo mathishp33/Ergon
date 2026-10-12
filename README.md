@@ -1,13 +1,10 @@
 # Structure
-Ergon is composed of:
-* <a href="#Hephaistos">Hephaistos</a> is a OS creation tool with its dedicated virtual environment
-* <a href="#Talos">Talos</a> is a virtual environment with its own 32 bit architecture (CPU, ASM interpreter & syntax, ...)
-
-# Hephaistos
+<a href="#Ergon">Ergon</a> is a  is a virtual environment with its own 32 bit architecture.
+The assembly language used is TalosAsm.
 
 
 
-# Talos
+# Ergon
 
 ## Help
 
