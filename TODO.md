@@ -53,11 +53,6 @@ Ajouter INTERNET !!!
 
 ===================== STORAGE =====================
 
-Applications(open(), write(), ...) -> User ASM(SYS_OPEN, SYS_WRITE) -> VFS(Files, Dirs, Paths)
--> FileSystem Manager(Allocations, inodes, directories) -> BlockStorage Layer(Block cache, block requests, I/O scheduler)
--> Storage Driver(read/write sectors, device interface)
--> devices.h(memory, flash, ...)
-
 bloc 0        superblock
 bloc 1        table des exécutables (16 entrées × 32 o)
 blocs 2..K    image kernel
@@ -71,7 +66,6 @@ kernel.asm ─► loader.asm (exec_load) ─► storage.asm (disk_read / disk_wr
 1. Storage device
 2. Storage driver
 3. Format du disque
-4. Superblock
 5. Allocation de blocs
 6. Inodes
 7. Répertoires
@@ -79,10 +73,8 @@ kernel.asm ─► loader.asm (exec_load) ─► storage.asm (disk_read / disk_wr
 9. File descriptors
 10. Executable loader
 11. Process structure
-12. SYSCALL/traps
 13. Scheduler
 14. Interruptions timer
-15. USER/KERNEL privilege separation
 
 ------------------------------------------------------------------------------------------------------------------------
 
@@ -138,22 +130,6 @@ TOTAL = FFFF
 
 ------------------------------------------------------------------------------------------------------------------------
 
-Programme Ergon\
-│\
-│ SYSCALL\
-▼\
-CPU / VM\
-│\
-│ trap\
-▼\
-Kernel Ergon\
-│\
-│ traite le syscall\
-▼\
-driver / filesystem / scheduler\
-
-------------------------------------------------------------------------------------------------------------------------
-
 USER program\
 │\
 │ SYSCALL\
@@ -171,10 +147,6 @@ USER program\
 │              │\
 │ mode KERNEL  │\
 └──────────────┘\
-
-ATTENTION AUX MECANISMES DE TRAP !!!!!\
-SEUL LE KERNEL DOIT POSSEDER LES DRIVERS
-
 
 Executable loader\
 ↓\
@@ -204,18 +176,6 @@ persistent disk\
 
 ------------------------------------------------------------------------------------------------------------------------
 
-VM\
-│\
-├── ROM\
-│    └── boot firmware\
-│\
-├── RAM\
-│\
-└── Storage\
-└── kernel executable\
-
-------------------------------------------------------------------------------------------------------------------------
-
 RESET\
 ↓\
 ROM boot code\
@@ -231,39 +191,3 @@ charger kernel depuis storage\
 kernel → RAM\
 ↓\
 jump kernel entry\
-
-------------------------------------------------------------------------------------------------------------------------
-
-┌────────────────────────────────────┐\
-│          USER PROGRAMS             │\
-│                                    │\
-│ shell / applications / games       │\
-└────────────────┬───────────────────┘\
-│\
-SYSCALL\
-│\
-▼\
-┌────────────────────────────────────┐\
-│              KERNEL                │\
-│                                    │\
-│ syscall handler                    │\
-│ scheduler                          │\
-│ process manager                    │\
-│ memory manager                     │\
-│ filesystem                         │\
-│ drivers                            │\
-│ executable loader                  │\
-└────────────────┬───────────────────┘\
-│\
-hardware access\
-│\
-▼\
-┌────────────────────────────────────┐\
-│                VM                  │\
-│                                    │\
-│ CPU                                │\
-│ RAM                                │\
-│ ROM                                │\
-│ Storage                            │\
-│ timers / devices                   │\
-└────────────────────────────────────┘\

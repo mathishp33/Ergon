@@ -40,28 +40,12 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="smells like teen spirit">
-      <change afterPath="$PROJECT_DIR$/tests/test_kernel/vm/kernel/kernel.asm" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/test_kernel/vm/kernel/loader.asm" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/test_kernel/vm/programs/mem_fault.asm" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/test_kernel/vm/programs/stack_overflow.asm" afterDir="false" />
+    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="fixed bugs &amp; added structured user programs">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/HELP.md" beforeDir="false" afterPath="$PROJECT_DIR$/HELP.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/TODO.md" beforeDir="false" afterPath="$PROJECT_DIR$/TODO.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/hardware/bus.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/hardware/bus.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/hardware/core.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/hardware/core.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/hardware/instructions_handler/run_handler.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/hardware/instructions_handler/run_handler.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/software/assembler/linker.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/software/assembler/linker.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/software/instructions.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/software/instructions.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/virtual_machine/environment_manager.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/virtual_machine/environment_manager.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_kernel/kernel_test.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_kernel/kernel_test.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_kernel/vm/boot.asm" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_kernel/vm/boot/boot.asm" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_kernel/vm/hello.asm" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_kernel/vm/programs/hello.asm" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_kernel/vm/kernel.asm" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_kernel/vm/layout.inc" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_kernel/vm/includes/layout.inc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_kernel/vm/loader.asm" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_kernel/vm/mmio.inc" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_kernel/vm/includes/mmio.inc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_kernel/vm/storage.asm" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_kernel/vm/kernel/storage.asm" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_kernel/vm/syscalls.inc" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_kernel/vm/includes/syscalls.inc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/software/parser.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/software/parser.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_kernel/vm/programs/hello.asm" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_kernel/vm/programs/hello.asm" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -161,7 +145,7 @@
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
     &quot;org.rust.first.attach.projects&quot;: &quot;true&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;CMakeSettings&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settingsdialog.textmate.bundles&quot;,
     &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
@@ -340,7 +324,10 @@
       <workItem from="1791703692745" duration="1676000" />
       <workItem from="1791717319452" duration="990000" />
       <workItem from="1791723385956" duration="988000" />
-      <workItem from="1791729728499" duration="3502000" />
+      <workItem from="1791729728499" duration="3656000" />
+      <workItem from="1791737861613" duration="191000" />
+      <workItem from="1791814281427" duration="6244000" />
+      <workItem from="1791829540651" duration="2480000" />
     </task>
     <task id="LOCAL-00001" summary="checkpoint commit">
       <option name="closed" value="true" />
@@ -694,7 +681,15 @@
       <option name="project" value="LOCAL" />
       <updated>1791705349401</updated>
     </task>
-    <option name="localTasksCounter" value="45" />
+    <task id="LOCAL-00045" summary="fixed bugs &amp; added structured user programs">
+      <option name="closed" value="true" />
+      <created>1791734214004</created>
+      <option name="number" value="00045" />
+      <option name="presentableId" value="LOCAL-00045" />
+      <option name="project" value="LOCAL" />
+      <updated>1791734214004</updated>
+    </task>
+    <option name="localTasksCounter" value="46" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -730,7 +725,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="implemented a little executor manager &gt;w&lt; hi hi hi" />
     <MESSAGE value="fixed linker bug with align" />
     <MESSAGE value="fixed align" />
     <MESSAGE value="&quot;je prie, je prie et je prie ...&quot; c'est ce que je disais quand à précisément 21:53 j'avais oublié de placer un NEXT(); dans mon dispatcher pour ne pas finir en enfer avec les programmeurs de merde. Je prie à la communauté d'informatique de France et de la Terre de bien vouloir me pardonner. J'ai bien compris que ma faute étais irréparable... J'ai demandé à claude de résoudre un bug sur ce projet ... Hélàs il n'était que plus confus que moi ... Il m'a avoué n'avoir rien compris et rien trouvé. Je me suis alors retrouvé face à moi même, regardant cet écran blanc (oui j'ai mis le thème clair sur CLion) pendant une bonne heure avant de me décider que croire en une religion monothéiste était peut-être la solution à tous mes problèmes. Finalement je pense que la morale de l'histoire est qu'il vaut mieux regarer son code deux fois qu'une et aussi que je devrais dormir. Non je ne deviens pas fou. Non je ne deviens pas fou. Non je ne deviens pas fou. Non je ne deviens pas fou. Non je ne deviens pas fou. Non je ne deviens pas fou. Hi Hi HI Hi HIHIhIH Ih IHiHihIH" />
@@ -755,7 +749,8 @@
     <MESSAGE value="cleaned lines" />
     <MESSAGE value="checkpoint" />
     <MESSAGE value="smells like teen spirit" />
-    <option name="LAST_COMMIT_MESSAGE" value="smells like teen spirit" />
+    <MESSAGE value="fixed bugs &amp; added structured user programs" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixed bugs &amp; added structured user programs" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

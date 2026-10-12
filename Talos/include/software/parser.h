@@ -123,45 +123,75 @@ inline std::pair<ErrorInfo, std::vector<Token>> tokenize(const std::string& str)
     std::string s = strip_spaces_outside_quotes(str);
 
     size_t i = 0;
-    while (i < s.size()) {
+    size_t n = s.size();
+    while (i < n) {
         const char c = s[i];
 
         if (std::isdigit((unsigned char)c) || c == '.') {
             const size_t start = i;
             bool isFloat = false;
 
-            if (c == '0' && i + 1 < s.size() && std::string("xXbBoO").find(s[i + 1]) != std::string::npos) {
+            if (c == '0' && i + 1 < n && std::string("xXbBoO").find(s[i + 1]) != std::string::npos) {
                 const bool hex = s[i + 1] == 'x' || s[i + 1] == 'X';
                 i += 2;
-                while (i < s.size() && (hex ? std::isxdigit((unsigned char)s[i]) : std::isdigit((unsigned char)s[i]))) i++;
+                while (i < n && (hex ? std::isxdigit((unsigned char)s[i]) : std::isdigit((unsigned char)s[i]))) i++;
             } else {
-                while (i < s.size() && (std::isdigit((unsigned char)s[i]) || s[i] == '.')) {
+                while (i < n && (std::isdigit((unsigned char)s[i]) || s[i] == '.')) {
                     if (s[i] == '.') isFloat = true;
                     i++;
                 }
-                if (i < s.size() && (s[i] == 'e' || s[i] == 'E')) { //exponent (1e5, 1e-5)
+                if (i < n && (s[i] == 'e' || s[i] == 'E')) { //exponent (1e5, 1e-5)
                     size_t j = i + 1;
-                    if (j < s.size() && (s[j] == '+' || s[j] == '-')) j++;
-                    if (j < s.size() && std::isdigit(static_cast<unsigned char>(s[j]))) {
+                    if (j < n && (s[j] == '+' || s[j] == '-')) j++;
+                    if (j < n && std::isdigit(static_cast<unsigned char>(s[j]))) {
                         isFloat = true;
                         i = j;
-                        while (i < s.size() && std::isdigit(static_cast<unsigned char>(s[i]))) i++;
+                        while (i < n && std::isdigit(static_cast<unsigned char>(s[i]))) i++;
                     }
                 }
-                if (i < s.size() && s[i] == 'f') { isFloat = true; i++; } // float (1.5f)
+                if (i < n && s[i] == 'f') { isFloat = true; i++; } // float (1.5f)
             }
             std::string f_str = s.substr(start, i - start);
             tokens.emplace_back(TokenType::Number, f_str, isFloat);
         }
-        else if (c == '\'') { //char
-            if (i + 2 >= s.size() || s[i + 2] != '\'')
-                return { { ErrorCode::INVALID_TOKEN, "invalid character literal" }, { } };
-            tokens.emplace_back(TokenType::Number, std::to_string((int)s[i + 1]));
-            i += 3;
+        else if (c == '\'') { // Character literal
+            if (i + 1 >= n)
+                return {{ErrorCode::INVALID_TOKEN, "unterminated character literal"}, {}};
+
+            char value;
+            size_t len;
+            if (s[i + 1] == '\\') {
+                if (i + 2 >= n)
+                    return {{ErrorCode::INVALID_TOKEN, "invalid escape sequence"}, {}};
+
+                switch (s[i + 2]) {
+                case '0': value = '\0'; break;
+                case 'n': value = '\n'; break;
+                case 't': value = '\t'; break;
+                case 'r': value = '\r'; break;
+                case 'b': value = '\b'; break;
+                case 'a': value = '\a'; break;
+                case 'f': value = '\f'; break;
+                case 'v': value = '\v'; break;
+                case '\\': value = '\\'; break;
+                case '\'': value = '\''; break;
+                case '"': value = '"'; break;
+                default:
+                    return {{ErrorCode::INVALID_TOKEN, "unknown escape sequence"}, {}};
+                }
+                len = 4;
+            } else {
+                value = s[i + 1];
+                len = 3;
+            }
+            if (i + len > n || s[i + len - 1] != '\'')
+                return {{ErrorCode::INVALID_TOKEN, "invalid character literal"}, {}};
+            tokens.emplace_back(TokenType::Number, std::to_string(static_cast<unsigned char>(value)));
+            i += len;
         }
         else if (std::isalpha(static_cast<unsigned char>(c)) || c == '_') { //variable or constant
             const size_t start = i;
-            while (i < s.size() && (std::isalnum(static_cast<unsigned char>(s[i])) || s[i] == '_')) i++;
+            while (i < n && (std::isalnum(static_cast<unsigned char>(s[i])) || s[i] == '_')) i++;
             tokens.emplace_back(TokenType::Identifier, s.substr(start, i - start));
         }
         else if (c == '(') {

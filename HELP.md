@@ -25,7 +25,7 @@ Let's begin with the basics:
 | r1	  | arg 0           | f1     |
 | r2	  | arg 1           | f2     |
 | r3	  | arg 2           | f3     |
-| r4	  | return value    | f4     |
+| r4	  | general purpose | f4     |
 | r5	  | general purpose | f5     |
 | r6	  | general purpose | f6     |
 | r7	  | general purpose | f7     |
@@ -35,7 +35,7 @@ Let's begin with the basics:
 | trp	 | trap            | f11    |
 | cmp	 | comparaison     | f12    |
 | fp	  | frame pointer   | f13    |
-| sp	  | stack pointer   | f14    |
+| sp   | stack pointer   | f14    |
 | pc   | program counter | f15    |
 
 ## Sections
@@ -52,85 +52,93 @@ Here is a complete list of all the instruction:
 
 // { <instruction_name>, { <opcode>, <instruction_tpye>, { <argument_type>, ... } } }
 
-| name    | type   | arguments     | equivalent                     |
-|---------|--------|---------------|--------------------------------|
-| add     | Type-R | REG, REG, REG | rd = rs1 + rs2                 |
-| sub     | Type-R | REG, REG, REG | rd = rs1 - rs2                 |
-| mul     | Type-R | REG, REG, REG | rd = rs1 * rs2                 |
-| div     | Type-R | REG, REG, REG | rd = rs1 / rs2                 |
-| mod     | Type-R | REG, REG, REG | rd = rs1 % rs2                 |
-| addi    | Type-I | REG, REG, IMM | rd = rs1 + imm                 |
-| subi    | Type-I | REG, REG, IMM | rd = rs1 - imm                 |
-| muli    | Type-I | REG, REG, IMM | rd = rs1 * imm                 |
-| divi    | Type-I | REG, REG, IMM | rd = rs1 / imm                 |
-| modi    | Type-I | REG, REG, IMM | rd = rs1 % imm                 |
-| and     | Type-R | REG, REG, REG | rd = rs1 & rs2                 |
-| or      | Type-R | REG, REG, REG | rd = rs1 \| rs2                |
-| xor     | Type-R | REG, REG, REG | rd = rs1 ^ rs2                 |
-| andi    | Type-I | REG, REG, IMM | rd = rs1 & imm                 |
-| ori     | Type-I | REG, REG, IMM | rd = rs1 \| imm                |
-| xori    | Type-I | REG, REG, IMM | rd = rs1 ^ imm                 |
-| shl     | Type-R | REG, REG, REG | rd = rs1 << rs2                |
-| shr     | Type-R | REG, REG, REG | rd = rs1 >> rs2                |
-| sar     | Type-R | REG, REG, REG | rd = rs1 >> rs2 (signed)       |
-| rol     | Type-R | REG, REG, REG | rd = rotl(rs1, rs2)            |
-| ror     | Type-R | REG, REG, REG | rd = rotr(rs1, rs2)            |
-| shli    | Type-I | REG, REG, IMM | rd = rs1 << imm                |
-| shri    | Type-I | REG, REG, IMM | rd = rs1 >> imm                |
-| sari    | Type-I | REG, REG, IMM | rd = rs1 >> imm (signed)       |
-| roli    | Type-I | REG, REG, IMM | rd = rotl(rs1, imm)            |
-| rori    | Type-I | REG, REG, IMM | rd = rotr(rs1, imm)            |
-| cmp     | Type-R | REG, REG      | cmp = rs1 ? rs2                |
-| cmpu    | Type-R | REG, REG      | cmp = rs1 ? rs2 (unsigned)     |
-| test    | Type-R | REG, REG      | cmp = rs1 & rs2                |
-| cmpi    | Type-I | REG, IMM      | cmp = rs1 ? imm                |
-| cmpui   | Type-I | REG, IMM      | cmp = rs1 ? imm (unsigned)     |
-| testi   | Type-I | REG, IMM      | cmp = rs1 & imm                |
-| inc     | Type-J | REG           | rd = rd + 1 (rd++)             |
-| dec     | Type-J | REG           | rd = rd - 1 (rd--)             |
-| not     | Type-J | REG, REG      | rd = !rs1                      |
-| abs     | Type-J | REG, REG      | rd = abs(rs1)                  |
-| neg     | Type-J | REG, REG      | rd = -rs1                      |
-| min     | Type-R | REG, REG, REG | rd = min(rs1, rs2)             |
-| max     | Type-R | REG, REG, REG | rd = max(rs1, rs2)             |
-| mini    | Type-I | REG, REG, IMM | rd = min(rs1, imm)             |
-| maxi    | Type-I | REG, REG, IMM | rd = max(rs1, imm)             |
-| mov     | Type-R | REG, REG      | rd = rs1                       |
-| movi    | Type-I | REG, IMM      | rd = imm                       |
-| lbaseb  | Type-I | REG, REG, IMM | rd = load8(rs1 + imm)          |
-| lbaseh  | Type-I | REG, REG, IMM | rd = load16(rs1 + imm)         |
-| lbasew  | Type-I | REG, REG, IMM | rd = load32(rs1 + imm)         |
-| lregb   | Type-R | REG, REG, REG | rd = load8(rs1 + rs2)          |
-| lregh   | Type-R | REG, REG, REG | rd = load16(rs1 + rs2)         |
-| lregw   | Type-R | REG, REG, REG | rd = load32(rs1 + rs2)         |
-| sbaseb  | Type-I | REG, REG, IMM | rd = store8(rs1 + imm)         |
-| sbaseh  | Type-I | REG, REG, IMM | rd = store16(rs1 + imm)        |
-| sbasew  | Type-I | REG, REG, IMM | rd = store32(rs1 + imm)        |
-| sregb   | Type-R | REG, REG, REG | rd = store8(rs1 + rs2)         |
-| sregh   | Type-R | REG, REG, REG | rd = store16(rs1 + rs2)        |
-| sregw   | Type-R | REG, REG, REG | rd = store32(rs1 + rs2)        |
-| ldb     | Type-I | REG, VAR      | rd = load8(var_addr)           |
-| ldh     | Type-I | REG, VAR      | rd = load16(var_addr)          |
-| ldw     | Type-I | REG, VAR      | rd = load32(var_addr)          |
-| stb     | Type-I | REG, VAR      | rd = store8(var_addr)          |
-| sth     | Type-I | REG, VAR      | rd = store16(var_addr)         |
-| stw     | Type-I | REG, VAR      | rd = store32(var_addr)         |
-| push    | Type-J | REG           |                                |
-| pop     | Type-J | REG           |                                |
-| lea     | Type-I | REG, VAR, IMM | rd = var_addr + imm            |
-| leab    | Type-I | REG, VAR      | rd = var_addr                  |
-| swap    | Type-R | REG, REG      | rd, rs1 = rs1, rd              |
-| clr     | Type-J | REG           | rd = 0                         |
-| memcpy  | Type-I | REG           |                                |
-| jmp     | Type-J | LABEL         | jump label                     |
-| jz      | Type-J | LABEL         | jz (jump if flag Z) label      |
-| jnz     | Type-J | LABEL         | jnz (jump if not flag Z) label |
-| jg      | Type-J | LABEL         | jg (...) label                 |
-| jl      | Type-J | LABEL         | jl (...) label                 |
-| call    | Type-J | LABEL         | call label                     |
-| ret     | Type-J |               | return from label              |
-| syscall | Type-J |               | calls a system call            |
-| halt    | Type-J |               | halts the program              |
+| name    | type   | arguments     | equivalent                        |
+|---------|--------|---------------|-----------------------------------|
+| add     | Type-R | REG, REG, REG | rd = rs1 + rs2                    |
+| sub     | Type-R | REG, REG, REG | rd = rs1 - rs2                    |
+| mul     | Type-R | REG, REG, REG | rd = rs1 * rs2                    |
+| div     | Type-R | REG, REG, REG | rd = rs1 / rs2                    |
+| mod     | Type-R | REG, REG, REG | rd = rs1 % rs2                    |
+| addi    | Type-I | REG, REG, IMM | rd = rs1 + imm                    |
+| subi    | Type-I | REG, REG, IMM | rd = rs1 - imm                    |
+| muli    | Type-I | REG, REG, IMM | rd = rs1 * imm                    |
+| divi    | Type-I | REG, REG, IMM | rd = rs1 / imm                    |
+| modi    | Type-I | REG, REG, IMM | rd = rs1 % imm                    |
+| and     | Type-R | REG, REG, REG | rd = rs1 & rs2                    |
+| or      | Type-R | REG, REG, REG | rd = rs1 \| rs2                   |
+| xor     | Type-R | REG, REG, REG | rd = rs1 ^ rs2                    |
+| andi    | Type-I | REG, REG, IMM | rd = rs1 & imm                    |
+| ori     | Type-I | REG, REG, IMM | rd = rs1 \| imm                   |
+| xori    | Type-I | REG, REG, IMM | rd = rs1 ^ imm                    |
+| shl     | Type-R | REG, REG, REG | rd = rs1 << rs2                   |
+| shr     | Type-R | REG, REG, REG | rd = rs1 >> rs2                   |
+| sar     | Type-R | REG, REG, REG | rd = rs1 >> rs2 (signed)          |
+| rol     | Type-R | REG, REG, REG | rd = rotl(rs1, rs2)               |
+| ror     | Type-R | REG, REG, REG | rd = rotr(rs1, rs2)               |
+| shli    | Type-I | REG, REG, IMM | rd = rs1 << imm                   |
+| shri    | Type-I | REG, REG, IMM | rd = rs1 >> imm                   |
+| sari    | Type-I | REG, REG, IMM | rd = rs1 >> imm (signed)          |
+| roli    | Type-I | REG, REG, IMM | rd = rotl(rs1, imm)               |
+| rori    | Type-I | REG, REG, IMM | rd = rotr(rs1, imm)               |
+| cmp     | Type-R | REG, REG      | cmp = rs1 ? rs2                   |
+| cmpu    | Type-R | REG, REG      | cmp = rs1 ? rs2 (unsigned)        |
+| test    | Type-R | REG, REG      | cmp = rs1 & rs2                   |
+| cmpi    | Type-I | REG, IMM      | cmp = rs1 ? imm                   |
+| cmpui   | Type-I | REG, IMM      | cmp = rs1 ? imm (unsigned)        |
+| testi   | Type-I | REG, IMM      | cmp = rs1 & imm                   |
+| inc     | Type-J | REG           | rd = rd + 1 (rd++)                |
+| dec     | Type-J | REG           | rd = rd - 1 (rd--)                |
+| not     | Type-J | REG, REG      | rd = !rs1                         |
+| abs     | Type-J | REG, REG      | rd = abs(rs1)                     |
+| neg     | Type-J | REG, REG      | rd = -rs1                         |
+| min     | Type-R | REG, REG, REG | rd = min(rs1, rs2)                |
+| max     | Type-R | REG, REG, REG | rd = max(rs1, rs2)                |
+| mini    | Type-I | REG, REG, IMM | rd = min(rs1, imm)                |
+| maxi    | Type-I | REG, REG, IMM | rd = max(rs1, imm)                |
+| mov     | Type-R | REG, REG      | rd = rs1                          |
+| movi    | Type-I | REG, IMM      | rd = imm                          |
+| lbaseb  | Type-I | REG, REG, IMM | rd = load8(rs1 + imm)             |
+| lbaseh  | Type-I | REG, REG, IMM | rd = load16(rs1 + imm)            |
+| lbasew  | Type-I | REG, REG, IMM | rd = load32(rs1 + imm)            |
+| lregb   | Type-R | REG, REG, REG | rd = load8(rs1 + rs2)             |
+| lregh   | Type-R | REG, REG, REG | rd = load16(rs1 + rs2)            |
+| lregw   | Type-R | REG, REG, REG | rd = load32(rs1 + rs2)            |
+| sbaseb  | Type-I | REG, REG, IMM | rd = store8(rs1 + imm)            |
+| sbaseh  | Type-I | REG, REG, IMM | rd = store16(rs1 + imm)           |
+| sbasew  | Type-I | REG, REG, IMM | rd = store32(rs1 + imm)           |
+| sregb   | Type-R | REG, REG, REG | rd = store8(rs1 + rs2)            |
+| sregh   | Type-R | REG, REG, REG | rd = store16(rs1 + rs2)           |
+| sregw   | Type-R | REG, REG, REG | rd = store32(rs1 + rs2)           |
+| ldb     | Type-I | REG, VAR      | rd = load8(var_addr)              |
+| ldh     | Type-I | REG, VAR      | rd = load16(var_addr)             |
+| ldw     | Type-I | REG, VAR      | rd = load32(var_addr)             |
+| stb     | Type-I | REG, VAR      | rd = store8(var_addr)             |
+| sth     | Type-I | REG, VAR      | rd = store16(var_addr)            |
+| stw     | Type-I | REG, VAR      | rd = store32(var_addr)            |
+| push    | Type-J | REG           | pushes content of reg into stack  |
+| pop     | Type-J | REG           | pop the content of stack into reg |
+| lea     | Type-I | REG, VAR, IMM | rd = var_addr + imm               |
+| leab    | Type-I | REG, VAR      | rd = var_addr                     |
+| swap    | Type-R | REG, REG      | rd, rs1 = rs1, rd                 |
+| clr     | Type-J | REG           | rd = 0                            |
+| memcpy  | Type-I | REG           | copy parts of ram                 |
+| jmp     | Type-J | LABEL         | jump label                        |
+| jz      | Type-J | LABEL         | jz (jump if flag Z) label         |
+| jnz     | Type-J | LABEL         | jnz (jump if not flag Z) label    |
+| jg      | Type-J | LABEL         | jg (...) label                    |
+| jl      | Type-J | LABEL         | jl (...) label                    |
+| call    | Type-J | LABEL         | calls label                       |
+| ret     | Type-J |               | returns from label                |
+| syscall | Type-J |               | calls a system call               |
+| halt    | Type-J |               | halts the program                 |
+| settv   | Type-J | REG           | kernel instruction                |
+| sysret  | Type-J |               | kernel instruction                |
+| setksp  | Type-J | REG           | kernel instruction                |
+| setusp  | Type-J | REG           | kernel instruction                |
+| getusp  | Type-J | REG           | kernel instruction                |
+| setsl   | Type-J | REG           | kernel instruction                |
+| setub   | Type-J | REG           | kernel instruction                |
+| setul   | Type-J | REG           | kernel instruction                |
 
 
 instructions are placed inside the ``.text`` section with the following syntax:
@@ -169,20 +177,25 @@ you can declare arrays too:
 
 The preprocessor a useful tool to use especially when programming in assembly.
 
-| name    | description                  | example                                | 
-|---------|------------------------------|----------------------------------------|
-| %equ    | declares a constant          | %equ my_cst 43                         |
-| %assign | declares a variable          | %assign i 43 + a                       |
-| %define | declares a text substitution | %define DINC(reg) addi reg reg 2       |
-| %macro  | declares a macro             | %macro RET() <br/> ret <br/> %endmacro |
-| %rep    | declares a loop              | %rep 8 <br/> inc r0 <br/> %endrep      |
+| name                                                    | description                                               | example                                       | 
+|---------------------------------------------------------|-----------------------------------------------------------|-----------------------------------------------|
+| %equ                                                    | declares a constant                                       | %equ my_cst 43                                |
+| %assign                                                 | declares a variable                                       | %assign i 43 + a                              |
+| %define                                                 | declares a text substitution                              | %define DINC(reg) addi reg reg 2              |
+| %macro (%endmacro)                                      | declares a macro                                          | %macro RET() <br/> ret <br/> %endmacro        |
+| %rep (%endrep)                                          | declares a loop                                           | %rep 8 <br/> inc r0 <br/> %endrep             |
+| %if/ifn   (%else, %elseif/elseifn, %endif)              | evaluate a condition                                      | %if my_cst <br/> dec r0 <br/> %endif          |
+| %ifdef/ifndef (%esle, %elseifdef/elseifndef, %endifdef) | evaluate a definition (constant, variable, define, macro) | %ifndef VAR <br/> %define VAR <br/> %endifdef |
+| %include                                                | adds the content of a file                                | %include "utils.inc"                          |
+
 
 ## System Calls
 
 You can call ``syscall`` to:
- - 0 = exit()
- - 1 = write(buff, size)
- - 2 = read(buff, size)
+ - 0 = EXIT() -> r1 = code
+ - 1 = write(r1 = *buff, r2 = buff_size) -> r0 = bytes wrote
+ - 2 = read(r1 = *buff, r2 = buff_size) -> r0 = bytes red
+ - 3 = exec(r1 = prog_idx) -> r1 = prog_idx (don't return if OK else returns r0 < 0)
 
 The syscall ABI is:
 r0 = call_id / return value
