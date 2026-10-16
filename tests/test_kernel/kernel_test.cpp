@@ -59,9 +59,11 @@ int main() {
         { "loader.asm", load(KERNEL_PATH, "loader.asm") } }
         );
     const std::vector<ProgramSource> programs = {
-        { "hello", pool({ { "hello.asm", load(PROGS_PATH, "hello.asm") } }) },
-     { "mem_fault", pool({ { "mem_fault.asm", load(PROGS_PATH, "mem_fault.asm") } }) },
-        { "stack_overflow.asm", pool({ { "stack_overflow.asm", load(PROGS_PATH, "stack_overflow.asm") } }) },
+    { "main", pool({ { "main.asm", load(PROGS_PATH, "main.asm") } }) },
+    { "mem_fault", pool({ { "mem_fault.asm", load(PROGS_PATH, "mem_fault.asm") } }) },
+    { "stack_overflow.asm", pool({ { "stack_overflow.asm", load(PROGS_PATH, "stack_overflow.asm") } }) },
+    { "spawndemo", pool({ { "spawndemo.asm", load(PROGS_PATH, "spawndemo.asm") } }) },
+    { "child", pool({ { "child.asm", load(PROGS_PATH, "child.asm") } }) }
     };
 
     std::cout << "ROM_BUILD: " << env.build_rom(pool({ { "boot.asm", load(BOOT_PATH, "boot.asm") } })) << std::endl;

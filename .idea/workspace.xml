@@ -40,12 +40,17 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="fixed bugs &amp; added structured user programs">
+    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="fixed bugs">
+      <change afterPath="$PROJECT_DIR$/tests/test_kernel/vm/programs/child.asm" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/test_kernel/vm/programs/spawndemo.asm" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/HELP.md" beforeDir="false" afterPath="$PROJECT_DIR$/HELP.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/TODO.md" beforeDir="false" afterPath="$PROJECT_DIR$/TODO.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Talos/include/software/parser.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/software/parser.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_kernel/vm/programs/hello.asm" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_kernel/vm/programs/hello.asm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_kernel/kernel_test.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_kernel/kernel_test.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_kernel/vm/includes/layout.inc" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_kernel/vm/includes/layout.inc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_kernel/vm/includes/syscalls.inc" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_kernel/vm/includes/syscalls.inc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_kernel/vm/kernel/kernel.asm" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_kernel/vm/kernel/kernel.asm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_kernel/vm/programs/hello.asm" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_kernel/vm/programs/main.asm" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -213,6 +218,7 @@
       </method>
     </configuration>
     <list>
+      <item itemvalue="CMake Debug.Ergon" />
       <item itemvalue="CMake Application.ergon_test_0" />
       <item itemvalue="CMake Application.ergon_test_1" />
       <item itemvalue="CMake Application.ergon_test_2" />
@@ -222,7 +228,6 @@
       <item itemvalue="CMake Application.ergon_test_stack" />
       <item itemvalue="CMake Application.ergon_test_sys_read" />
       <item itemvalue="CMake Application.ergon_test_sys_write" />
-      <item itemvalue="CMake Debug.Ergon" />
     </list>
     <recent_temporary>
       <list>
@@ -327,7 +332,11 @@
       <workItem from="1791729728499" duration="3656000" />
       <workItem from="1791737861613" duration="191000" />
       <workItem from="1791814281427" duration="6244000" />
-      <workItem from="1791829540651" duration="2480000" />
+      <workItem from="1791829540651" duration="2573000" />
+      <workItem from="1791905173918" duration="2812000" />
+      <workItem from="1791916944628" duration="2141000" />
+      <workItem from="1792089658485" duration="804000" />
+      <workItem from="1792160492888" duration="4000" />
     </task>
     <task id="LOCAL-00001" summary="checkpoint commit">
       <option name="closed" value="true" />
@@ -689,7 +698,15 @@
       <option name="project" value="LOCAL" />
       <updated>1791734214004</updated>
     </task>
-    <option name="localTasksCounter" value="46" />
+    <task id="LOCAL-00046" summary="fixed bugs">
+      <option name="closed" value="true" />
+      <created>1791832114701</created>
+      <option name="number" value="00046" />
+      <option name="presentableId" value="LOCAL-00046" />
+      <option name="project" value="LOCAL" />
+      <updated>1791832114702</updated>
+    </task>
+    <option name="localTasksCounter" value="47" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -725,7 +742,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fixed linker bug with align" />
     <MESSAGE value="fixed align" />
     <MESSAGE value="&quot;je prie, je prie et je prie ...&quot; c'est ce que je disais quand à précisément 21:53 j'avais oublié de placer un NEXT(); dans mon dispatcher pour ne pas finir en enfer avec les programmeurs de merde. Je prie à la communauté d'informatique de France et de la Terre de bien vouloir me pardonner. J'ai bien compris que ma faute étais irréparable... J'ai demandé à claude de résoudre un bug sur ce projet ... Hélàs il n'était que plus confus que moi ... Il m'a avoué n'avoir rien compris et rien trouvé. Je me suis alors retrouvé face à moi même, regardant cet écran blanc (oui j'ai mis le thème clair sur CLion) pendant une bonne heure avant de me décider que croire en une religion monothéiste était peut-être la solution à tous mes problèmes. Finalement je pense que la morale de l'histoire est qu'il vaut mieux regarer son code deux fois qu'une et aussi que je devrais dormir. Non je ne deviens pas fou. Non je ne deviens pas fou. Non je ne deviens pas fou. Non je ne deviens pas fou. Non je ne deviens pas fou. Non je ne deviens pas fou. Hi Hi HI Hi HIHIhIH Ih IHiHihIH" />
     <MESSAGE value="OwO" />
@@ -750,7 +766,8 @@
     <MESSAGE value="checkpoint" />
     <MESSAGE value="smells like teen spirit" />
     <MESSAGE value="fixed bugs &amp; added structured user programs" />
-    <option name="LAST_COMMIT_MESSAGE" value="fixed bugs &amp; added structured user programs" />
+    <MESSAGE value="fixed bugs" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixed bugs" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

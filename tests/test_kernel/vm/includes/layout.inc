@@ -3,14 +3,39 @@
 ; ---- HEADER EXEC ----
 %equ XH_NRELOC 24
 
-; ---- PROCESSUS ----
+; ---- PROCESSUS : régions de 1 MiB ----
 %equ PROC_SLOT_BASE 0x100000
 %equ PROC_SLOT_SHIFT 20
 %equ PROC_SLOT_SIZE 0x100000
 %equ PROC_MAX 8
-%equ P_STATE 0 ; entrée de 16o = état, base, sommet
-%equ P_BASE 4
-%equ P_TOP 8
+
+; ---- PCB : 128 octets par processus (tous les offsets doivent tenir dans un disp8) ----
+%equ PCB_SHIFT 7
+%equ PCB_SIZE 128
+%equ P_STATE 0
+%equ P_BASE 4 ; région : début
+%equ P_TOP 8 ; région : fin (exclue)
+%equ P_SLIM 12 ; stack_limit
+%equ P_PARENT 16 ; pid du parent (P_NONE = aucun)
+%equ P_PC 24 ; PC|mode sauvegardé par le trap
+%equ P_USP 28 ; SP user
+%equ P_CMP 32
+%equ P_R1 36
+%equ P_R2 40
+%equ P_R3 44
+%equ P_R4 48
+%equ P_R5 52
+%equ P_R6 56
+%equ P_R7 60
+%equ P_R8 64
+%equ P_R9 68
+%equ P_R10 72 ; r0 n'est pas sauvegardé : c'est la valeur de retour du syscall
+
+; ---- STATE ----
+%equ P_FREE 0
+%equ P_RUN 1
+%equ P_WAIT 2 ; suspendu en attendant la fin d'un fils
+%equ P_NONE -1
 
 %equ KERNEL_BASE 0x1000
 %equ KERNEL_STACK_TOP 0xF000

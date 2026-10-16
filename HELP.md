@@ -201,3 +201,10 @@ The syscall ABI is:
 r0 = call_id / return value
 r1-4 = args
 r11 = trap cause
+
+## Return Codes
+
+ - 0 to 255 = return code from SYS_EXIT
+ - 128 + cause = raised by fault (129 = MMIO, 130 = privilege, 131 = OPCODE, 132 = STACK, 133 = memory fault)
+ - -3, -4, -5 = SYS_ENOENT, SYS_EBADEXEC, SYS_EIO
+ - -6 = SYS_ENOMEM

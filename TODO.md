@@ -77,6 +77,20 @@ kernel.asm ─► loader.asm (exec_load) ─► storage.asm (disk_read / disk_wr
 14. Interruptions timer
 
 ------------------------------------------------------------------------------------------------------------------------
+EXIT de child
+SPAWN
+parent (USER) depuis syscall -> ctx_save -> PCB parent
+proc_alloc -> slot fils
+exec_load (dans le slot du fils)
+parent = WAIT, cur_pid = fils
+enter_user -> fils (USER)
+│ syscall EXIT / faute
+▼
+proc_exit : efface la région du fils, libère le slot,
+cur_pid = parent, r0 = code
+resume_cur -> parent (USER), registres restaurés
+
+------------------------------------------------------------------------------------------------------------------------
 
 A sample system memory map
 Address range (hexadecimal)	Size	Device
