@@ -18,8 +18,8 @@ enum class ArgType {
 };
 
 struct InstrDef {
-    OPCODE opcode;
-    InstrType type;
+    OPCODE opcode = ILLEGAL;
+    InstrType type = InstrType::J;
     std::vector<ArgType> args;
     std::vector<size_t> args_pos;
 
@@ -35,7 +35,7 @@ inline const std::unordered_set<OPCODE> disp8_ops = {
     FLDW_BASE, FSTW_BASE
 };
 
-// { <instruction_name>, { <opcode>, <instruction_type>, { <argument_type>, ... } } }
+// { <instruction_name>, { <opcode>, <instruction_type>, { <argument_type>, ... }, { <argument_pos>, ... } } }
 inline std::unordered_map<std::string, InstrDef> instr_table = {
     {"add",  {ADD,  InstrType::R, { ArgType::REG, ArgType::REG, ArgType::REG }, { 0, 1, 2 } }}, //rd, rs1, rs2/imm
     {"sub",  {SUB,  InstrType::R, { ArgType::REG, ArgType::REG, ArgType::REG }, { 0, 1, 2 } }},

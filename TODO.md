@@ -31,6 +31,12 @@
 ===================== NETTOYAGE (mineur, pas urgent) =====================
 - run_handler.h : RunResult::SYSCALL_STOP pas utilisé
 
+===================== PROBLEMES  =====================
+ - fma rd, rs1, rs2 calcule rd * rs1 + rs2.
+ - CONSOLE_IN bloque toute la VM sur cin.read, alors que le commentaire dit « 0 si rien ».
+ - build_disk tronque les noms à 15 caractères sans prévenir.
+ - StepInfo copié garde ses références PC/SP/FP sur l’original.
+
 ===================== NOTE : plusieurs Core dans CPU =====================
 Actuellement SimpleCPU ne contient qu'un seul SimpleCore. Pour du
 multi-coeur : SimpleCPU garderait un tableau/vector de SimpleCore (chacun

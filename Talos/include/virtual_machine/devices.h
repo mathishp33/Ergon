@@ -74,7 +74,7 @@ struct TimerDevice {
 
     static uint32_t sys_time() {
         const auto now = std::chrono::system_clock::now();
-        uint64_t timestamp = std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()).count();
+        const uint64_t timestamp = std::chrono::duration_cast<std::chrono::seconds>(now.time_since_epoch()).count();
         return static_cast<uint32_t>(timestamp);
     }
 };
@@ -109,7 +109,7 @@ struct MMIO {
         // IRQ_* = 0x0200.. (c'est un outil mystère qui nous servira plus tard)
     };
 
-    static uint8_t load8(uint32_t off) {
+    static uint8_t load8(const uint32_t off) {
         switch (off) {
             case CONSOLE_IN: {
                 uint8_t b = 0;
@@ -119,7 +119,7 @@ struct MMIO {
             default: return 0;
         }
     }
-    static void store8(uint32_t off, uint8_t v) {
+    static void store8(const uint32_t off, const uint8_t v) {
         switch (off) {
             case CONSOLE_OUT: ConsoleDevice::write(&v, 1); break;
             default: break;
@@ -127,8 +127,8 @@ struct MMIO {
     }
 
 
-    static uint16_t load16(uint32_t off) { return load8(off); }
-    static void store16(uint32_t off, uint16_t v) { store8(off, static_cast<uint8_t>(v)); }
+    static uint16_t load16(const uint32_t off) { return load8(off); }
+    static void store16(const uint32_t off, const uint16_t v) { store8(off, static_cast<uint8_t>(v)); }
 
     [[nodiscard]] uint32_t load32(uint32_t off) const {
         switch (off) {

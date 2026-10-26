@@ -40,17 +40,18 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="fixed bugs">
-      <change afterPath="$PROJECT_DIR$/tests/test_kernel/vm/programs/child.asm" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/test_kernel/vm/programs/spawndemo.asm" afterDir="false" />
+    <list default="true" id="edede54d-bdce-435b-9aa8-0a96db473f5b" name="Changes" comment="tweaks">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/HELP.md" beforeDir="false" afterPath="$PROJECT_DIR$/HELP.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/TODO.md" beforeDir="false" afterPath="$PROJECT_DIR$/TODO.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/hardware/core.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/hardware/core.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/hardware/instructions_handler/run_handler.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/hardware/instructions_handler/run_handler.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/hardware/instructions_handler/step_handler.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/hardware/instructions_handler/step_handler.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/software/instructions.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/software/instructions.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/virtual_machine/devices.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/virtual_machine/devices.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Talos/include/virtual_machine/environment_manager.h" beforeDir="false" afterPath="$PROJECT_DIR$/Talos/include/virtual_machine/environment_manager.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tests/test_kernel/kernel_test.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_kernel/kernel_test.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_kernel/vm/includes/layout.inc" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_kernel/vm/includes/layout.inc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_kernel/vm/includes/syscalls.inc" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_kernel/vm/includes/syscalls.inc" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tests/test_kernel/vm/kernel/kernel.asm" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_kernel/vm/kernel/kernel.asm" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_kernel/vm/programs/hello.asm" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_kernel/vm/programs/main.asm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test_kernel/vm/programs/spawndemo.asm" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test_kernel/vm/programs/spawndemo.asm" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -61,7 +62,7 @@
     <option name="formatViaClangd" value="false" />
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="276" />
+    <option name="cachedIndexableFilesCount" value="384" />
   </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
   <component name="Git.Settings">
@@ -80,8 +81,8 @@
 }</component>
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/mathishp33/Ergon.git&quot;,
-    &quot;accountId&quot;: &quot;d265dc3e-7c09-43ad-ad06-a226187da898&quot;
+    &quot;url&quot;: &quot;https://github.com/mathishp33/Ergon&quot;,
+    &quot;accountId&quot;: &quot;2c353670-91fe-4230-a235-f9bb83e1eef5&quot;
   }
 }</component>
   <component name="MacroExpansionManager">
@@ -140,7 +141,7 @@
     &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
     &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
     &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;vrai__vm&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
     &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
     &quot;last_opened_file_path&quot;: &quot;C:/Users/mathi/CLionProjects/Ergon/tests&quot;,
@@ -218,16 +219,16 @@
       </method>
     </configuration>
     <list>
-      <item itemvalue="CMake Debug.Ergon" />
-      <item itemvalue="CMake Application.ergon_test_0" />
-      <item itemvalue="CMake Application.ergon_test_1" />
-      <item itemvalue="CMake Application.ergon_test_2" />
       <item itemvalue="CMake Application.ergon_test_ide" />
       <item itemvalue="CMake Application.ergon_test_kernel" />
       <item itemvalue="CMake Application.ergon_test_preproc" />
       <item itemvalue="CMake Application.ergon_test_stack" />
       <item itemvalue="CMake Application.ergon_test_sys_read" />
       <item itemvalue="CMake Application.ergon_test_sys_write" />
+      <item itemvalue="CMake Application.ergon_test_0" />
+      <item itemvalue="CMake Application.ergon_test_1" />
+      <item itemvalue="CMake Application.ergon_test_2" />
+      <item itemvalue="CMake Debug.Ergon" />
     </list>
     <recent_temporary>
       <list>
@@ -285,58 +286,51 @@
       <workItem from="1772806901795" duration="3545000" />
       <workItem from="1772811839709" duration="5669000" />
       <workItem from="1772867263777" duration="9422000" />
-      <workItem from="1772903359031" duration="3119000" />
-      <workItem from="1788804578719" duration="245000" />
-      <workItem from="1789286229379" duration="20565000" />
-      <workItem from="1789316517656" duration="4609000" />
-      <workItem from="1789321213129" duration="499000" />
-      <workItem from="1789321950335" duration="1290000" />
-      <workItem from="1789323331276" duration="694000" />
-      <workItem from="1789324135737" duration="785000" />
-      <workItem from="1789326513766" duration="3588000" />
-      <workItem from="1789394550837" duration="7098000" />
-      <workItem from="1789408280976" duration="1062000" />
-      <workItem from="1789409458597" duration="4522000" />
-      <workItem from="1789482419491" duration="16198000" />
-      <workItem from="1789569522471" duration="3496000" />
-      <workItem from="1789574970382" duration="7303000" />
-      <workItem from="1789620976551" duration="1093000" />
-      <workItem from="1789657671170" duration="10412000" />
-      <workItem from="1789741624890" duration="785000" />
-      <workItem from="1790016912128" duration="1493000" />
-      <workItem from="1790103869467" duration="621000" />
-      <workItem from="1790186829434" duration="75000" />
-      <workItem from="1790187024628" duration="4495000" />
-      <workItem from="1790267947131" duration="3114000" />
-      <workItem from="1790878334780" duration="312000" />
-      <workItem from="1791046162421" duration="11001000" />
-      <workItem from="1791057671454" duration="28000" />
-      <workItem from="1791098094637" duration="4429000" />
-      <workItem from="1791102643106" duration="104000" />
-      <workItem from="1791107144091" duration="6054000" />
-      <workItem from="1791117166287" duration="3000" />
-      <workItem from="1791117354654" duration="520000" />
-      <workItem from="1791120563244" duration="2490000" />
-      <workItem from="1791221983119" duration="1750000" />
-      <workItem from="1791298244156" duration="2552000" />
-      <workItem from="1791304512781" duration="1352000" />
-      <workItem from="1791397324884" duration="3076000" />
-      <workItem from="1791483328728" duration="3680000" />
-      <workItem from="1791561987605" duration="2023000" />
-      <workItem from="1791569944728" duration="4053000" />
-      <workItem from="1791633140267" duration="2508000" />
-      <workItem from="1791639818664" duration="7930000" />
-      <workItem from="1791703692745" duration="1676000" />
-      <workItem from="1791717319452" duration="990000" />
-      <workItem from="1791723385956" duration="988000" />
-      <workItem from="1791729728499" duration="3656000" />
-      <workItem from="1791737861613" duration="191000" />
-      <workItem from="1791814281427" duration="6244000" />
-      <workItem from="1791829540651" duration="2573000" />
-      <workItem from="1791905173918" duration="2812000" />
-      <workItem from="1791916944628" duration="2141000" />
-      <workItem from="1792089658485" duration="804000" />
-      <workItem from="1792160492888" duration="4000" />
+      <workItem from="1772903359031" duration="3345000" />
+      <workItem from="1772988895680" duration="2723000" />
+      <workItem from="1773000421174" duration="2820000" />
+      <workItem from="1773068333951" duration="7656000" />
+      <workItem from="1773164538190" duration="3772000" />
+      <workItem from="1773250258780" duration="6100000" />
+      <workItem from="1773325992069" duration="46000" />
+      <workItem from="1784568396678" duration="5789000" />
+      <workItem from="1784629833282" duration="4163000" />
+      <workItem from="1784814960239" duration="12764000" />
+      <workItem from="1784837008401" duration="2593000" />
+      <workItem from="1784841362511" duration="511000" />
+      <workItem from="1784890040663" duration="1466000" />
+      <workItem from="1784907117463" duration="11208000" />
+      <workItem from="1785003708504" duration="1197000" />
+      <workItem from="1785014525639" duration="3351000" />
+      <workItem from="1785020297750" duration="451000" />
+      <workItem from="1785022019083" duration="2440000" />
+      <workItem from="1785061918187" duration="3766000" />
+      <workItem from="1785092587214" duration="2356000" />
+      <workItem from="1785161187118" duration="1850000" />
+      <workItem from="1785334677966" duration="5604000" />
+      <workItem from="1785408698556" duration="14853000" />
+      <workItem from="1785444910576" duration="1362000" />
+      <workItem from="1785487640306" duration="2424000" />
+      <workItem from="1785492665043" duration="14918000" />
+      <workItem from="1785582614125" duration="7214000" />
+      <workItem from="1785676378324" duration="2778000" />
+      <workItem from="1785690426856" duration="5229000" />
+      <workItem from="1785702031749" duration="144000" />
+      <workItem from="1785767852144" duration="80000" />
+      <workItem from="1785768655045" duration="2535000" />
+      <workItem from="1785791092589" duration="1721000" />
+      <workItem from="1785853404094" duration="1864000" />
+      <workItem from="1785856707581" duration="903000" />
+      <workItem from="1785937267358" duration="4457000" />
+      <workItem from="1785964175404" duration="2716000" />
+      <workItem from="1786007882007" duration="3087000" />
+      <workItem from="1788014376162" duration="1000" />
+      <workItem from="1793010326512" duration="4996000" />
+      <workItem from="1793022667909" duration="2026000" />
+      <workItem from="1793031874234" duration="1587000" />
+      <workItem from="1793034822981" duration="431000" />
+      <workItem from="1793051240033" duration="4000000" />
+      <workItem from="1793055302250" duration="2982000" />
     </task>
     <task id="LOCAL-00001" summary="checkpoint commit">
       <option name="closed" value="true" />
@@ -514,199 +508,7 @@
       <option name="project" value="LOCAL" />
       <updated>1789413763420</updated>
     </task>
-    <task id="LOCAL-00023" summary="oupsi">
-      <option name="closed" value="true" />
-      <created>1789413949617</created>
-      <option name="number" value="00023" />
-      <option name="presentableId" value="LOCAL-00023" />
-      <option name="project" value="LOCAL" />
-      <updated>1789413949617</updated>
-    </task>
-    <task id="LOCAL-00024" summary="fixes, including bss crushing bug">
-      <option name="closed" value="true" />
-      <created>1789493278185</created>
-      <option name="number" value="00024" />
-      <option name="presentableId" value="LOCAL-00024" />
-      <option name="project" value="LOCAL" />
-      <updated>1789493278185</updated>
-    </task>
-    <task id="LOCAL-00025" summary="local variables are now good &amp; i fixed">
-      <option name="closed" value="true" />
-      <created>1789579631126</created>
-      <option name="number" value="00025" />
-      <option name="presentableId" value="LOCAL-00025" />
-      <option name="project" value="LOCAL" />
-      <updated>1789579631126</updated>
-    </task>
-    <task id="LOCAL-00026" summary="small changes">
-      <option name="closed" value="true" />
-      <created>1789583890352</created>
-      <option name="number" value="00026" />
-      <option name="presentableId" value="LOCAL-00026" />
-      <option name="project" value="LOCAL" />
-      <updated>1789583890352</updated>
-    </task>
-    <task id="LOCAL-00027" summary="small changes">
-      <option name="closed" value="true" />
-      <created>1789668355174</created>
-      <option name="number" value="00027" />
-      <option name="presentableId" value="LOCAL-00027" />
-      <option name="project" value="LOCAL" />
-      <updated>1789668355174</updated>
-    </task>
-    <task id="LOCAL-00028" summary="small changes">
-      <option name="closed" value="true" />
-      <created>1789668765726</created>
-      <option name="number" value="00028" />
-      <option name="presentableId" value="LOCAL-00028" />
-      <option name="project" value="LOCAL" />
-      <updated>1789668765726</updated>
-    </task>
-    <task id="LOCAL-00029" summary="1. Fetch depuis la RAM (format d'instruction fixe + FETCH() via bus).">
-      <option name="closed" value="true" />
-      <created>1789670857198</created>
-      <option name="number" value="00029" />
-      <option name="presentableId" value="LOCAL-00029" />
-      <option name="project" value="LOCAL" />
-      <updated>1789670857198</updated>
-    </task>
-    <task id="LOCAL-00030" summary="check point">
-      <option name="closed" value="true" />
-      <created>1789741969612</created>
-      <option name="number" value="00030" />
-      <option name="presentableId" value="LOCAL-00030" />
-      <option name="project" value="LOCAL" />
-      <updated>1789741969612</updated>
-    </task>
-    <task id="LOCAL-00031" summary="ABI syscall + trap (trap_vector, bit de mode, SYSRET).">
-      <option name="closed" value="true" />
-      <created>1790017272291</created>
-      <option name="number" value="00031" />
-      <option name="presentableId" value="LOCAL-00031" />
-      <option name="project" value="LOCAL" />
-      <updated>1790017272291</updated>
-    </task>
-    <task id="LOCAL-00032" summary="checkpoint">
-      <option name="closed" value="true" />
-      <created>1790188214705</created>
-      <option name="number" value="00032" />
-      <option name="presentableId" value="LOCAL-00032" />
-      <option name="project" value="LOCAL" />
-      <updated>1790188214706</updated>
-    </task>
-    <task id="LOCAL-00033" summary="checkpoint (à tester)">
-      <option name="closed" value="true" />
-      <created>1790190805673</created>
-      <option name="number" value="00033" />
-      <option name="presentableId" value="LOCAL-00033" />
-      <option name="project" value="LOCAL" />
-      <updated>1790190805673</updated>
-    </task>
-    <task id="LOCAL-00034" summary="todo resolved &amp; bugs solved">
-      <option name="closed" value="true" />
-      <created>1790191537815</created>
-      <option name="number" value="00034" />
-      <option name="presentableId" value="LOCAL-00034" />
-      <option name="project" value="LOCAL" />
-      <updated>1790191537815</updated>
-    </task>
-    <task id="LOCAL-00035" summary="bugs">
-      <option name="closed" value="true" />
-      <created>1790273277443</created>
-      <option name="number" value="00035" />
-      <option name="presentableId" value="LOCAL-00035" />
-      <option name="project" value="LOCAL" />
-      <updated>1790273277443</updated>
-    </task>
-    <task id="LOCAL-00036" summary="update">
-      <option name="closed" value="true" />
-      <created>1791047135248</created>
-      <option name="number" value="00036" />
-      <option name="presentableId" value="LOCAL-00036" />
-      <option name="project" value="LOCAL" />
-      <updated>1791047135250</updated>
-    </task>
-    <task id="LOCAL-00037" summary="entire rework of Preprocessor">
-      <option name="closed" value="true" />
-      <created>1791054085289</created>
-      <option name="number" value="00037" />
-      <option name="presentableId" value="LOCAL-00037" />
-      <option name="project" value="LOCAL" />
-      <updated>1791054085289</updated>
-    </task>
-    <task id="LOCAL-00038" summary="fixed bugs :(">
-      <option name="closed" value="true" />
-      <created>1791057691878</created>
-      <option name="number" value="00038" />
-      <option name="presentableId" value="LOCAL-00038" />
-      <option name="project" value="LOCAL" />
-      <updated>1791057691879</updated>
-    </task>
-    <task id="LOCAL-00039" summary="added things">
-      <option name="closed" value="true" />
-      <created>1791121815574</created>
-      <option name="number" value="00039" />
-      <option name="presentableId" value="LOCAL-00039" />
-      <option name="project" value="LOCAL" />
-      <updated>1791121815574</updated>
-    </task>
-    <task id="LOCAL-00040" summary="added %include">
-      <option name="closed" value="true" />
-      <created>1791400389189</created>
-      <option name="number" value="00040" />
-      <option name="presentableId" value="LOCAL-00040" />
-      <option name="project" value="LOCAL" />
-      <updated>1791400389189</updated>
-    </task>
-    <task id="LOCAL-00041" summary="added %ifndef and %ifn (also did a total rework of branch system)">
-      <option name="closed" value="true" />
-      <created>1791485455522</created>
-      <option name="number" value="00041" />
-      <option name="presentableId" value="LOCAL-00041" />
-      <option name="project" value="LOCAL" />
-      <updated>1791485455523</updated>
-    </task>
-    <task id="LOCAL-00042" summary="cleaned lines">
-      <option name="closed" value="true" />
-      <created>1791488068572</created>
-      <option name="number" value="00042" />
-      <option name="presentableId" value="LOCAL-00042" />
-      <option name="project" value="LOCAL" />
-      <updated>1791488068572</updated>
-    </task>
-    <task id="LOCAL-00043" summary="checkpoint">
-      <option name="closed" value="true" />
-      <created>1791704114303</created>
-      <option name="number" value="00043" />
-      <option name="presentableId" value="LOCAL-00043" />
-      <option name="project" value="LOCAL" />
-      <updated>1791704114303</updated>
-    </task>
-    <task id="LOCAL-00044" summary="smells like teen spirit">
-      <option name="closed" value="true" />
-      <created>1791705349401</created>
-      <option name="number" value="00044" />
-      <option name="presentableId" value="LOCAL-00044" />
-      <option name="project" value="LOCAL" />
-      <updated>1791705349401</updated>
-    </task>
-    <task id="LOCAL-00045" summary="fixed bugs &amp; added structured user programs">
-      <option name="closed" value="true" />
-      <created>1791734214004</created>
-      <option name="number" value="00045" />
-      <option name="presentableId" value="LOCAL-00045" />
-      <option name="project" value="LOCAL" />
-      <updated>1791734214004</updated>
-    </task>
-    <task id="LOCAL-00046" summary="fixed bugs">
-      <option name="closed" value="true" />
-      <created>1791832114701</created>
-      <option name="number" value="00046" />
-      <option name="presentableId" value="LOCAL-00046" />
-      <option name="project" value="LOCAL" />
-      <updated>1791832114702</updated>
-    </task>
-    <option name="localTasksCounter" value="47" />
+    <option name="localTasksCounter" value="19" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -716,7 +518,6 @@
     <isAutomaticCheckingOnLaunch value="false" />
     <isAutomaticFoundErrors value="true" />
     <isAutomaticReloadCMake value="true" />
-    <isAutomaticBootstrapAfterUpdate value="false" />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
     <option name="TAB_STATES">
@@ -742,32 +543,24 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="fixed align" />
-    <MESSAGE value="&quot;je prie, je prie et je prie ...&quot; c'est ce que je disais quand à précisément 21:53 j'avais oublié de placer un NEXT(); dans mon dispatcher pour ne pas finir en enfer avec les programmeurs de merde. Je prie à la communauté d'informatique de France et de la Terre de bien vouloir me pardonner. J'ai bien compris que ma faute étais irréparable... J'ai demandé à claude de résoudre un bug sur ce projet ... Hélàs il n'était que plus confus que moi ... Il m'a avoué n'avoir rien compris et rien trouvé. Je me suis alors retrouvé face à moi même, regardant cet écran blanc (oui j'ai mis le thème clair sur CLion) pendant une bonne heure avant de me décider que croire en une religion monothéiste était peut-être la solution à tous mes problèmes. Finalement je pense que la morale de l'histoire est qu'il vaut mieux regarer son code deux fois qu'une et aussi que je devrais dormir. Non je ne deviens pas fou. Non je ne deviens pas fou. Non je ne deviens pas fou. Non je ne deviens pas fou. Non je ne deviens pas fou. Non je ne deviens pas fou. Hi Hi HI Hi HIHIhIH Ih IHiHihIH" />
-    <MESSAGE value="OwO" />
-    <MESSAGE value="j'ai ajouté des trucs de time et j'ai réglé des trucs. Puis j'ai fait des jolis dessins aussi !!!!" />
-    <MESSAGE value="oupsi" />
-    <MESSAGE value="fixes, including bss crushing bug" />
-    <MESSAGE value="local variables are now good &amp; i fixed" />
-    <MESSAGE value="small changes" />
-    <MESSAGE value="1. Fetch depuis la RAM (format d'instruction fixe + FETCH() via bus)." />
-    <MESSAGE value="check point" />
-    <MESSAGE value="ABI syscall + trap (trap_vector, bit de mode, SYSRET)." />
-    <MESSAGE value="checkpoint (à tester)" />
-    <MESSAGE value="todo resolved &amp; bugs solved" />
-    <MESSAGE value="bugs" />
-    <MESSAGE value="update" />
-    <MESSAGE value="entire rework of Preprocessor" />
-    <MESSAGE value="fixed bugs :(" />
-    <MESSAGE value="added things" />
-    <MESSAGE value="added %include" />
-    <MESSAGE value="added %ifndef and %ifn (also did a total rework of branch system)" />
-    <MESSAGE value="cleaned lines" />
-    <MESSAGE value="checkpoint" />
-    <MESSAGE value="smells like teen spirit" />
-    <MESSAGE value="fixed bugs &amp; added structured user programs" />
-    <MESSAGE value="fixed bugs" />
-    <option name="LAST_COMMIT_MESSAGE" value="fixed bugs" />
+    <MESSAGE value="checkpoint commit" />
+    <MESSAGE value="I cleaned code + added more instructions" />
+    <MESSAGE value="added better instruction + still trying to fix the bug" />
+    <MESSAGE value="LE COMMIT DE LA JOIE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!&#10;OE TOUT MARCHE" />
+    <MESSAGE value="FIXED a bug with JUMPs instructions" />
+    <MESSAGE value="optimized everything" />
+    <MESSAGE value="added registers names" />
+    <MESSAGE value="added two pass detection labels + sections (.text, .data, .bss) + cleaned files" />
+    <MESSAGE value="added linker" />
+    <MESSAGE value="the AUTO execution mode is now super fast" />
+    <MESSAGE value="j'ai fait des trucs importants voila tout ..." />
+    <MESSAGE value="added license + fixed code" />
+    <MESSAGE value="fixed linker problem" />
+    <MESSAGE value="added fpu" />
+    <MESSAGE value="added parser" />
+    <MESSAGE value="now supporting %equ, %assign and %define" />
+    <MESSAGE value="added %macro" />
+    <option name="LAST_COMMIT_MESSAGE" value="added %macro" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

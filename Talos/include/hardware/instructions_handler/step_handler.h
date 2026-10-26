@@ -1,15 +1,16 @@
 #ifndef ERGON_STEP_HANDLER_H
 #define ERGON_STEP_HANDLER_H
 
-#include <functional>
+#include <bit>
+#include <cmath>
+#include <cstdint>
+#include <utility>
 
 #include "hardware/core.h"
 
-/*
-
-inline void step_instr(SimpleCore& c, const DecodedInstr& prog, std::function<int()> handle_syscall) {
+inline void step_instr(SimpleCore& c, const DecodedInstr& prog) {
     #if !defined(__GNUC__) && !defined(__clang__)
-        #error "Computed goto requires GCC or Clang therefore you cannot use AUTO execution mode"
+        #error "Computed goto requires GCC or Clang"
     #endif
 
     static void* dispatch_table[256] = {
@@ -46,340 +47,473 @@ inline void step_instr(SimpleCore& c, const DecodedInstr& prog, std::function<in
         &&OP_JMP, &&OP_JZ, &&OP_JNZ, &&OP_JG, &&OP_JL,
 
         &&OP_CALL, &&OP_RET,
-        &&OP_SYSCALL, &&OP_HALT
+        &&OP_SYSCALL, &&OP_HALT,
+
+        &&OP_SETTV, &&OP_SYSRET,
+        &&OP_SETKSP, &&OP_SETUSP, &&OP_GETUSP,
+        &&OP_SETSL, &&OP_SETUB, &&OP_SETUL
     };
+    for (auto& p : dispatch_table)
+        if (!p)
+            p = &&OP_ILLEGAL;
 
-    #define DISPATCH() goto *dispatch_table[instr->opcode]
+    if (c.bus.ram_size() == 0)
+        return;
+    //magie noire >w<
 
-    #define STEP() c.PC++;
+    #define CHECK_PC() do { \
+        if (c.pending_fault) { \
+            c.pending_fault = false; \
+            if (!c.enter_trap(c.PC, c.fault_cause)) return; \
+            return; \
+        } \
+        if (c.mode == PrivMode::USER && !c.in_user_region(c.PC, INSTR_SIZE)) { \
+            if (!c.enter_trap(c.PC, 5)) return; \
+            return; \
+        } \
+        if (!c.bus.pc_in_bounds(c.PC)) return; \
+    } while (false)
 
+    #define STEP() do { c.PC += INSTR_SIZE; CHECK_PC(); return; } while (false)
+    #define NEXT() STEP()
+    #define STACK_FLOOR() (c.mode == PrivMode::USER ? c.stack_limit : 0u)
+    #define REQUIRE_KERNEL() \
+        if (c.mode == PrivMode::USER) { c.pending_fault = true; c.fault_cause = 2; STEP(); }
+
+    // Validate before executing the instruction passed by the caller.
+    CHECK_PC();
     const DecodedInstr* instr = &prog;
-    DISPATCH();
+    goto *dispatch_table[instr->opcode];
+
 
 OP_ADD:
     c.regs[instr->rd] = (uint32_t)((uint64_t)c.regs[instr->rs1] + (uint64_t)c.regs[instr->rs2]);
-    STEP();
+    NEXT();
 OP_SUB:
     c.regs[instr->rd] = (uint32_t)((uint64_t)c.regs[instr->rs1] - (uint64_t)c.regs[instr->rs2]);
-    STEP();
+    NEXT();
 OP_MUL:
     c.regs[instr->rd] = (uint32_t)((int64_t)(int32_t)c.regs[instr->rs1] * (int64_t)(int32_t)c.regs[instr->rs2]);
-    STEP();
+    NEXT();
 OP_DIV:
     if ((int32_t)c.regs[instr->rs2] != 0 && !((int32_t)c.regs[instr->rs1] == INT32_MIN && (int32_t)c.regs[instr->rs2] == -1))
         c.regs[instr->rd] = (uint32_t)((int32_t)c.regs[instr->rs1] / (int32_t)c.regs[instr->rs2]);
-    STEP();
+    NEXT();
 OP_MOD:
     if ((int32_t)c.regs[instr->rs2] != 0)
         c.regs[instr->rd] = (uint32_t)((int32_t)c.regs[instr->rs1] % (int32_t)c.regs[instr->rs2]);
-    STEP();
+    NEXT();
 OP_ADDI:
-    c.regs[instr->rd] = (uint32_t)((uint64_t)c.regs[instr->rs1] + (uint64_t)instr->rs2);
-    STEP();
+    c.regs[instr->rd] = (uint32_t)((uint64_t)c.regs[instr->rs1] + (uint64_t)instr->imm);
+    NEXT();
 OP_SUBI:
-    c.regs[instr->rd] = (uint32_t)((uint64_t)c.regs[instr->rs1] - (uint64_t)(int32_t)instr->rs2);
-    STEP();
+    c.regs[instr->rd] = (uint32_t)((uint64_t)c.regs[instr->rs1] - (uint64_t)instr->imm);
+    NEXT();
 OP_MULI:
-    c.regs[instr->rd] = (uint32_t)((int64_t)(int32_t)c.regs[instr->rs1] * (int64_t)(int32_t)instr->rs2);
-    STEP();
+    c.regs[instr->rd] = (uint32_t)((int64_t)(int32_t)c.regs[instr->rs1] * (int64_t)instr->imm);
+    NEXT();
 OP_DIVI:
-    if ((int32_t)instr->rs2 != 0 && !((int32_t)c.regs[instr->rs1] == INT32_MIN && (int32_t)instr->rs2 == -1))
-        c.regs[instr->rd] = (uint32_t)((int32_t)c.regs[instr->rs1] / (int32_t)instr->rs2);
-    STEP();
+    if (instr->imm != 0 && !((int32_t)c.regs[instr->rs1] == INT32_MIN && instr->imm == -1))
+        c.regs[instr->rd] = (uint32_t)((int32_t)c.regs[instr->rs1] / instr->imm);
+    NEXT();
 OP_MODI:
-    if ((int32_t)instr->rs2 != 0) c.regs[instr->rd] = (uint32_t)((int32_t)c.regs[instr->rs1] % (int32_t)instr->rs2);
-    STEP();
+    if (instr->imm != 0) c.regs[instr->rd] = (uint32_t)((int32_t)c.regs[instr->rs1] % instr->imm);
+    NEXT();
 
 OP_AND:
     c.regs[instr->rd] = c.regs[instr->rs1] & c.regs[instr->rs2];
-    STEP();
+    NEXT();
 OP_OR:
     c.regs[instr->rd] = c.regs[instr->rs1] | c.regs[instr->rs2];
-    STEP();
+    NEXT();
 OP_XOR:
     c.regs[instr->rd] = c.regs[instr->rs1] ^ c.regs[instr->rs2];
-    STEP();
+    NEXT();
 OP_ANDI:
-    c.regs[instr->rd] = c.regs[instr->rs1] & (uint32_t)(int32_t)instr->rs2;
-    STEP();
+    c.regs[instr->rd] = c.regs[instr->rs1] & (uint32_t)instr->imm;
+    NEXT();
 OP_ORI:
-    c.regs[instr->rd] = c.regs[instr->rs1] | (uint32_t)(int32_t)instr->rs2;
-    STEP();
+    c.regs[instr->rd] = c.regs[instr->rs1] | (uint32_t)instr->imm;
+    NEXT();
 OP_XORI:
-    c.regs[instr->rd] = c.regs[instr->rs1] ^ (uint32_t)(int32_t)instr->rs2;
-    STEP();
+    c.regs[instr->rd] = c.regs[instr->rs1] ^ (uint32_t)instr->imm;
+    NEXT();
 
 OP_SHL:
     c.regs[instr->rd] = c.regs[instr->rs1] << (c.regs[instr->rs2] & 31);
-    STEP();
+    NEXT();
 OP_SHR:
     c.regs[instr->rd] = c.regs[instr->rs1] >> (c.regs[instr->rs2] & 31);
-    STEP();
+    NEXT();
 OP_SAR:
     c.regs[instr->rd] = static_cast<uint32_t>(static_cast<int32_t>(c.regs[instr->rs1]) >> (c.regs[instr->rs2] & 31));
-    STEP();
+    NEXT();
 OP_ROL:
-    c.regs[instr->rd] = (c.regs[instr->rs1] << (c.regs[instr->rs2] & 31)) | (c.regs[instr->rs1] >> (32 - (c.regs[instr->rs2] & 31)));
-    STEP();
+    c.regs[instr->rd] = std::rotl(c.regs[instr->rs1], static_cast<int>(c.regs[instr->rs2] & 31));
+    NEXT();
 OP_ROR:
-    c.regs[instr->rd] = (c.regs[instr->rs1] >> (c.regs[instr->rs2] & 31)) | (c.regs[instr->rs1] << (32 - (c.regs[instr->rs2] & 31)));
-    STEP();
+    c.regs[instr->rd] = std::rotr(c.regs[instr->rs1], static_cast<int>(c.regs[instr->rs2] & 31));
+    NEXT();
 OP_SHLI:
-    c.regs[instr->rd] = c.regs[instr->rs1] << ((uint32_t)instr->rs2 & 31);
-    STEP();
+    c.regs[instr->rd] = c.regs[instr->rs1] << ((uint32_t)instr->imm & 31);
+    NEXT();
 OP_SHRI:
-    c.regs[instr->rd] = c.regs[instr->rs1] >> ((uint32_t)instr->rs2 & 31);
-    STEP();
+    c.regs[instr->rd] = c.regs[instr->rs1] >> ((uint32_t)instr->imm & 31);
+    NEXT();
 OP_SARI:
-    c.regs[instr->rd] = (uint32_t)((int32_t)c.regs[instr->rs1] >> ((uint32_t)instr->rs2 & 31));
-    STEP();
+    c.regs[instr->rd] = (uint32_t)((int32_t)c.regs[instr->rs1] >> ((uint32_t)instr->imm & 31));
+    NEXT();
 OP_ROLI:
-    c.regs[instr->rd] = (c.regs[instr->rs1] << ((uint32_t)instr->rs2 & 31)) | (c.regs[instr->rs1] >> (32 - ((uint32_t)instr->rs2 & 31)));
-    STEP();
+    c.regs[instr->rd] = std::rotl(c.regs[instr->rs1], static_cast<int>(static_cast<uint32_t>(instr->imm) & 31));
+    NEXT();
 OP_RORI:
-    c.regs[instr->rd] = (c.regs[instr->rs1] >> ((uint32_t)instr->rs2 & 31)) | (c.regs[instr->rs1] << (32 - ((uint32_t)instr->rs2 & 31)));
-    STEP();
+    c.regs[instr->rd] = std::rotr(c.regs[instr->rs1], static_cast<int>(static_cast<uint32_t>(instr->imm) & 31));
+    NEXT();
 OP_CMP:
     c.regs[12] = ((int32_t)c.regs[instr->rs1] < (int32_t)c.regs[instr->rs2]) ? -1 : (((int32_t)c.regs[instr->rs1] > (int32_t)c.regs[instr->rs2]) ? 1 : 0);
-STEP();
+    NEXT();
 OP_CMPU:
     c.regs[12] = (c.regs[instr->rs1] < c.regs[instr->rs2]) ? -1 : ((c.regs[instr->rs1] > c.regs[instr->rs2]) ? 1 : 0);
-STEP();
+    NEXT();
 OP_CMPI:
-    c.regs[12] = ((int32_t)c.regs[instr->rs1] < (int32_t)instr->rs2) ? -1 : (((int32_t)c.regs[instr->rs1] > (int32_t)instr->rs2) ? 1 : 0);
-STEP();
+    c.regs[12] = ((int32_t)c.regs[instr->rs1] < instr->imm) ? -1 : (((int32_t)c.regs[instr->rs1] > instr->imm) ? 1 : 0);
+    NEXT();
 OP_CMPUI:
-    c.regs[12] = (c.regs[instr->rs1] < (uint32_t)instr->rs2) ? -1 : ((c.regs[instr->rs1] < (uint32_t)instr->rs2) ? 1 : 0);
-STEP();
+    c.regs[12] = (c.regs[instr->rs1] < (uint32_t)instr->imm) ? -1 : ((c.regs[instr->rs1] > (uint32_t) instr->imm) ? 1 : 0);
+    NEXT();
 OP_TEST:
     c.regs[12] = ((c.regs[instr->rs1] & c.regs[instr->rs2]) != 0) ? 1 : 0;
-    STEP();
+    NEXT();
 OP_TESTI:
-    c.regs[12] = ((c.regs[instr->rs1] & (uint32_t)instr->rs2) != 0) ? 1 : 0;
-    STEP();
+    c.regs[12] = ((c.regs[instr->rs1] & (uint32_t)instr->imm) != 0) ? 1 : 0;
+    NEXT();
 
 OP_INC:
     c.regs[instr->rd] = (uint32_t)(int64_t)(int32_t)c.regs[instr->rd] + 1;
-    STEP();
+    NEXT();
 OP_DEC:
     c.regs[instr->rd] = (uint32_t)(int64_t)(int32_t)c.regs[instr->rd] - 1;
-    STEP();
+    NEXT();
 OP_NOT:
     c.regs[instr->rd] = ~c.regs[instr->rs1];
-    STEP();
+    NEXT();
 OP_ABS:
     if ((int32_t)c.regs[instr->rs1] < 0) c.regs[instr->rd] = (uint32_t)-(int32_t)c.regs[instr->rs1];
     else c.regs[instr->rd] = c.regs[instr->rs1];
-    STEP();
+    NEXT();
 OP_NEG:
     if ((int32_t)c.regs[instr->rs1] != INT32_MIN) c.regs[instr->rd] = (uint32_t)-(int32_t)c.regs[instr->rs1];
-    STEP();
+    NEXT();
 OP_MIN:
-    if (c.regs[instr->rs1] < c.regs[instr->rs2]) c.regs[instr->rd] = c.regs[instr->rs1];
+    if ((int32_t)c.regs[instr->rs1] < (int32_t)c.regs[instr->rs2]) c.regs[instr->rd] = c.regs[instr->rs1]; //signed
     else c.regs[instr->rd] = c.regs[instr->rs2];
-    STEP();
+    NEXT();
 OP_MAX:
-    if (c.regs[instr->rs1] > c.regs[instr->rs2]) c.regs[instr->rd] = c.regs[instr->rs1];
+    if ((int32_t)c.regs[instr->rs1] > (int32_t)c.regs[instr->rs2]) c.regs[instr->rd] = c.regs[instr->rs1]; //signed
     else c.regs[instr->rd] = c.regs[instr->rs2];
-    STEP();
+    NEXT();
 OP_MINI:
-    if (c.regs[instr->rs1] < instr->rs2) c.regs[instr->rd] = instr->rs1;
-    else c.regs[instr->rd] = instr->rs2;
-    STEP();
+    if ((int32_t)c.regs[instr->rs1] < instr->imm) c.regs[instr->rd] = c.regs[instr->rs1]; //signed
+    else c.regs[instr->rd] = instr->imm;
+    NEXT();
 OP_MAXI:
-    if (c.regs[instr->rs1] > instr->rs2) c.regs[instr->rd] = instr->rs1;
-    else c.regs[instr->rd] = instr->rs2;
-    STEP();
+    if ((int32_t)c.regs[instr->rs1] > instr->imm) c.regs[instr->rd] = c.regs[instr->rs1]; //signed
+    else c.regs[instr->rd] = instr->imm;
+    NEXT();
 
 OP_FADD:
     c.fregs[instr->rd] = std::bit_cast<uint32_t>(std::bit_cast<float>(c.fregs[instr->rs1]) + std::bit_cast<float>(c.fregs[instr->rs2]));
-    STEP();
+    NEXT();
 OP_FSUB:
     c.fregs[instr->rd] = std::bit_cast<uint32_t>(std::bit_cast<float>(c.fregs[instr->rs1]) - std::bit_cast<float>(c.fregs[instr->rs2]));
-    STEP();
+    NEXT();
 OP_FMUL:
     c.fregs[instr->rd] = std::bit_cast<uint32_t>(std::bit_cast<float>(c.fregs[instr->rs1]) * std::bit_cast<float>(c.fregs[instr->rs2]));
-    STEP();
+    NEXT();
 OP_FDIV:
     c.fregs[instr->rd] = std::bit_cast<uint32_t>(std::bit_cast<float>(c.fregs[instr->rs1]) / std::bit_cast<float>(c.fregs[instr->rs2]));
-    STEP();
+    NEXT();
 OP_FMA:
     c.fregs[instr->rd] = std::bit_cast<uint32_t>( std::fma(std::bit_cast<float>(c.fregs[instr->rd]), std::bit_cast<float>(c.fregs[instr->rs1]), std::bit_cast<float>(c.fregs[instr->rs2])));
-    STEP();
+    NEXT();
 OP_FSQRT:
     c.fregs[instr->rd] = std::bit_cast<uint32_t>(std::sqrt(std::bit_cast<float>(c.fregs[instr->rs1])));
-    STEP();
+    NEXT();
 OP_FABS:
     c.fregs[instr->rd] = std::bit_cast<uint32_t>(std::abs(std::bit_cast<float>(c.fregs[instr->rs1])));
-    STEP();
+    NEXT();
 OP_FNEG:
     c.fregs[instr->rd] = std::bit_cast<uint32_t>(-std::bit_cast<float>(c.fregs[instr->rs1]));
-    STEP();
+    NEXT();
 OP_FCMP:
     c.regs[12] = std::bit_cast<uint32_t>(std::bit_cast<float>(c.fregs[instr->rs1]) < std::bit_cast<float>(c.fregs[instr->rs2]) ? -1 : std::bit_cast<float>(c.fregs[instr->rs1]) > std::bit_cast<float>(c.fregs[instr->rs2]) ? 1 : 0);
-    STEP();
+    NEXT();
 OP_ITOF:
-    c.fregs[instr->rd] = std::bit_cast<uint32_t>(std::bit_cast<float>(c.regs[instr->rs1]));
-    STEP();
+    c.fregs[instr->rd] = std::bit_cast<uint32_t>(static_cast<float>(static_cast<int32_t>(c.regs[instr->rs1])));
+    NEXT();
 OP_FTOI:
-    c.regs[instr->rd] = std::bit_cast<uint32_t>(c.fregs[instr->rs1]);
-    STEP();
+    {
+    const auto f = std::bit_cast<float>(c.fregs[instr->rs1]);
+    int32_t r;
+    if (std::isnan(f)) r = 0;
+    else if (f >= 2147483648.0f) r = INT32_MAX;
+    else if (f <= -2147483648.0f) r = INT32_MIN;
+    else r = static_cast<int32_t>(f);
+    c.regs[instr->rd] = static_cast<uint32_t>(r);
+    }
+    NEXT();
 OP_FMOV:
     c.fregs[instr->rd] = c.regs[instr->rs1];
-    STEP();
+    NEXT();
 OP_MOVF:
     c.regs[instr->rd] = c.fregs[instr->rs1];
-    STEP();
+    NEXT();
 OP_FLDW_ABS:
     c.fregs[instr->rd] = c.load32(instr->imm);
-    STEP();
+    NEXT();
 OP_FSDW_ABS:
     c.store32(instr->imm, c.fregs[instr->rd]);
-    STEP();
+    NEXT();
 OP_FLDW_BASE:
-    c.fregs[instr->rd] = c.load32(c.regs[instr->rs1] + static_cast<int8_t>(instr->imm));
-    STEP();
+    c.fregs[instr->rd] = c.load32(c.regs[instr->rs1] + static_cast<int8_t>(instr->rs2));
+    NEXT();
 OP_FSDW_BASE:
-    c.store32(c.regs[instr->rs1] + static_cast<int8_t>(instr->imm), c.fregs[instr->rd]);
-    STEP();
-    OP_FLDW_REG:
-        c.fregs[instr->rd] = c.load32(c.regs[instr->rs1] + c.regs[instr->rs2]);
-    STEP();
-    OP_FSDW_REG:
-        c.store32(c.regs[instr->rs1] + c.regs[instr->rs2], c.fregs[instr->rd]);
-    STEP();
+    c.store32(c.regs[instr->rs1] + static_cast<int8_t>(instr->rs2), c.fregs[instr->rd]);
+    NEXT();
+OP_FLDW_REG:
+    c.fregs[instr->rd] = c.load32(c.regs[instr->rs1] + c.regs[instr->rs2]);
+    NEXT();
+OP_FSDW_REG:
+    c.store32(c.regs[instr->rs1] + c.regs[instr->rs2], c.fregs[instr->rd]);
+    NEXT();
 
 OP_MOV_IMM:
     c.regs[instr->rd] = instr->imm;
-    STEP();
+    NEXT();
 OP_MOV_REG:
     c.regs[instr->rd] = c.regs[instr->rs1];
-    STEP();
+    NEXT();
 OP_LDB_ABS:
     c.regs[instr->rd] = static_cast<int8_t>(c.load8(instr->imm));
-    STEP();
+    NEXT();
 OP_LDH_ABS:
     c.regs[instr->rd] = static_cast<int16_t>(c.load16(instr->imm));
-    STEP();
+    NEXT();
 OP_LDW_ABS:
     c.regs[instr->rd] = c.load32(instr->imm);
-    STEP();
+    NEXT();
 OP_STB_ABS:
     c.store8(instr->imm, c.regs[instr->rd] & 0xFF);
-    STEP();
+    NEXT();
 OP_STH_ABS:
     c.store16(instr->imm, c.regs[instr->rd] & 0xFFFF);
-    STEP();
+    NEXT();
 OP_STW_ABS:
     c.store32(instr->imm, c.regs[instr->rd]);
-    STEP();
+    NEXT();
 OP_LDB_BASE:
-    c.regs[instr->rd] = static_cast<int8_t>(c.load8(c.regs[instr->rs1] + static_cast<int8_t>(instr->imm)));
-    STEP();
+    c.regs[instr->rd] = static_cast<int8_t>(c.load8(c.regs[instr->rs1] + static_cast<int8_t>(instr->rs2)));
+    NEXT();
 OP_LDH_BASE:
-    c.regs[instr->rd] = static_cast<int16_t>(c.load16(c.regs[instr->rs1] + static_cast<int8_t>(instr->imm)));
-    STEP();
+    c.regs[instr->rd] = static_cast<int16_t>(c.load16(c.regs[instr->rs1] + static_cast<int8_t>(instr->rs2)));
+    NEXT();
 OP_LDW_BASE:
-    c.regs[instr->rd] = c.load32(c.regs[instr->rs1] + static_cast<int8_t>(instr->imm));
-    STEP();
+    c.regs[instr->rd] = c.load32(c.regs[instr->rs1] + static_cast<int8_t>(instr->rs2));
+    NEXT();
 OP_LDB_REG:
     c.regs[instr->rd] = static_cast<int8_t>(c.load8(c.regs[instr->rs1] + c.regs[instr->rs2]));
-    STEP();
+    NEXT();
 OP_LDH_REG:
     c.regs[instr->rd] = static_cast<int16_t>(c.load16(c.regs[instr->rs1] + c.regs[instr->rs2]));
-    STEP();
+    NEXT();
 OP_LDW_REG:
     c.regs[instr->rd] = c.load32(c.regs[instr->rs1] + c.regs[instr->rs2]);
-    STEP();
+    NEXT();
 OP_STB_BASE:
-    c.store8(c.regs[instr->rs1] + static_cast<int8_t>(instr->imm), c.regs[instr->rd] & 0xFF);
-    STEP();
+    c.store8(c.regs[instr->rs1] + static_cast<int8_t>(instr->rs2), c.regs[instr->rd] & 0xFF);
+    NEXT();
 OP_STH_BASE:
-    c.store16(c.regs[instr->rs1] + static_cast<int8_t>(instr->imm), c.regs[instr->rd] & 0xFFFF);
-    STEP();
+    c.store16(c.regs[instr->rs1] + static_cast<int8_t>(instr->rs2), c.regs[instr->rd] & 0xFFFF);
+    NEXT();
 OP_STW_BASE:
-    c.store32(c.regs[instr->rs1] + static_cast<int8_t>(instr->imm), c.regs[instr->rd]);
-    STEP();
+    c.store32(c.regs[instr->rs1] + static_cast<int8_t>(instr->rs2), c.regs[instr->rd]);
+    NEXT();
 OP_STB_REG:
     c.store8(c.regs[instr->rs1] + c.regs[instr->rs2], c.regs[instr->rd] & 0xFF);
-    STEP();
+    NEXT();
 OP_STH_REG:
     c.store16(c.regs[instr->rs1] + c.regs[instr->rs2], c.regs[instr->rd] & 0xFFFF);
-    STEP();
+    NEXT();
 OP_STW_REG:
     c.store32(c.regs[instr->rs1] + c.regs[instr->rs2], c.regs[instr->rd]);
-    STEP();
+    NEXT();
 
 OP_PUSH:
+    if (c.SP < 4 || c.SP - 4 < STACK_FLOOR()) {
+        if (c.mode == PrivMode::USER) {
+            c.pending_fault = true;
+            c.fault_cause = 4;
+            NEXT();
+        }
+        return;
+    }
     c.SP -= 4;
     c.store32(c.SP, c.regs[instr->rs1]);
-    STEP();
+    NEXT();
 OP_POP:
+    if (c.SP + 4 > c.bus.ram_size()) { return; } // stack underflow
     c.regs[instr->rd] = c.load32(c.SP);
     c.SP += 4;
-    STEP();
+    NEXT();
 OP_LEA:
     c.regs[instr->rd] = c.regs[instr->rs1] + instr->imm;
-    STEP();
+    NEXT();
 OP_LEAB:
     c.regs[instr->rd] = instr->imm;
-    STEP();
+    NEXT();
 OP_SWAP:
     std::swap(c.regs[instr->rd], c.regs[instr->rs1]);
-    STEP();
+    NEXT();
 OP_CLR:
     c.regs[instr->rd] = 0;
-    STEP();
+    NEXT();
 OP_MEMCPY:
     {
-        int32_t len = static_cast<int8_t>(instr->imm);
-        if (len >= 0) {
-            for (uint32_t index = 0; index < instr->rs2; ++index)
-                if (c.regs[instr->rd] + index < c.ram.size() && c.regs[instr->rs1] + index < c.ram.size())
-                    c.ram[c.regs[instr->rd] + index] = c.ram[c.regs[instr->rs1] + index];
-        }
+        // Copie octet à octet via c.store8/c.load8 : ça respecte le
+        // routage RAM/MMIO du bus au lieu de taper direct dans le vector.
+        int32_t len = instr->imm;
+        if (len > 0)
+            for (uint32_t idx = 0; idx < (uint32_t)len; ++idx)
+                c.store8(c.regs[instr->rd] + idx, c.load8(c.regs[instr->rs1] + idx));
     }
-    STEP();
-
+    NEXT();
 OP_JMP:
-    c.PC += instr->imm;
-    DISPATCH();
+    c.PC += instr->imm; CHECK_PC(); return;
 OP_JZ:
-    if(c.regs[12] == 0)
-        c.PC += instr->imm; DISPATCH();
-    STEP();
+    {
+    if(c.regs[12] == 0) {
+        c.PC += instr->imm; CHECK_PC(); return;
+    }
+    NEXT();
+    }
 OP_JNZ:
-    if(c.regs[12] != 0)
-        c.PC += instr->imm; DISPATCH();
-    STEP();
+    {
+    if(c.regs[12] != 0) {
+        c.PC += instr->imm; CHECK_PC(); return;
+    }
+    NEXT();
+    }
 OP_JL:
-    if((int32_t)c.regs[12] < 0)
-        c.PC += instr->imm; DISPATCH();
-    STEP();
+    {
+    if(static_cast<int32_t>(c.regs[12]) < 0) {
+        c.PC += instr->imm; CHECK_PC(); return;
+    }
+    NEXT();
+    }
 OP_JG:
-    if((int32_t)c.regs[12] > 0)
-        c.PC += instr->imm; DISPATCH();
-    STEP();
+    {
+    if(static_cast<int32_t>(c.regs[12]) > 0) {
+        c.PC += instr->imm; CHECK_PC(); return;
+    }
+    NEXT();
+    }
 OP_CALL:
+    if (c.SP < 4 || c.SP - 4 < STACK_FLOOR()) {
+        if (c.mode == PrivMode::USER) {
+            c.pending_fault = true;
+            c.fault_cause = 4;
+            NEXT();
+        }
+        return;
+    }
     c.SP -= 4;
-    c.store32(c.SP, c.PC + 1);
-    c.PC += instr->imm;
-    DISPATCH();
+    c.store32(c.SP, c.PC + INSTR_SIZE);
+    c.PC += instr->imm; CHECK_PC(); return;
 OP_RET:
-    c.PC = c.load32(c.SP);
-    c.SP += 4;
-    DISPATCH();
+    if (c.SP + 4 > c.bus.ram_size()) { return; } // stack underflow
+    c.PC = c.load32(c.SP); c.SP += 4; CHECK_PC(); return;
 
 OP_SYSCALL:
-    if (handle_syscall() == -1) return;
-    STEP();
-OP_HALT:
+    if (!c.enter_trap(c.PC + INSTR_SIZE, 0)) return;
+    CHECK_PC();
     return;
+OP_HALT:
+    if (c.mode == PrivMode::USER) {
+        c.pending_fault = true;
+        c.fault_cause = 2;
+        NEXT();
+    }
+    return;
+
+OP_SETTV:
+    //kernel manages trap !
+    if (c.mode == PrivMode::KERNEL) {
+        c.trap_vector = c.regs[instr->rs1];
+    }
+    else {
+        c.pending_fault = true;
+        c.fault_cause = 2;
+    }
+    NEXT();
+
+OP_SYSRET:
+    REQUIRE_KERNEL();
+    if (c.SP + 4 > c.bus.ram_size()) return;
+    {
+        const uint32_t saved = c.load32(c.SP);
+        c.SP += 4;
+        c.PC = saved & ~1u;
+        if (saved & 1u) {
+            c.mode = PrivMode::USER;
+            c.SP = c.user_sp;
+        } else {
+            c.mode = PrivMode::KERNEL; //retour de trap
+        }
+    }
+    CHECK_PC();
+    return;
+
+OP_SETKSP:
+    REQUIRE_KERNEL();
+    c.kernel_sp = c.regs[instr->rs1];
+    NEXT();
+
+OP_SETUSP:
+    REQUIRE_KERNEL();
+    c.user_sp = c.regs[instr->rs1];
+    NEXT();
+
+OP_GETUSP:
+    REQUIRE_KERNEL();
+    c.regs[instr->rd] = c.user_sp;
+    NEXT();
+
+OP_SETSL:
+    REQUIRE_KERNEL();
+    c.stack_limit = c.regs[instr->rs1];
+    NEXT();
+
+OP_SETUB:
+    REQUIRE_KERNEL();
+    c.user_base = c.regs[instr->rs1];
+    NEXT();
+
+OP_SETUL:
+    REQUIRE_KERNEL();
+    c.user_limit = c.regs[instr->rs1];
+    NEXT();
+
+OP_ILLEGAL:
+    c.pending_fault = true;
+    c.fault_cause = 3;
+    NEXT();
+
+#undef STEP
+#undef NEXT
+#undef CHECK_PC
+#undef STACK_FLOOR
+#undef REQUIRE_KERNEL
+
 }
 
-#undef DISPATCH
-#undef STEP
-
-*/
-
-#endif
+#endif // ERGON_STEP_HANDLER_H

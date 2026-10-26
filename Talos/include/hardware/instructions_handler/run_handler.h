@@ -61,10 +61,14 @@ inline RunResult run(SimpleCore& c) {
             &&OP_SETKSP, &&OP_SETUSP, &&OP_GETUSP,
             &&OP_SETSL, &&OP_SETUB, &&OP_SETUL
         };
-    for (auto& p : dispatch_table) if (!p) p = &&OP_ILLEGAL;
+    for (auto& p : dispatch_table)
+        if (!p)
+            p = &&OP_ILLEGAL;
 
-    if (c.bus.ram_size() == 0) return RunResult::ERROR;
+    if (c.bus.ram_size() == 0)
+        return RunResult::ERROR;
     //magie noire >w<
+
     #define FETCH() instr_storage = c.bus.fetch_instr(c.PC);
 
     #define DISPATCH() goto *dispatch_table[instr->opcode]
@@ -545,5 +549,10 @@ OP_ILLEGAL:
     c.pending_fault = true;
     c.fault_cause = 3;
     NEXT();
+
+#undef NEXT
+#undef CHECK_PC
+#undef STACK_FLOOR
+#undef REQUIRE_KERNEL
 }
 #endif

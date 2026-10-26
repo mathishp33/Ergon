@@ -4,6 +4,7 @@
 #include <chrono>
 #include <fstream>
 #include <thread>
+#include <iomanip>
 
 #include "../hardware/mother_board.h"
 #include "../hardware/instructions_handler/step_handler.h"
@@ -11,9 +12,30 @@
 #include "../software/assembler/assembler.h"
 #include "../software/assembler/linker.h"
 
+
+inline std::string find_instr_from_opcode(const uint32_t opcode) {
+    for (const auto& [instr_name, instr_def] : instr_table)
+        if (instr_def.opcode == opcode)
+            return instr_name;
+    return "";
+}
+
+inline std::string find_reg_name_from_idx(const uint32_t idx, bool isFloat) {
+    for (const auto& [reg_name, reg_idx] : reg_table)
+        if (reg_idx == idx && !(isFloat ^ reg_name.starts_with("f")))
+            return reg_name;
+    return "";
+}
+
+inline std::string int_to_hex_str(const int32_t input) {
+    std::stringstream ss;
+    ss << std::hex << input;
+    return ss.str();
+}
+
 struct StepInfo {
-    std::array<uint32_t, 16> regs;
-    std::array<uint32_t, 16> fregs;
+    std::array<uint32_t, 16> regs{};
+    std::array<uint32_t, 16> fregs{};
     uint32_t& PC = regs[15];
     uint32_t& SP = regs[14];
     uint32_t& FP = regs[13];
@@ -22,7 +44,10 @@ struct StepInfo {
     PrivMode mode = PrivMode::KERNEL;
     uint32_t trap_vector = 0;
 
-    StepInfo() = default;
+    std::string line;
+    bool isFloatInstr = false;
+    InstrDef instr_def = { ILLEGAL, InstrType::J, { }, { } };
+
     StepInfo(const MotherBoard& mb) {
         regs = mb.cpu->core.regs;
         fregs = mb.cpu->core.fregs;
@@ -33,6 +58,59 @@ struct StepInfo {
         trap_vector = mb.cpu->core.trap_vector;
 
         instr = mb.cpu->core.bus.fetch_instr(mb.cpu->core.PC);
+
+        line += find_instr_from_opcode(instr.opcode);
+        const auto it = instr_table.find(line);
+        if (it != instr_table.end())
+            instr_def = it->second;
+        isFloatInstr = line.starts_with("f");
+        for (size_t i = line.size(); i < 8; i++)
+            line += " ";
+        if (line == "fmov") {
+            line += find_reg_name_from_idx(instr.rd, true);
+            line += ", ";
+            line += find_reg_name_from_idx(instr.rs1, false);
+        } if (line == "movf") {
+            line += find_reg_name_from_idx(instr.rd, false);
+            line += ", ";
+            line += find_reg_name_from_idx(instr.rs1, true);
+        } else {
+            std::string comment;
+            for (size_t i = 0; i < instr_def.args.size(); i++) {
+                if (instr_def.args[i] == ArgType::REG) {
+                    if (i == 0)
+                        line += find_reg_name_from_idx(instr.rd, isFloatInstr);
+                    if (i == 1)
+                        line += find_reg_name_from_idx(instr.rs1, isFloatInstr);
+                    if (i == 2)
+                        line += find_reg_name_from_idx(instr.rs2, isFloatInstr);
+                    if (i + 1 != instr_def.args.size())
+                        line += ", ";
+                }
+                if (instr_def.args[i] == ArgType::IMM) {
+                    line += std::to_string(instr.imm);
+                    comment = "0x" + int_to_hex_str(instr.imm);
+                    if (i + 1 != instr_def.args.size())
+                        line += ", ";
+                }
+                if (instr_def.args[i] == ArgType::VAR) {
+                    line += "0x";
+                    line += int_to_hex_str(instr.imm);
+                    comment = std::to_string(instr.imm);
+                    if (i + 1 != instr_def.args.size())
+                        line += ", ";
+                }
+                if (instr_def.args[i] == ArgType::LABEL) {
+                    line += std::to_string(instr.imm);
+                    comment = "label";
+                    if (i + 1 != instr_def.args.size())
+                        line += ", ";
+                }
+            }
+            line += "  ; ";
+            line += comment;
+        }
+
     }
 };
 
@@ -301,25 +379,31 @@ struct EnvironmentManager {
         return "";
     }
 
-    void flash_disk(const std::vector<uint8_t>& image, uint32_t start_block) {
+    void flash_disk(const std::vector<uint8_t>& image, const uint32_t start_block) {
         const size_t offset = static_cast<size_t>(start_block) * StorageDevice::BLOCK_SIZE;
         if (offset + image.size() > mb.hard_drive.size())
             mb.hard_drive.resize(offset + image.size(), 0);
-        std::ranges::copy(image, mb.hard_drive.begin() + offset);
+        std::ranges::copy(image, mb.hard_drive.begin() + static_cast<long long>(offset));
     }
 
-    // StepInfo step() {
-    //     if (mb.cpu->core.PC == 0) {
-    //         running = true;
-    //         exit_code = 1;
-    //         start_time = std::chrono::system_clock::now();
-    //     }
-    //     if (mb.cpu->core.PC >= mb.ram.size()) return { };
-    //     const DecodedInstr current = mb.cpu->core.bus.fetch_instr(mb.cpu->core.PC);
-    //     step_instr(mb.cpu->core, current, [this]() { handle_syscall(); return exit_code; });
-    //
-    //     return { mb };
-    // }
+    void start_debug() {
+        running = true;
+        exit_code = 1;
+        start_time = std::chrono::system_clock::now();
+    }
+
+    void end_debug() {
+        running = false;
+        exit_code = static_cast<int>(mb.cpu->core.regs[0]);
+    }
+
+    StepInfo step() {
+        //if (mb.cpu->core.PC >= mb.ram.size()) return { mb };
+        const DecodedInstr current = mb.cpu->core.bus.fetch_instr(mb.cpu->core.PC);
+        step_instr(mb.cpu->core, current);
+
+        return { mb };
+    }
 
 };
 

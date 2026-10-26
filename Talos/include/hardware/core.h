@@ -51,6 +51,8 @@ enum OPCODE : uint8_t {
     SETSL, // setsl rs : stack_limit = regs[rs] (kernel-only)
     SETUB, // setub rs : user_base = regs[rs] (kernel-only)
     SETUL, // setul rs : user_limit = regs[rs] (kernel-only, borne exclusive)
+
+    ILLEGAL,
 };
 
 

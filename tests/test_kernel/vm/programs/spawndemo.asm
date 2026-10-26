@@ -7,7 +7,7 @@
     movi r7, 1234 ; doit survivre aux SYS_SPAWN
 
     movi r0, SYS_SPAWN
-    movi r1, 6 ; "child" : sort avec 42
+    movi r1, 4 ; "child" : sort avec 42
     syscall
     cmpi r0, 42
     jnz fail1

@@ -2,7 +2,7 @@
 %include "mmio.inc"
 %include "syscalls.inc"
 
-%equ BOOT_PROG 0
+%equ BOOT_PROG 3
 
 .entry kmain
 .extern loader_init
@@ -55,7 +55,6 @@
     mov r6, r1 ; parent
     clr r3
     ldw r5, k_user_top
-
   pa_loop:
     cmpi r3, PROC_MAX
     jz pa_none
@@ -77,11 +76,9 @@
     sbasew r6, r4, P_PARENT
     mov r0, r3
     ret
-
   pa_next:
     inc r3
     jmp pa_loop
-
   pa_none:
     movi r0, -1
     ret
