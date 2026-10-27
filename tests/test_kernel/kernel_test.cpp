@@ -63,7 +63,14 @@ int main() {
     /* 1 */ { "mem_fault", pool({ { "mem_fault.asm", load(PROGS_PATH, "mem_fault.asm") } }) },
     /* 2 */ { "stack_overflow.asm", pool({ { "stack_overflow.asm", load(PROGS_PATH, "stack_overflow.asm") } }) },
     /* 3 */ { "spawndemo", pool({ { "spawndemo.asm", load(PROGS_PATH, "spawndemo.asm") } }) },
-    /* 4 */ { "child", pool({ { "child.asm", load(PROGS_PATH, "child.asm") } }) }
+    /* 4 */ { "child", pool({ { "child.asm", load(PROGS_PATH, "child.asm") } }) },
+    /* 5 */ { "proctest", pool({ { "proctest.asm", load(PROGS_PATH, "proctest.asm") } }) },
+    /* 6 */ { "pt_exit7", pool({ { "pt_exit7.asm", load(PROGS_PATH, "pt_exit7.asm") } }) },
+    /* 7 */ { "pt_fault", pool({ { "pt_fault.asm", load(PROGS_PATH, "pt_fault.asm") } }) },
+    /* 8 */ { "pt_yield", pool({ { "pt_yield.asm", load(PROGS_PATH, "pt_yield.asm") } }) },
+    /* 9 */ { "pt_regs", pool({ { "pt_regs.asm", load(PROGS_PATH, "pt_regs.asm") } }) },
+    /* 10 */ { "pt_grand", pool({ { "pt_grand.asm", load(PROGS_PATH, "pt_grand.asm") } }) },
+    /* 11 */ { "pt_orphan", pool({ { "pt_orphan.asm", load(PROGS_PATH, "pt_orphan.asm") } }) }
     };
 
     std::cout << "ROM_BUILD: " << env.build_rom(pool({ { "boot.asm", load(BOOT_PATH, "boot.asm") } })) << std::endl;
@@ -115,8 +122,6 @@ int main() {
     std::cout << " - r : to see regs \n";
     std::cout << " - f : to see fregs \n";
     std::cout << " - i : to see PC, SP, FP \n";
-    std::cout << " - p or p+ : to inc PC \n";
-    std::cout << " - p- : to dec PC \n";
     std::cout << " - e : to exit \n";
     std::cout << "\n";
 
@@ -143,10 +148,6 @@ int main() {
             std::cout << "SP = " << SI.SP << "\n";
             std::cout << "FP = " << SI.FP << "\n";
         }
-        if (in == "p" || in == "p+")
-            env.mb.cpu->core.PC++;
-        if (in == "p-")
-            env.mb.cpu->core.PC--;
         if (in == "e")
             break;
     }

@@ -30,11 +30,18 @@
 %equ P_R8 64
 %equ P_R9 68
 %equ P_R10 72 ; r0 n'est pas sauvegardé : c'est la valeur de retour du syscall
+%equ P_FP 76 ; r13 (frame pointer)
+%equ P_RET 80 ; valeur injectée dans r0 quand le processus est (re)lancé par run_pid
+%equ P_EXIT 84 ; code de sortie (état P_ZOMBIE)
+%equ P_WFOR 88 ; état P_WAIT : pid attendu, -1 = n'importe quel fils
+%equ P_ZERO_END 92 ; spawn_common remet à zéro les champs [P_CMP, P_ZERO_END)
 
 ; ---- STATE ----
 %equ P_FREE 0
 %equ P_RUN 1
 %equ P_WAIT 2 ; suspendu en attendant la fin d'un fils
+%equ P_READY 3 ; prêt à tourner, attend le processeur
+%equ P_ZOMBIE 4 ; terminé, attend le WAIT de son parent (code dans P_EXIT)
 %equ P_NONE -1
 
 %equ KERNEL_BASE 0x1000
